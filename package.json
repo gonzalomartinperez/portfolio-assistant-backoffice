@@ -1,0 +1,35 @@
+{
+	"name": "portfolio-assistant-web",
+	"version": "0.1.0",
+	"private": false,
+	"scripts": {
+		"dev": "next dev --port 3001",
+		"build": "next build --webpack",
+		"start": "next start --port 3001",
+		"typecheck": "next typegen && tsc --noEmit",
+		"test": "npm run contract:check && node --experimental-strip-types --test tests/*.test.mjs",
+		"contract:check": "node scripts/check-contract.mjs",
+		"contract:generate": "openapi-typescript contracts/openapi.json -o contracts/types.d.ts",
+		"test:browser": "playwright test"
+	},
+	"engines": {
+		"node": ">=24 <25"
+	},
+	"dependencies": {
+		"next": "16.3.5",
+		"react": "19.3.0",
+		"react-dom": "19.3.0",
+		"react-markdown": "^10.1.0",
+		"rehype-sanitize": "^6.0.0",
+		"remark-gfm": "^4.0.1"
+	},
+	"devDependencies": {
+		"@playwright/test": "1.63.0",
+		"@types/node": "24.13.5",
+		"@types/react": "19.3.0",
+		"@types/react-dom": "19.3.0",
+		"openapi-typescript": "7.13.0",
+		"typescript": "5.9.3"
+	},
+	"type": "module"
+}
