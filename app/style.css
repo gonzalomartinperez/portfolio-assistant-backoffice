@@ -143,6 +143,7 @@ select:focus-visible {
 }
 .settings {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 8px;
 }
 select {

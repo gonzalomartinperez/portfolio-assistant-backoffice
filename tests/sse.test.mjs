@@ -37,7 +37,7 @@ test("rejects an oversized event without retaining unbounded data", async () => 
 	const stream = new ReadableStream({
 		start(controller) {
 			controller.enqueue(
-				new TextEncoder().encode("data: " + "x".repeat(65_000)),
+				new TextEncoder().encode(`data: ${"x".repeat(65_000)}`),
 			);
 			controller.close();
 		},

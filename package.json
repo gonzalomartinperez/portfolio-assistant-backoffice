@@ -6,6 +6,7 @@
 		"dev": "next dev --port 3001",
 		"build": "next build --webpack",
 		"start": "next start --port 3001",
+		"lint": "biome lint app lib tests scripts",
 		"typecheck": "next typegen && tsc --noEmit",
 		"test": "npm run contract:check && node --experimental-strip-types --test tests/*.test.mjs",
 		"contract:check": "node scripts/check-contract.mjs",
@@ -24,6 +25,7 @@
 		"remark-gfm": "^4.0.1"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "2.5.14",
 		"@playwright/test": "1.63.0",
 		"@types/node": "24.13.5",
 		"@types/react": "19.3.0",
