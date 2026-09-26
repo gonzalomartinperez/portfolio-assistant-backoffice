@@ -95,6 +95,7 @@ export default function Chat() {
 	useEffect(() => {
 		document.documentElement.dataset.theme = theme;
 	}, [theme]);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Scroll when persisted or streaming messages change.
 	useEffect(() => {
 		if (nearBottom.current)
 			bottom.current?.scrollIntoView({ behavior: "smooth" });
@@ -257,25 +258,28 @@ export default function Chat() {
 				<div className="brand">
 					GMP <span>assistant</span>
 				</div>
-				<button className="primary" onClick={newChat} disabled={!ready}>
+				<button type="button" className="primary" onClick={newChat} disabled={!ready}>
 					{t.new}
 				</button>
 				<nav className="conversation-list">
 					{items.map((item) => (
 						<div className="conversation" key={item.id}>
 							<button
+								type="button"
 								className={active === item.id ? "selected" : ""}
 								onClick={() => setActive(item.id)}
 							>
 								{item.title}
 							</button>
 							<button
+								type="button"
 								aria-label={`${t.rename} ${item.title}`}
 								onClick={() => rename(item.id)}
 							>
 								✎
 							</button>
 							<button
+								type="button"
 								aria-label={`${t.delete} ${item.title}`}
 								onClick={() => remove(item.id)}
 							>
@@ -366,10 +370,10 @@ export default function Chat() {
 							)}
 							{message.role === "assistant" && (
 								<div className="feedback">
-									<button onClick={() => feedback(message.id, "up")}>
+									<button type="button" onClick={() => feedback(message.id, "up")}>
 										{t.up}
 									</button>
-									<button onClick={() => feedback(message.id, "down")}>
+									<button type="button" onClick={() => feedback(message.id, "down")}>
 										{t.down}
 									</button>
 								</div>

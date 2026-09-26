@@ -37,3 +37,19 @@ test("Spanish mobile chat has no horizontal overflow", async ({ page }) => {
 		),
 	).toBe(true);
 });
+
+test("theme controls and 200 percent mobile zoom remain usable", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.goto("/");
+	const theme = page.getByLabel("Theme");
+	await theme.selectOption("dark");
+	await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("dark");
+	await theme.selectOption("light");
+	await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("light");
+	await page.emulateMedia({ colorScheme: "dark" });
+	await theme.selectOption("system");
+	await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("dark");
+	await page.evaluate(() => { document.body.style.zoom = "200%"; });
+	expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+	await expect(page.getByRole("button", { name: "New chat" })).toBeEnabled();
+});
