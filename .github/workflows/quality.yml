@@ -35,7 +35,7 @@ jobs:
       - run: docker compose -f api/compose.yaml up -d --wait
       - run: uv sync --python 3.13 --frozen && uv run python -m app.migrate && uv run python -m app.knowledge_sync --repo ../public-portfolio
         working-directory: api
-      - run: (cd api && uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/assistant-api.log 2>&1 &)
+      - run: (cd api && .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-access-log > /tmp/assistant-api.log 2>&1 &)
       - run: npm run start > /tmp/assistant-web.log 2>&1 &
       - run: |
           for attempt in {1..30}; do

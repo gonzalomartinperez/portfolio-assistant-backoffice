@@ -204,8 +204,13 @@ export default function Chat() {
 					if (entry.type === "run.failed") setError(t.unavailable);
 				},
 			);
-			if (!result.terminal) setError(t.interrupted);
-		} catch (cause) {
+			if (!result.terminal) {
+				const savedRun = await getRun(result.runId ?? receivedRun ?? "").catch(
+					() => null,
+				);
+				if (savedRun?.state !== "completed") setError(t.interrupted);
+			}
+		} catch {
 			if (!abort.signal.aborted) setError(t.unavailable);
 			if (receivedRun) {
 				const run = await getRun(receivedRun).catch(() => null);
