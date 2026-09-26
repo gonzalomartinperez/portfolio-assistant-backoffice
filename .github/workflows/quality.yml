@@ -32,8 +32,8 @@ jobs:
           path: public-portfolio
           persist-credentials: false
       - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
-      - run: docker compose -f api/compose.yaml up -d
-      - run: uv sync --frozen && uv run python -m app.migrate && uv run python -m app.knowledge_sync --repo ../public-portfolio
+      - run: docker compose -f api/compose.yaml up -d --wait
+      - run: uv sync --python 3.13 --frozen && uv run python -m app.migrate && uv run python -m app.knowledge_sync --repo ../public-portfolio
         working-directory: api
       - run: (cd api && uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/assistant-api.log 2>&1 &)
       - run: npm run start > /tmp/assistant-web.log 2>&1 &
