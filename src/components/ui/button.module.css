@@ -50,3 +50,8 @@
 		transition: none;
 	}
 }
+
+.button[aria-disabled="true"] {
+	cursor: progress;
+	opacity: 0.55;
+}

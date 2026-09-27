@@ -7,6 +7,7 @@ import { retentionText } from "../../../shared/i18n/copy";
 import Image from "next/image";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { copy } from "../../../shared/i18n/copy";
+import { IdentityAvatar } from "./identity-avatar";
 import { ChatMessage } from "./chat-message";
 import { useChat } from "./use-chat";
 
@@ -385,15 +386,7 @@ export default function Chat({ assistant }: { assistant: Assistant }) {
 						!runningHere &&
 						!chat.historyLoading && (
 							<section className={cx("empty")}>
-								<div className={cx("empty-avatar")}>
-									<Image
-										src="/avatar.png"
-										width={88}
-										height={88}
-										alt=""
-										priority
-									/>
-								</div>
+								<IdentityAvatar />
 								<p className={cx("eyebrow")}>GONZALO MARTIN PEREZ</p>
 								<h2>{t.emptyTitle}</h2>
 								<p>{t.empty}</p>
@@ -449,6 +442,30 @@ export default function Chat({ assistant }: { assistant: Assistant }) {
 							</div>
 						</article>
 					)}
+					{!chat.busy &&
+						!chat.error &&
+						!chat.streamText &&
+						!chat.historyLoading &&
+						chat.history.at(-1)?.role === "assistant" && (
+							<section className={cx("followups")} aria-label={t.explore}>
+								<p className={cx("eyebrow")}>{t.explore}</p>
+								<div>
+									{t.followups.map((question) => (
+										<Button
+											key={question}
+											type="button"
+											onClick={() => {
+												chat.setDraft(question);
+												composer.current?.focus();
+											}}
+										>
+											{question}
+											<span aria-hidden="true">＋</span>
+										</Button>
+									))}
+								</div>
+							</section>
+						)}
 					<div ref={bottom} />
 				</div>
 				{showLatest && (

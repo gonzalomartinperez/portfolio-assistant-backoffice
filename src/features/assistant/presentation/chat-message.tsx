@@ -2,6 +2,7 @@
 import { Button } from "../../../components/ui/button";
 import { cx } from "./styles";
 
+import { CopyAnswer } from "./copy-answer";
 import { memo } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
@@ -84,24 +85,27 @@ export const ChatMessage = memo(function ChatMessage({
 					</section>
 				)}
 				{message.role === "assistant" && (
-					<fieldset className={cx("feedback")}>
-						<legend className={cx("sr-only")}>{t.feedback}</legend>
-						<Button
-							type="button"
-							aria-pressed={rating === "up"}
-							onClick={() => onFeedback(message.id, "up")}
-						>
-							{t.up}
-						</Button>
-						<Button
-							type="button"
-							aria-pressed={rating === "down"}
-							onClick={() => onFeedback(message.id, "down")}
-						>
-							{t.down}
-						</Button>
-						{rating && <span role="status">{t.thanks}</span>}
-					</fieldset>
+					<div className={cx("answer-actions")}>
+						<CopyAnswer content={message.content} locale={locale} />
+						<fieldset className={cx("feedback")}>
+							<legend className={cx("sr-only")}>{t.feedback}</legend>
+							<Button
+								type="button"
+								aria-pressed={rating === "up"}
+								onClick={() => onFeedback(message.id, "up")}
+							>
+								{t.up}
+							</Button>
+							<Button
+								type="button"
+								aria-pressed={rating === "down"}
+								onClick={() => onFeedback(message.id, "down")}
+							>
+								{t.down}
+							</Button>
+							{rating && <span role="status">{t.thanks}</span>}
+						</fieldset>
+					</div>
 				)}
 			</div>
 		</article>
