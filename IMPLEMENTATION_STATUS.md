@@ -1,5 +1,25 @@
-# Implementation status · 2026-09-26
+# Implementation status · 2026-09-27
 
-The repository was bootstrapped private, then changed to public at the owner's explicit request. `main` holds only bootstrap files; feature PR #1 is merged into `develop`.
+The frontend preserves the existing chat capabilities and quality-chat design work while
+introducing enforced feature-oriented boundaries, explicit lifecycle/application ownership,
+validated HTTP/SSE mapping, safe partial recovery and deterministic resource cleanup.
 
-The standalone Next.js 16 client uses Node 24 LTS. Local Chromium tests on the merged `develop` commits reached the fixture API with real PostgreSQL and Neo4j over credentialed CORS, streamed responses, showed saved citations and persisted anonymous history. Spanish mobile 390×844 and 200% zoom showed no horizontal overflow; light, dark and system themes were exercised. The incremental SSE client bounds frames, checks sequence numbers, and reads persisted run state after an interrupted stream without retrying generation. Parser unit tests, production build, three browser tests and the production Docker build pass locally; CI runs the same suite with production artifacts. The API's fixture excerpts do not demonstrate real model quality. A full cross-browser accessibility audit and a real OpenAI call remain outside this fixture gate; the paid call is intentionally not run.
+The portfolio identity, semantic colors, fonts, approved avatar and data-theme authority
+are retained. Both languages cover public errors, controls, privacy/retention, metadata and
+assistive labels. Responsive conversation/citation/composer layouts, conditional auto-follow,
+keyboard navigation, focus restoration, IME input and reduced motion have automated coverage.
+
+The public project includes an adapted TypeScript readability policy, MIT application-code
+license with separate identity/third-party terms, contribution/security guidance, font notices,
+PR/issue templates, dependency updates and reproducible CI with redacted scans/link validation.
+The sole new package is development-only axe; runtime dependencies and Next major are unchanged.
+
+The consumed API snapshot is `94408ab4b59297e93e2574320b3049ee2f5d4f2e`, verified against
+committed upstream artifacts. The committed handoff includes discriminated SSE payloads and examples. The
+portfolio design reference is `45d8a42faa78bfb94952639ed462832c3b4ad109`; no reference repository
+was edited. Integration instructions and the next contract request are in `docs/api-contract.md`.
+
+See the [bounded acceptance checklist](docs/release-checklist.md) and
+[verification report](docs/verification/quality-chat.md) for actual results and limits.
+Physical-device, human screen-reader, deployed production and paid-model behavior remain
+unverified. GitHub PR/check history records integration into develop; main is unchanged.

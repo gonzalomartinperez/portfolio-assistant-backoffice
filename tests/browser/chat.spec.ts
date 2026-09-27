@@ -1,55 +1,371 @@
 import { expect, test } from "@playwright/test";
-
-test("streams cited fixture answers and restores anonymous history", async ({
+import AxeBuilder from "@axe-core/playwright";
+async function ready(page: import("@playwright/test").Page) {
+	await page.goto("/");
+	await expect(
+		page.getByRole("button", { name: "New chat", exact: true }),
+	).toBeEnabled();
+}
+async function send(
+	page: import("@playwright/test").Page,
+	question = "What is Filomena?",
+) {
+	await page.getByRole("textbox", { name: "Ask a question" }).fill(question);
+	await page.getByRole("button", { name: "Send", exact: true }).click();
+}
+test("anonymous session, incremental answer, sources, history, feedback, rename and delete", async ({
+	page,
+}, testInfo) => {
+	const errors: string[] = [];
+	page.on("pageerror", (error) => errors.push(error.message));
+	await ready(page);
+	await send(page);
+	await expect(
+		page.getByRole("heading", { name: "Public sources" }),
+	).toBeVisible();
+	await page.screenshot({
+		path: testInfo.outputPath("conversation-en-dark.png"),
+		fullPage: true,
+	});
+	await page
+		.getByRole("combobox", { name: "Theme", exact: true })
+		.selectOption("light");
+	await page.screenshot({
+		path: testInfo.outputPath("conversation-en-light.png"),
+		fullPage: true,
+	});
+	expect(
+		(
+			await new AxeBuilder({ page })
+				.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+				.analyze()
+		).violations,
+	).toEqual([]);
+	const source = page.getByRole("link", { name: /projects.ts/ });
+	await expect(source).toHaveAttribute("href", /^https:\/\/github.com\//);
+	const popup = page.waitForEvent("popup");
+	await source.click();
+	const opened = await popup;
+	expect(opened.url()).toContain("github.com");
+	await opened.close();
+	await page.getByRole("button", { name: "Helpful", exact: true }).click();
+	await expect(page.getByText("Feedback saved")).toBeVisible();
+	await page.reload();
+	await expect(
+		page.getByRole("heading", { name: "Public sources" }),
+	).toBeVisible();
+	await page.getByRole("button", { name: "Rename New conversation" }).click();
+	await page.getByRole("textbox", { name: "Rename" }).fill("Public work");
+	await page.getByRole("button", { name: "Save", exact: true }).click();
+	await expect(
+		page.getByRole("button", { name: "Public work", exact: true }),
+	).toBeVisible();
+	await page.getByRole("button", { name: "Delete Public work" }).click();
+	await page
+		.getByRole("button", { name: "Delete conversation", exact: true })
+		.click();
+	await expect(
+		page.getByRole("heading", { name: "Where would you like to start?" }),
+	).toBeVisible();
+	expect(errors).toEqual([]);
+});
+test("stop keeps partial output and recovery does not repeat generation", async ({
 	page,
 }) => {
-	await page.goto("/");
-	await expect(page.getByRole("button", { name: "New chat" })).toBeEnabled();
-	await page
-		.getByRole("textbox", { name: "Ask a question" })
-		.fill("What is Filomena?");
-	await page.getByRole("button", { name: "Send", exact: true }).click();
-	await expect(page.getByText("Sources")).toBeVisible();
+	let sends = 0;
+	page.on("request", (request) => {
+		if (request.url().endsWith("/stream")) sends++;
+	});
+	await ready(page);
+	await send(page, "slow");
 	await expect(
-		page.getByRole("link", { name: /projects\.ts/ }).first(),
-	).toHaveAttribute(
-		"href",
-		/github\.com\/gonzalomartinperez\/portfolio\/blob\/[0-9a-f]{40}/,
-	);
-	await page.reload();
-	await expect(page.getByText("What is Filomena?")).toBeVisible();
-	await expect(page.getByText("Sources")).toBeVisible();
+		page.locator("pre").filter({ hasText: "This is a deterministic" }),
+	).toBeVisible();
+	await page.getByRole("button", { name: "Stop", exact: true }).click();
+	await expect(
+		page.getByText("Incomplete response", { exact: true }),
+	).toBeVisible();
+	expect(sends).toBe(1);
 });
-
-test("Spanish mobile chat has no horizontal overflow", async ({ page }) => {
+test("interruption, rejection, expiry and reconnect produce safe actionable errors", async ({
+	page,
+}) => {
+	await ready(page);
+	await send(page, "interrupt");
+	await expect(page.locator("main").getByRole("alert")).toContainText(
+		"connection ended early",
+	);
+	await expect(
+		page.getByText("Incomplete response", { exact: true }),
+	).toBeVisible();
+	await page.getByRole("button", { name: "New chat", exact: true }).click();
+	await send(page, "reject");
+	await expect(page.locator("main").getByRole("alert")).toContainText(
+		"could not be accepted",
+	);
+	await page.getByRole("button", { name: "New chat", exact: true }).click();
+	await send(page, "expired");
+	await expect(page.locator("main").getByRole("alert")).toContainText(
+		"session has expired",
+	);
+	await page.getByRole("button", { name: "Reconnect", exact: true }).click();
+	await expect(page.locator("main").getByRole("alert")).toHaveCount(0);
+});
+test("unavailable initialization can reconnect without generation", async ({
+	page,
+}) => {
+	await page.route("**/api/v1/session", (route) =>
+		route.fulfill({ status: 503, json: { message: "internal stack" } }),
+	);
+	await page.goto("/");
+	await expect(page.locator("main").getByRole("alert")).toContainText(
+		"unavailable",
+	);
+	await page.unroute("**/api/v1/session");
+	await page.getByRole("button", { name: "Reconnect", exact: true }).click();
+	await expect(
+		page.getByRole("button", { name: "New chat", exact: true }),
+	).toBeEnabled();
+});
+test("Enter, Shift+Enter and IME follow composer rules", async ({ page }) => {
+	await ready(page);
+	const input = page.getByRole("textbox", { name: "Ask a question" });
+	await input.fill("A");
+	await input.press("Shift+Enter");
+	await expect(input).toHaveValue("A\n");
+	await input.dispatchEvent("keydown", {
+		key: "Enter",
+		code: "Enter",
+		isComposing: true,
+	});
+	await expect(input).toHaveValue("A\n");
+	await input.press("Enter");
+	await expect(
+		page.getByRole("heading", { name: "Public sources" }),
+	).toBeVisible();
+});
+test("long output remains scrollable without hijacking the reader", async ({
+	page,
+}) => {
+	await ready(page);
+	await send(page, "long");
+	const log = page.getByRole("log");
+	await expect
+		.poll(() =>
+			log.evaluate((node) => node.scrollHeight > node.clientHeight + 500),
+		)
+		.toBe(true);
+	await log.evaluate((node) => {
+		node.scrollTop = 0;
+		node.dispatchEvent(new Event("scroll"));
+	});
+	await expect(
+		page.getByRole("button", { name: "Jump to latest" }),
+	).toBeVisible();
+	await expect.poll(() => log.evaluate((node) => node.scrollTop)).toBe(0);
+	await page.getByRole("button", { name: "Jump to latest" }).click();
+	await expect(
+		page.getByRole("button", { name: "Jump to latest" }),
+	).toHaveCount(0);
+	await expect(
+		page.getByRole("heading", { name: "Public sources" }),
+	).toBeVisible();
+	expect(await page.locator('a[href^="javascript:"]').count()).toBe(0);
+});
+for (const viewport of [
+	{ width: 320, height: 740 },
+	{ width: 430, height: 932 },
+	{ width: 768, height: 1024 },
+	{ width: 844, height: 390 },
+	{ width: 1440, height: 900 },
+]) {
+	test(`themes, Spanish, keyboard menu and accessibility ${viewport.width}x${viewport.height}`, async ({
+		page,
+	}, testInfo) => {
+		await page.setViewportSize(viewport);
+		await page.goto("/");
+		await expect(
+			page.getByRole("button", { name: "Send", exact: true }),
+		).toBeVisible();
+		await expect(page.getByRole("status")).not.toContainText("Connecting");
+		if (viewport.width <= 900) {
+			await page
+				.getByRole("button", { name: "Conversations", exact: true })
+				.click();
+			await expect(
+				page.getByRole("button", { name: "Close conversations", exact: true }),
+			).toBeFocused();
+			await page.keyboard.press("Escape");
+			await expect(
+				page.getByRole("button", { name: "Conversations", exact: true }),
+			).toBeFocused();
+		}
+		await page
+			.getByRole("combobox", { name: "Language", exact: true })
+			.selectOption("es");
+		for (const theme of ["light", "dark"]) {
+			await page
+				.getByRole("combobox", { name: "Tema", exact: true })
+				.selectOption(theme);
+			await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+			expect(
+				await page.evaluate(
+					() => document.documentElement.scrollWidth <= window.innerWidth,
+				),
+			).toBe(true);
+			const result = await new AxeBuilder({ page })
+				.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+				.analyze();
+			expect(result.violations).toEqual([]);
+			await page.screenshot({
+				path: testInfo.outputPath(`${theme}-es.png`),
+				fullPage: true,
+			});
+		}
+		await page
+			.getByRole("textbox", { name: "Pregunta por el trabajo público" })
+			.fill("Pregunta");
+		await page.getByRole("button", { name: "Enviar", exact: true }).click();
+		await expect(
+			page.getByRole("heading", { name: "Fuentes públicas" }),
+		).toBeVisible();
+		expect(
+			await page.evaluate(
+				() => document.documentElement.scrollWidth <= window.innerWidth,
+			),
+		).toBe(true);
+		await page.screenshot({
+			path: testInfo.outputPath("conversation-es.png"),
+			fullPage: true,
+		});
+	});
+}
+test("blocked preference storage keeps controls usable", async ({ page }) => {
+	await page.addInitScript(() => {
+		Storage.prototype.setItem = () => {
+			throw new Error("blocked");
+		};
+		Storage.prototype.getItem = () => {
+			throw new Error("blocked");
+		};
+	});
+	await ready(page);
+	await page
+		.getByRole("combobox", { name: "Theme", exact: true })
+		.selectOption("light");
+	await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+	await send(page);
+	await expect(
+		page.getByRole("heading", { name: "Public sources" }),
+	).toBeVisible();
+});
+test("zoom, reduced motion, system theme and navigation keep essential controls usable", async ({
+	page,
+}) => {
 	await page.setViewportSize({ width: 390, height: 844 });
 	await page.goto("/");
-	await expect(page.getByRole("button", { name: "New chat" })).toBeEnabled();
-	await page.getByLabel("Language").selectOption("es");
+	await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
 	await page
-		.getByRole("textbox", { name: "Escribe tu pregunta" })
-		.fill("¿Qué es Filomena?");
-	await page.getByRole("button", { name: "Enviar", exact: true }).click();
-	await expect(page.getByText("Fuentes")).toBeVisible();
+		.getByRole("combobox", { name: "Theme", exact: true })
+		.selectOption("system");
+	await expect
+		.poll(() =>
+			page.evaluate(
+				() => getComputedStyle(document.documentElement).colorScheme,
+			),
+		)
+		.toBe("light");
+	await page.evaluate(() => {
+		document.body.style.zoom = "200%";
+	});
 	expect(
 		await page.evaluate(
-			() => document.documentElement.scrollWidth <= window.innerWidth,
+			() => document.documentElement.scrollWidth <= innerWidth,
+		),
+	).toBe(true);
+	const input = page.getByRole("textbox", { name: "Ask a question" });
+	await input.fill("Question");
+	await input.scrollIntoViewIfNeeded();
+	await expect(input).toBeInViewport();
+	const sendButton = page.getByRole("button", { name: "Send", exact: true });
+	await sendButton.scrollIntoViewIfNeeded();
+	await expect(sendButton).toBeInViewport();
+	await page.evaluate(() => {
+		document.body.style.zoom = "";
+	});
+	await send(page, "slow");
+	await expect(page.locator("pre")).toContainText("This is a deterministic");
+	await page.goto("about:blank");
+	await page.goto("/");
+	await expect(
+		page.getByRole("button", { name: "Conversations", exact: true }),
+	).toBeVisible();
+	await expect(
+		page.getByRole("button", { name: "Stop", exact: true }),
+	).toHaveCount(0);
+});
+test("provider failure preserves partial text and no unsafe output is executable", async ({
+	page,
+}) => {
+	await ready(page);
+	await send(page, "failed");
+	await expect(page.locator("main").getByRole("alert")).toContainText(
+		"connection ended early",
+	);
+	await expect(
+		page.getByText("Incomplete response", { exact: true }),
+	).toBeVisible();
+});
+test("a reduced mobile viewport keeps the focused composer and send control visible", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 320, height: 740 });
+	await page.goto("/");
+	const input = page.getByRole("textbox", { name: "Ask a question" });
+	await input.fill("Keyboard viewport");
+	await input.focus();
+	await page.setViewportSize({ width: 320, height: 360 });
+	await expect(input).toBeInViewport();
+	await expect(
+		page.getByRole("button", { name: "Send", exact: true }),
+	).toBeInViewport();
+	expect(
+		await page.evaluate(
+			() => document.documentElement.scrollWidth <= innerWidth,
 		),
 	).toBe(true);
 });
-
-test("theme controls and 200 percent mobile zoom remain usable", async ({ page }) => {
-	await page.setViewportSize({ width: 390, height: 844 });
-	await page.goto("/");
-	const theme = page.getByLabel("Theme");
-	await theme.selectOption("dark");
-	await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("dark");
-	await theme.selectOption("light");
-	await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("light");
-	await page.emulateMedia({ colorScheme: "dark" });
-	await theme.selectOption("system");
-	await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("dark");
-	await page.evaluate(() => { document.body.style.zoom = "200%"; });
-	expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-	await expect(page.getByRole("button", { name: "New chat" })).toBeEnabled();
+test("keyboard focus survives rename, delete confirmation, cancellation and deletion", async ({
+	page,
+}) => {
+	await ready(page);
+	await page.getByRole("button", { name: "New chat", exact: true }).click();
+	const title = page.getByRole("button", {
+		name: "New conversation",
+		exact: true,
+	});
+	await expect(title).toBeEnabled();
+	await page.getByRole("button", { name: "Rename New conversation" }).click();
+	await page
+		.getByRole("textbox", { name: "Rename", exact: true })
+		.fill("Focus test");
+	await page.getByRole("button", { name: "Save", exact: true }).click();
+	await expect(
+		page.getByRole("button", { name: "Focus test", exact: true }),
+	).toBeFocused();
+	await page.getByRole("button", { name: "Delete Focus test" }).click();
+	await expect(
+		page.getByRole("button", { name: "Cancel", exact: true }),
+	).toBeFocused();
+	await page.keyboard.press("Enter");
+	await expect(
+		page.getByRole("button", { name: "Focus test", exact: true }),
+	).toBeFocused();
+	await page.getByRole("button", { name: "Delete Focus test" }).click();
+	await page
+		.getByRole("button", { name: "Delete conversation", exact: true })
+		.click();
+	await expect(
+		page.getByRole("button", { name: "New chat", exact: true }),
+	).toBeFocused();
 });

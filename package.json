@@ -6,12 +6,16 @@
 		"dev": "next dev --port 3001",
 		"build": "next build --webpack",
 		"start": "next start --port 3001",
-		"lint": "biome lint app lib tests scripts",
+		"lint": "biome lint src tests scripts",
 		"typecheck": "next typegen && tsc --noEmit",
-		"test": "npm run contract:check && node --experimental-strip-types --test tests/*.test.mjs",
+		"test": "npm run contract:check && node --experimental-strip-types --test tests/*.test.mjs tests/unit/*.test.mjs tests/contract/*.test.mjs",
 		"contract:check": "node scripts/check-contract.mjs",
 		"contract:generate": "openapi-typescript contracts/openapi.json -o contracts/types.d.ts",
-		"test:browser": "playwright test"
+		"test:browser": "playwright test",
+		"format:check": "biome format src tests scripts docs package.json biome.json playwright.config.ts playwright.live.config.ts",
+		"security:check": "node scripts/check-public-files.mjs",
+		"docs:check": "node scripts/check-docs.mjs",
+		"preview:fixture": "node scripts/test-server.mjs"
 	},
 	"engines": {
 		"node": ">=24 <25"
@@ -25,6 +29,7 @@
 		"remark-gfm": "^4.0.1"
 	},
 	"devDependencies": {
+		"@axe-core/playwright": "^4.13.0",
 		"@biomejs/biome": "2.5.14",
 		"@playwright/test": "1.63.0",
 		"@types/node": "24.13.5",
@@ -33,5 +38,6 @@
 		"openapi-typescript": "7.13.0",
 		"typescript": "5.9.3"
 	},
-	"type": "module"
+	"type": "module",
+	"license": "MIT"
 }
