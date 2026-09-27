@@ -16,6 +16,7 @@ export function useEmbed(assistant: Assistant, options?: EmbedOptions) {
 	const [visible, setVisible] = useState(!options);
 	const visibleRef = useRef(!options);
 	const [focus, setFocus] = useState(0);
+	const [initializations, setInitializations] = useState(0);
 	const origin = useRef<string | null>(null);
 	const status = useSyncExternalStore<EmbedStatus>(
 		assistant.subscribe,
@@ -57,10 +58,7 @@ export function useEmbed(assistant: Assistant, options?: EmbedOptions) {
 				setPreferences(message.preferences);
 				visibleRef.current = message.visible;
 				setVisible(message.visible);
-				send(
-					{ version: 1, type: "assistant.ready", status: latestStatus.current },
-					event.origin,
-				);
+				setInitializations((count) => count + 1);
 			} else if (origin.current === event.origin) {
 				if (message.type === "host.preferences")
 					setPreferences(message.preferences);
@@ -94,7 +92,7 @@ export function useEmbed(assistant: Assistant, options?: EmbedOptions) {
 		};
 	}, [options]);
 	useEffect(() => {
-		if (options && origin.current)
+		if (options && origin.current && initializations > 0)
 			window.parent.postMessage(
 				{
 					version: 1,
@@ -103,7 +101,7 @@ export function useEmbed(assistant: Assistant, options?: EmbedOptions) {
 				} satisfies AssistantMessage,
 				origin.current,
 			);
-	}, [status, options]);
+	}, [status, options, initializations]);
 	return options
 		? { preferences: preferences ?? options.initialPreferences, visible, focus }
 		: undefined;

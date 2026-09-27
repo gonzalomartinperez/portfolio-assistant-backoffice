@@ -94,3 +94,10 @@ Current dependency review: Node types remain on the runtime-matching 24 major. T
 7 fails the frozen install because the pinned contract generator requires ^5.x; compiler
 and Node-type major upgrades are held for a coordinated migration. No peer checks are
 bypassed. Next patch and reviewed Docker Action SHA updates receive the full CI graph.
+
+Embedded-first validation runs in the existing browser job, using the same production image
+with runtime `EMBED_ALLOWED_ORIGINS=http://localhost:3110`. The managed test-server lifecycle
+also owns the cross-origin host on 3110; no second frontend build or privileged workflow is
+added. The live-fixture job uses its own host lifecycle against the pinned API/proxy stack
+and verifies the combined response framing headers. Loopback origins belong only to tests,
+not the production default. Both standalone and embedded cases remain required.

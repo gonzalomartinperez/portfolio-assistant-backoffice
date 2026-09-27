@@ -88,6 +88,7 @@ function receive(event) {
 			preferences: preferences(),
 			visible: !panel.hidden,
 		});
+		return;
 	}
 
 	operational = m.status === "ready";

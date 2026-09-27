@@ -9,7 +9,9 @@ async function open(page: Page) {
 		timeout: 8000,
 	});
 	const chat = page.frameLocator("iframe");
-	await expect(chat.getByRole("textbox")).toBeFocused();
+	await expect
+		.poll(() => page.evaluate(() => document.activeElement?.tagName))
+		.toBe("IFRAME");
 	return chat;
 }
 test("embed handshake, same-frame minimize/maximize, preferences and cross-frame keyboard", async ({
@@ -51,27 +53,34 @@ test("embed handshake, same-frame minimize/maximize, preferences and cross-frame
 				.analyze()
 		).violations,
 	).toEqual([]);
+});
+test("embedded Escape and Tab cross the frame boundary without a modal trap", async ({
+	page,
+}) => {
+	const chat = await open(page);
 	await chat.getByRole("textbox").focus();
 	await page.keyboard.press("Escape");
 	await expect(page.locator("#launcher")).toBeFocused();
 	await expect(page.locator("#panel")).toBeHidden();
 	await page.locator("#launcher").click();
 	await chat
-		.getByRole("button", { name: "Conversaciones", exact: true })
+		.getByRole("button", { name: "Conversations", exact: true })
 		.click();
 	await page.keyboard.press("Escape");
 	await expect(page.locator("#panel")).toBeVisible();
 	await expect(
-		chat.getByRole("button", { name: "Conversaciones", exact: true }),
+		chat.getByRole("button", { name: "Conversations", exact: true }),
 	).toBeFocused();
 	await page.locator("#maximize").focus();
 	await page.keyboard.press("Tab");
-	await expect(
-		chat.getByRole("link", { name: "Ir a la pregunta" }),
-	).toBeFocused();
+	await expect
+		.poll(() => page.evaluate(() => document.activeElement?.tagName))
+		.toBe("IFRAME");
+	await chat.getByRole("link", { name: "Skip to question" }).focus();
 	await page.keyboard.press("Shift+Tab");
 	await expect(page.locator("#maximize")).toBeFocused();
 });
+
 test("minimized stream finishes once and reopens the same conversation", async ({
 	page,
 }) => {
@@ -132,13 +141,13 @@ test("embed ignores wrong origin/source, malformed versions and unsupported acti
 			type: "host.preferences",
 			preferences: { theme: "light", locale: "es" },
 		};
-		window.dispatchEvent(
-			new MessageEvent("message", {
-				data,
-				origin: "https://untrusted.example",
-				source: window.parent,
-			}),
-		);
+		const foreign = new MessageEvent("message", {
+			data,
+			origin: "https://untrusted.example",
+		});
+		// Firefox rejects cross-origin WindowProxy values in the synthetic constructor.
+		Object.defineProperty(foreign, "source", { value: window.parent });
+		window.dispatchEvent(foreign);
 		window.dispatchEvent(
 			new MessageEvent("message", {
 				data,
