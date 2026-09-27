@@ -35,7 +35,7 @@ jobs:
       - name: Test state, transport, contract and architecture
         run: npm test
       - name: Scan public files and documentation links
-        run: npm run security:check && npm run docs:check
+        run: npm run security:check && npm run docs:check && npm run skills:check
       - name: Reject generated contract drift
         run: npm run contract:generate && git diff --exit-code contracts/types.d.ts
   image:

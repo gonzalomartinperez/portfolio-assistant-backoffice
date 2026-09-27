@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, statSync } from "node:fs";
 const files = [
 	...new Set(
 		execFileSync(
@@ -27,7 +27,7 @@ const rules = [
 let findings = 0;
 let checked = 0;
 for (const file of files) {
-	if (!existsSync(file)) continue;
+	if (!existsSync(file) || !statSync(file).isFile()) continue;
 	if (/(^|\/)\.env(?:\.|$)/.test(file) && !file.endsWith(".example")) {
 		console.error(`environment-file: ${file} (contents redacted)`);
 		findings++;
