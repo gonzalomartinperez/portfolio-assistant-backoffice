@@ -2,7 +2,9 @@
 
 Read the [README](README.md) for setup and [architecture](docs/architecture.md) for
 boundaries. Work on a focused task branch and open a PR against `develop`; never merge
-feature work into `main`. Preserve others' uncommitted changes. The API and portfolio
+feature work into `main`. An explicitly owner-authorized promotion uses a separate
+`develop` → `main` PR and must pass the full CI graph at its current head before merging.
+Source promotion does not authorize image publication or production deployment. Preserve others' uncommitted changes. The API and portfolio
 have separate owners; request coordinated changes instead of silently editing them.
 
 ## Readability and TypeScript

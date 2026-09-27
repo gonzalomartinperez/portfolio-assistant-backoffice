@@ -29,7 +29,7 @@ edits do not invalidate compilation; the full validation graph still runs. Cache
 No node_modules/build/browser binary cache with loose restore keys. Browser OS dependencies
 are installed explicitly. Image tar is already gzip-compressed; artifact recompression is off.
 
-PRs to develop, merge-group events, manual runs and reusable release verification run the
+PRs to develop or main, merge-group events, manual runs and reusable release verification run the
 whole graph. No path filters or diff-based conditional tests can leave required checks
 pending or bypass coverage. Do not use CI-skip commit messages. The always-running aggregator
 rejects failed/cancelled/skipped jobs. Obsolete runs for the same workflow/ref are cancelled;
@@ -50,8 +50,10 @@ quality graph, then enters the `container-release` environment and publishes its
 to GHCR with a source-SHA tag. Only that job has packages:write; no broad PAT or registry
 secret is needed. `release.json` records the registry digest and compatible API commit.
 Deploy by digest, never the mutable tag. The workflow has no automatic production consumer.
-GitHub discovers workflow_dispatch from the default branch: until an independently approved
-main promotion, manual workflow availability is not promised. No main change is made here.
+GitHub discovers workflow_dispatch from the default branch. Owner-authorized promotion
+uses a separate develop-to-main PR with the same full validation graph. Merging source
+does not dispatch publishing or deployment; publishing still requires a manual invocation
+against develop. Production deployment remains hard-disabled.
 
 Production is hard-disabled with `if: false`, has no SSH command or VPS secrets, names the
 production environment and serializes deployments without cancellation. Before enabling,
