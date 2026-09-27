@@ -194,6 +194,12 @@ test("authenticated bot identity, signed single commit, repository and develop a
 	assert.equal(identityReason(valid.pr, repository, valid.commits), null);
 	for (const mutate of [
 		(f) => {
+			delete f.pr.labels;
+		},
+		(f) => {
+			delete f.pr.draft;
+		},
+		(f) => {
 			f.pr.user = { ...bot, id: 123 };
 			f.pr.title = "Bump @types/react";
 			f.pr.labels = [{ name: "dependencies" }];

@@ -39,8 +39,9 @@ export function identityReason(pr, repository, commits) {
 	if (pr.base?.ref !== "develop" || pr.base?.repo?.full_name !== repository)
 		return "wrong-target";
 	if (pr.head?.repo?.full_name !== repository) return "foreign-source";
-	if (pr.state !== "open" || pr.draft) return "not-open-ready-pr";
-	if (pr.labels?.some((label) => label.name === "dependencies:manual"))
+	if (pr.state !== "open" || pr.draft !== false) return "not-open-ready-pr";
+	if (!Array.isArray(pr.labels)) return "incomplete-metadata";
+	if (pr.labels.some((label) => label.name === "dependencies:manual"))
 		return "manual-veto";
 	if (commits.length !== 1 || pr.commits !== 1)
 		return "human-or-ambiguous-history";
