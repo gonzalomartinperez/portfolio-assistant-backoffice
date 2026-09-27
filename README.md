@@ -18,7 +18,8 @@ not live model output or personal conversations.
 [Landscape conversation](docs/verification/final-landscape.png)
 
 [Before/after evidence](docs/verification/interaction-polish.md) ·
-[Avatar and conversation interaction demo](docs/verification/interaction-polish/signature-demo.webm)
+[Avatar and conversation interaction demo](docs/verification/interaction-polish/signature-demo.webm) ·
+[Full-stack fixture follow-up](docs/verification/interaction-polish/live-context-desktop.png)
 
 ## Local development
 

@@ -61,9 +61,20 @@ try {
 	const oversized = await fetch(`${base}/api/v1/conversations`, {
 		method: "POST",
 		headers,
-		body: "x".repeat(17000),
+		body: "x".repeat(33000),
 	});
 	assert.equal(oversized.status, 413);
+	const belowProxyLimit = await fetch(`${base}/api/v1/conversations`, {
+		method: "POST",
+		headers,
+		body: `{}${" ".repeat(20000)}`,
+	});
+	assert.equal(belowProxyLimit.status, 200);
+	const paddedConversation = await belowProxyLimit.json();
+	assert.equal(
+		(await call(`/conversations/${paddedConversation.id}`, "DELETE")).status,
+		204,
+	);
 	const created = await call("/conversations", "POST", {});
 	assert.equal(created.status, 200);
 	const conversation = await created.json();

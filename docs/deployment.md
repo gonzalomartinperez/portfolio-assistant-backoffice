@@ -46,8 +46,8 @@ Production must preserve `/api/v1/...` without rewriting; empty FastAPI root_pat
 Disable response/request buffering and cache for `/api/`, use HTTP/1.1, omit Connection,
 forward original Host/protocol and overwrite rather than append client-supplied forwarded
 addresses. API trust must list actual immediate proxy peers, never `*`. Request size
-16 KiB, body read 15s, upstream read/send 135s are the tested baseline; the API deadline is
-at most 120s. No fabricated heartbeat is added. Proxy idle limits must exceed the maximum
+32 KiB, body read 15s, upstream read/send 135s are the tested baseline; the API deadline is
+at most 120s. The API emits heartbeat comments after 15s of silence; the proxy does not fabricate them. Proxy idle limits must exceed the maximum
 silent provider period; reevaluate if API deadlines change.
 
 `tests/integration/nginx.conf` exercises these HTTP settings locally. Production TLS,
@@ -108,14 +108,12 @@ cache bypass and disconnect behavior through it; normal HTTP success is insuffic
 No HA or zero downtime is promised. Registry ownership, environment reviewers, backup
 storage/retention, operational SLOs and optional Cloudflare remain owner decisions. Coolify is selected; vps-ops must verify its prebuilt-image workflow.
 
-## Backend packaging request from local verification
+## Resolved indexing packaging handoff
 
-API `94408ab`'s production image cannot run `python -m app.knowledge_sync`: the command
-requires the Git executable but the image omits it. API owner should provide a reviewed
-indexing/operations image (or include Git deliberately), document non-root safe-directory
-handling for a read-only corpus mount, and pin its release digest. The frontend test-only
-`Dockerfile.indexer` adds Git to the pinned API image without changing its runtime or source.
-It runs with the read-only checkout owner's UID/GID because the indexer deliberately
-discards external Git safe-directory configuration. Its apt package resolution is not a reproducible production artifact and is not published.
-The API runtime itself still uses its committed, frozen build. This packaging gap remains
-a production indexing gate, not a reason to modify the API repository from this task.
+The previous `94408ab` image omitted Git and required a test-only indexing wrapper.
+The committed conversational pin `6b1e65f2406ba5ddf21d15c56c34ccf672d90bbb` includes a pinned
+Git package in the API image. Local verification now uses that exact API image for indexing;
+`Dockerfile.indexer` and its duplicate service/build have been retired. The public corpus
+remains read-only and the indexing command runs with its checkout owner's UID/GID because
+Git intentionally ignores external safe-directory configuration. No sibling checkout or
+production volume is used. See [contract provenance](api-contract.md).

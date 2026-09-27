@@ -50,7 +50,7 @@ Proposed origin: `https://assistant.gonzalomartinperez.com`; portfolio remains o
 Business. Coolify's shared proxy sends `/` to web:3000 and preserves `/api/*` directly to
 FastAPI:8000. Browser calls already include `/api/v1`; **do not strip or duplicate `/api`**.
 No Next proxy/BFF is needed. Pinned API contract:
-`94408ab4b59297e93e2574320b3049ee2f5d4f2e`, with hashes in `contracts/source.json`.
+`6b1e65f2406ba5ddf21d15c56c34ccf672d90bbb`, with hashes in `contracts/source.json`.
 FastAPI root_path is empty; `/docs`, `/openapi.json` and `/health/ready` remain internal to
 the API under this routing. An image upgrade must retain contract compatibility or import
 a committed, tested handoff before publication.
@@ -67,6 +67,8 @@ obligations. Secure host-only `__Host-assistant_session`, HttpOnly, SameSite=Lax
 no Domain are the pinned production cookie expectations. Verify both HTTPS origins before
 release. No portfolio change is made here; framing is not required.
 
+The pinned API emits heartbeat comments after 15 seconds of silence; clients ignore them.
+The proxy reference body limit is 32 KiB with 135s read/send timeouts.
 Proxy requirements and reproducible local commands are in [verification](deployment.md).
 The fixture Nginx disables buffering/cache, preserves paths and tests SSE flushing, request
 limits, disconnect/cancellation and graceful proxy shutdown. Those results do not certify
@@ -78,7 +80,7 @@ repeat the acceptance checks through its selected deployment path.
 | Assets | Ownership / disposition |
 | --- | --- |
 | Dockerfile, .dockerignore, lockfile, .env.example, application/contract/browser checks | Retain here |
-| tests/integration Compose, Nginx, fixture indexer and scripts | Retain, explicitly local verification only |
+| tests/integration Compose, Nginx, fixture scripts | Retain, explicitly local verification only |
 | quality.yml and manually gated release.yml | Retain: application validation and authorized image publication only |
 | Prior disabled production workflow placeholder | Retired after explicit vps-ops ownership confirmation; no deployment implementation existed |
 | Production stack, TLS, budgets, backups, migration scheduling and recovery | vps-ops authority; no canonical production stack existed here to transfer |
