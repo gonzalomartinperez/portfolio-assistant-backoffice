@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.env
+.env.local
+*.log
+test-results
+playwright-report
+api
+public-portfolio
+
+.env.*
+.integration
+docs/verification/*.png

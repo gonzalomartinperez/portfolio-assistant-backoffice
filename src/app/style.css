@@ -1,0 +1,119 @@
+:root {
+	color-scheme: dark;
+	--surface-void: #000;
+	--surface-base: #0d0f14;
+	--surface-raised: #12151b;
+	--line-subtle: #1b2430;
+	--line-strong: #2a3542;
+	--line-control: #586775;
+	--text-primary: #e8edf4;
+	--text-secondary: #9aa6b8;
+	--text-muted: #8a95a8;
+	--accent: #4cd6ff;
+	--accent-wash: rgb(76 214 255 / 12%);
+	--accent-ink: #001820;
+	--danger: #ffb4b4;
+	--radius-sm: 6px;
+	--radius-md: 12px;
+	--radius-lg: 20px;
+}
+:root[data-theme="light"] {
+	color-scheme: light;
+	--surface-void: #fafafb;
+	--surface-base: #f1f4f8;
+	--surface-raised: #fff;
+	--line-subtle: #e6e9ee;
+	--line-strong: #d5dae2;
+	--line-control: #7f8a99;
+	--text-primary: #0f141b;
+	--text-secondary: #48546a;
+	--text-muted: #5c687b;
+	--accent: #0a6e9b;
+	--accent-wash: rgb(10 110 155 / 10%);
+	--accent-ink: #fff;
+	--danger: #9b2020;
+}
+@media (prefers-color-scheme: light) {
+	:root[data-theme="system"] {
+		color-scheme: light;
+		--surface-void: #fafafb;
+		--surface-base: #f1f4f8;
+		--surface-raised: #fff;
+		--line-subtle: #e6e9ee;
+		--line-strong: #d5dae2;
+		--line-control: #7f8a99;
+		--text-primary: #0f141b;
+		--text-secondary: #48546a;
+		--text-muted: #5c687b;
+		--accent: #0a6e9b;
+		--accent-wash: rgb(10 110 155 / 10%);
+		--accent-ink: #fff;
+		--danger: #9b2020;
+	}
+}
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+html {
+	-webkit-text-size-adjust: 100%;
+}
+body {
+	margin: 0;
+	background: var(--surface-void);
+	color: var(--text-primary);
+	font-family: var(--font-sans), system-ui, sans-serif;
+	font-size: 1rem;
+	line-height: 1.55;
+	-webkit-font-smoothing: antialiased;
+}
+button,
+textarea,
+select,
+input {
+	font: inherit;
+}
+button {
+	cursor: pointer;
+}
+button:disabled {
+	cursor: not-allowed;
+	opacity: 0.55;
+}
+a {
+	color: var(--accent);
+}
+h1,
+h2,
+h3,
+p {
+	margin-top: 0;
+}
+h1,
+h2,
+h3 {
+	font-family: var(--font-display), var(--font-sans), sans-serif;
+	letter-spacing: -0.035em;
+	line-height: 1.15;
+}
+h1 {
+	margin-bottom: 0.4rem;
+	font-size: clamp(1.75rem, 2.2vw, 2.6rem);
+	font-weight: 560;
+}
+:focus-visible {
+	outline: 3px solid var(--accent);
+	outline-offset: 3px;
+}
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}

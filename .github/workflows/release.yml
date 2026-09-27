@@ -1,0 +1,68 @@
+name: Prepare immutable release
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+concurrency:
+  group: assistant-release
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/develop'
+    uses: ./.github/workflows/quality.yml
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: container-release
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: production-image
+          path: /tmp/image
+      - run: gunzip -c /tmp/image/image.tar.gz | docker load
+      - name: Publish verified image and record compatibility
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_SHA}"
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker tag portfolio-assistant-web:rc "$image"
+          docker push "$image"
+          docker inspect "$image" --format '{{index .RepoDigests 0}}' > image-digest.txt
+          python3 - <<'PYCODE'
+          import json, os, pathlib
+          source = json.loads(pathlib.Path('contracts/source.json').read_text())
+          pathlib.Path('release.json').write_text(json.dumps({
+            'frontend_commit': os.environ['GITHUB_SHA'],
+            'api_commit': source['api_commit'],
+            'frontend_image': pathlib.Path('image-digest.txt').read_text().strip(),
+            'production_deployment': 'disabled',
+          }, indent=2) + '\n')
+          PYCODE
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-compatibility
+          path: release.json
+          retention-days: 90
+  production:
+    # Hard disabled until the combined release is explicitly authorized and reviewed.
+    if: ${{ false }}
+    needs: publish
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: assistant-production
+      cancel-in-progress: false
+    steps:
+      - run: echo 'Deployment disabled; follow the API-owned shared runbook.' && exit 1
