@@ -61,3 +61,8 @@ Local WSL samples on the same checkout: typegen plus 5.9.3 typecheck took 20.43s
 additional strict flags and 18.91s afterward, under concurrent workspace load. These single
 samples do **not** establish a speedup. No TypeScript 7 performance result is claimed.
 Browser performance and bundle evidence remain separate in the embed acceptance report.
+
+Tooling migration: all owned scripts/tests now use TypeScript, executed by Node 24 native
+type stripping. Full checking still uses 5.9.3. The cross-origin host fixture also uses the
+classic compiler API for browser JavaScript emission; include this consumer when revisiting
+the compiler-API compatibility arrangement. No production browser compiler is introduced.

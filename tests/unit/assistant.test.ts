@@ -1,3 +1,8 @@
+import type {
+	Message,
+	Conversation,
+} from "../../src/features/assistant/domain/models.ts";
+import type { AssistantTransport } from "../../src/features/assistant/application/ports.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createAssistant } from "../../src/features/assistant/application/assistant.ts";
@@ -13,25 +18,25 @@ const item = {
 	created_at: "now",
 	updated_at: "now",
 };
-const user = {
+const user: Message = {
 	id: "user",
 	role: "user",
 	content: "Question",
 	citations: [],
 	created_at: "now",
 };
-const answer = { ...user, id: "answer", role: "assistant", content: "Answer" };
-function deferred() {
-	let resolve, reject;
-	const promise = new Promise((a, b) => {
-		resolve = a;
-		reject = b;
-	});
-	return { promise, resolve, reject };
+const answer: Message = {
+	...user,
+	id: "answer",
+	role: "assistant",
+	content: "Answer",
+};
+function deferred<T = void>() {
+	return Promise.withResolvers<T>();
 }
-function fixture(overrides = {}) {
+function fixture(overrides: Partial<AssistantTransport> = {}) {
 	let calls = 0;
-	const api = {
+	const api: AssistantTransport = {
 		session: async () => ({ retention_days: 7 }),
 		conversations: async () => [item],
 		messages: async () => [],
@@ -103,12 +108,12 @@ test("rapid submit is single flight; abort retains partial text without retrying
 	await first;
 	assert.equal(sends, 1);
 	assert.equal(app.getSnapshot().lifecycle.kind, "cancelled");
-	assert.equal(app.getSnapshot().partial.content, "Partial");
+	assert.equal(app.getSnapshot().partial?.content, "Partial");
 	assert.equal(canSubmit(app.getSnapshot()), false);
 });
 test("early EOF and provider failure preserve a recoverable partial; recovery never sends", async () => {
 	let sends = 0;
-	let saved = [];
+	let saved: Message[] = [];
 	const { app } = fixture({
 		messages: async () => saved,
 		send: async (_a, _b, _c, _d, progress) => {
@@ -120,14 +125,14 @@ test("early EOF and provider failure preserve a recoverable partial; recovery ne
 	await app.initialize();
 	await app.submit("Question", "es");
 	assert.equal(app.getSnapshot().lifecycle.kind, "failure");
-	assert.equal(app.getSnapshot().partial.content, "Partial");
+	assert.equal(app.getSnapshot().partial?.content, "Partial");
 	saved = [user, answer];
 	await app.recover();
 	assert.equal(app.getSnapshot().partial, null);
 	assert.equal(sends, 1);
 });
 test("late history cannot overwrite another conversation", async () => {
-	const old = deferred();
+	const old = deferred<Message[]>();
 	const { app } = fixture({
 		conversations: async () => [],
 		messages: async (id) => (id === "old" ? old.promise : [answer]),
@@ -141,7 +146,7 @@ test("late history cannot overwrite another conversation", async () => {
 });
 test("unmount aborts the transport and suppresses late updates", async () => {
 	const pending = deferred();
-	let signal;
+	let signal: AbortSignal | undefined;
 	const { app } = fixture({
 		send: async (_a, _b, _c, s, progress) => {
 			signal = s;
@@ -155,7 +160,7 @@ test("unmount aborts the transport and suppresses late updates", async () => {
 	app.dispose();
 	pending.resolve();
 	await promise;
-	assert.equal(signal.aborted, true);
+	assert.equal(signal?.aborted, true);
 	assert.equal(app.getSnapshot(), snapshot);
 });
 test("expired session requires explicit recovery; failed deletion preserves history", async () => {
@@ -171,7 +176,7 @@ test("expired session requires explicit recovery; failed deletion preserves hist
 	assert.equal(canSubmit(app.getSnapshot()), false);
 });
 test("stopping while creating a conversation never starts generation", async () => {
-	const create = deferred();
+	const create = deferred<Conversation>();
 	let sends = 0;
 	const { app } = fixture({
 		conversations: async () => [],
@@ -198,7 +203,7 @@ test("a completed message without run completion remains an interrupted partial"
 	await app.initialize();
 	await app.submit("Question", "en");
 	assert.equal(app.getSnapshot().lifecycle.kind, "failure");
-	assert.equal(app.getSnapshot().partial.content, "Answer");
+	assert.equal(app.getSnapshot().partial?.content, "Answer");
 });
 test("recovery never mistakes an older assistant message for the interrupted answer", async () => {
 	const { app } = fixture({
@@ -211,7 +216,7 @@ test("recovery never mistakes an older assistant message for the interrupted ans
 	await app.initialize();
 	await app.submit("Next question", "en");
 	await app.recover();
-	assert.equal(app.getSnapshot().partial.content, "Current partial");
+	assert.equal(app.getSnapshot().partial?.content, "Current partial");
 });
 test("late feedback failure cannot replace the active generation lifecycle", async () => {
 	const feedback = deferred();
@@ -247,6 +252,6 @@ test("remote cancellation retains partial text when post-stream history is stale
 	await app.initialize();
 	await app.submit("Next question", "en");
 	assert.equal(app.getSnapshot().lifecycle.kind, "cancelled");
-	assert.equal(app.getSnapshot().partial.content, "Current partial");
-	assert.equal(app.getSnapshot().history.at(-1).content, "Next question");
+	assert.equal(app.getSnapshot().partial?.content, "Current partial");
+	assert.equal(app.getSnapshot().history.at(-1)?.content, "Next question");
 });

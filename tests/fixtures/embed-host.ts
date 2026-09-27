@@ -1,24 +1,32 @@
+import type {
+	HostMessage,
+	EmbedPreferences,
+} from "../../src/features/embed/protocol.ts";
+function element<T extends Element>(selector: string, kind: { new (): T }): T {
+	const value = document.querySelector(selector);
+	if (!(value instanceof kind))
+		throw new Error(`Missing fixture element: ${selector}`);
+	return value;
+}
 const assistantOrigin = "http://localhost:3107";
-const panel = document.querySelector("#panel");
-const launcher = document.querySelector("#launcher");
-const status = document.querySelector("#status");
-const retry = document.querySelector("#retry");
-let frame = null,
-	initialized = false,
+const panel = element("#panel", HTMLElement);
+const launcher = element("#launcher", HTMLButtonElement);
+const status = element("#status", HTMLElement);
+const retry = element("#retry", HTMLButtonElement);
+let frame: HTMLIFrameElement | null = null;
+let initialized = false,
 	operational = false,
 	pendingFocus = true,
-	timer;
-const preferences = () => ({
-	theme: document.querySelector("#theme").value,
-	locale: document.querySelector("#locale").value,
+	timer: number | undefined;
+const preferences = (): EmbedPreferences => ({
+	theme:
+		element("#theme", HTMLSelectElement).value === "light" ? "light" : "dark",
+	locale: element("#locale", HTMLSelectElement).value === "es" ? "es" : "en",
 });
-const send = (message) =>
-	frame?.contentWindow?.postMessage(
-		{ version: 1, ...message },
-		assistantOrigin,
-	);
+const send = (message: HostMessage) =>
+	frame?.contentWindow?.postMessage(message, assistantOrigin);
 function minimize() {
-	send({ type: "host.visibility", visible: false });
+	send({ version: 1, type: "host.visibility", visible: false });
 	panel.hidden = true;
 	panel.inert = true;
 	launcher.setAttribute("aria-expanded", "false");
@@ -27,7 +35,7 @@ function minimize() {
 function focusChat() {
 	if (!panel.hidden && operational && pendingFocus) {
 		frame?.focus();
-		send({ type: "host.focus" });
+		send({ version: 1, type: "host.focus" });
 		pendingFocus = false;
 	}
 }
@@ -43,7 +51,7 @@ function create() {
 	frame.src = `${assistantOrigin}/embed?${params}`;
 	panel.append(frame);
 	clearTimeout(timer);
-	timer = setTimeout(() => {
+	timer = window.setTimeout(() => {
 		status.textContent =
 			"Assistant did not become ready. Retry the connection.";
 		retry.hidden = false;
@@ -56,21 +64,29 @@ launcher.onclick = () => {
 	launcher.setAttribute("aria-expanded", "true");
 	if (!frame) create();
 	else {
-		send({ type: "host.visibility", visible: true });
+		send({ version: 1, type: "host.visibility", visible: true });
 		focusChat();
 	}
 };
-document.querySelector("#minimize").onclick = minimize;
-document.querySelector("#maximize").onclick = (event) => {
+element("#minimize", HTMLButtonElement).onclick = minimize;
+const maximize = element("#maximize", HTMLButtonElement);
+maximize.onclick = () => {
 	const on = panel.classList.toggle("maximized");
-	event.currentTarget.setAttribute("aria-pressed", String(on));
-	event.currentTarget.textContent = on ? "Restore" : "Maximize";
+	maximize.setAttribute("aria-pressed", String(on));
+	maximize.textContent = on ? "Restore" : "Maximize";
 };
-function receive(event) {
+function receive(event: MessageEvent<unknown>) {
 	if (event.origin !== assistantOrigin || event.source !== frame?.contentWindow)
 		return;
 	const m = event.data;
-	if (!m || typeof m !== "object" || m.version !== 1) return;
+	if (
+		!m ||
+		typeof m !== "object" ||
+		!("version" in m) ||
+		m.version !== 1 ||
+		!("type" in m)
+	)
+		return;
 	if (m.type === "assistant.request-minimize" && Object.keys(m).length === 2) {
 		minimize();
 		return;
@@ -78,12 +94,15 @@ function receive(event) {
 	if (
 		m.type !== "assistant.ready" ||
 		Object.keys(m).length !== 3 ||
+		!("status" in m) ||
+		typeof m.status !== "string" ||
 		!["initializing", "ready", "unavailable", "expired"].includes(m.status)
 	)
 		return;
 	if (!initialized) {
 		initialized = true;
 		send({
+			version: 1,
 			type: "host.initialize",
 			preferences: preferences(),
 			visible: !panel.hidden,
@@ -104,9 +123,9 @@ function receive(event) {
 	if (operational) focusChat();
 }
 window.addEventListener("message", receive);
-function cancelDeferredFocus(event) {
+function cancelDeferredFocus(event: KeyboardEvent | PointerEvent) {
 	if (
-		(event.type === "keydown" && event.key === "Tab") ||
+		(event instanceof KeyboardEvent && event.key === "Tab") ||
 		(event.type === "pointerdown" && event.target !== launcher)
 	)
 		pendingFocus = false;
@@ -114,13 +133,13 @@ function cancelDeferredFocus(event) {
 document.addEventListener("keydown", cancelDeferredFocus);
 document.addEventListener("pointerdown", cancelDeferredFocus);
 for (const id of ["theme", "locale"])
-	document.querySelector(`#${id}`).onchange = () =>
-		send({ type: "host.preferences", preferences: preferences() });
+	element(`#${id}`, HTMLSelectElement).onchange = () =>
+		send({ version: 1, type: "host.preferences", preferences: preferences() });
 retry.onclick = () => {
 	frame?.remove();
 	create();
 };
-document.querySelector("#remove").onclick = () => {
+element("#remove", HTMLButtonElement).onclick = () => {
 	clearTimeout(timer);
 	frame?.remove();
 	frame = null;

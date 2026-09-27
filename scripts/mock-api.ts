@@ -1,8 +1,32 @@
-import { createServer } from "node:http";
+import { record, text as stringValue } from "./json.ts";
+import { createServer, type Server } from "node:http";
 import { randomUUID } from "node:crypto";
+type Citation = {
+	id: string;
+	label: string;
+	source_type: string;
+	url: string;
+	path: string;
+	start_line: number;
+	end_line: number;
+};
+type Message = {
+	id: string;
+	role: "user" | "assistant";
+	content: string;
+	citations: Citation[];
+	created_at: string;
+};
+type Conversation = {
+	id: string;
+	title: string;
+	created_at: string;
+	updated_at: string;
+};
+type Session = { items: Conversation[]; messages: Map<string, Message[]> };
 export function startMockApi(port = 8107) {
-	const sessions = new Map();
-	const runs = new Map();
+	const sessions = new Map<string, Session>();
+	const runs = new Map<string, () => void>();
 	const server = createServer(async (req, res) => {
 		res.setHeader("Access-Control-Allow-Origin", "http://localhost:3107");
 		res.setHeader("Access-Control-Allow-Credentials", "true");
@@ -20,18 +44,18 @@ export function startMockApi(port = 8107) {
 			res.end();
 			return;
 		}
-		const json = (data, status = 200) => {
+		const json = (data: unknown, status = 200) => {
 			res.writeHead(status, { "content-type": "application/json" });
 			res.end(JSON.stringify(data));
 		};
-		const url = new URL(req.url, "http://localhost");
+		const url = new URL(req.url ?? "/", "http://localhost");
 		const parts = url.pathname.split("/");
-		let data = {};
+		let data: Record<string, unknown> = {};
 		let body = "";
 		for await (const chunk of req) body += chunk;
-		if (body) data = JSON.parse(body);
+		if (body) data = record(JSON.parse(body));
 		let id = req.headers.cookie?.match(/fixture=([^;]+)/)?.[1];
-		let session = sessions.get(id);
+		let session = sessions.get(id ?? "");
 		if (url.pathname === "/api/v1/session") {
 			if (req.method === "POST" && req.headers["x-session-bootstrap"] === "1") {
 				id = randomUUID();
@@ -67,13 +91,14 @@ export function startMockApi(port = 8107) {
 			return json(item, 201);
 		}
 		if (parts[3] === "runs" && parts[5] === "cancel") {
-			runs.get(parts[4])?.();
+			runs.get(parts[4] ?? "")?.();
 			return json({});
 		}
 		if (parts[3] === "messages" && parts[5] === "feedback") return json({});
-		const conversation = parts[4];
-		const history = session.messages.get(conversation);
-		if (!history) return json({}, 404);
+		const conversation = parts[4] ?? "";
+		const saved = session.messages.get(conversation);
+		if (!saved) return json({}, 404);
+		const history = saved;
 		if (parts.length === 5) {
 			if (req.method === "DELETE") {
 				session.items = session.items.filter(
@@ -85,7 +110,8 @@ export function startMockApi(port = 8107) {
 			}
 			if (req.method === "PATCH") {
 				const item = session.items.find((item) => item.id === conversation);
-				item.title = data.title;
+				if (!item) return json({}, 404);
+				item.title = stringValue(data.title);
 				return json(item);
 			}
 		}
@@ -97,14 +123,14 @@ export function startMockApi(port = 8107) {
 			const run = randomUUID();
 			let seq = 0;
 			let cancelled = false;
-			const timers = [];
+			const timers: ReturnType<typeof setTimeout>[] = [];
 			res.writeHead(200, {
 				"content-type": "text/event-stream",
 				"X-Run-ID": run,
 				"cache-control": "no-cache",
 			});
 			res.flushHeaders();
-			const event = (type, payload) => {
+			const event = (type: string, payload: unknown) => {
 				if (!res.destroyed)
 					res.write(
 						`event: ${type}\r\ndata: ${JSON.stringify({ type, schema_version: "1", run_id: run, conversation_id: conversation, sequence: seq++, timestamp: new Date().toISOString(), payload })}\r\n\r\n`,
@@ -122,14 +148,18 @@ export function startMockApi(port = 8107) {
 				res.end();
 				finish();
 			});
-			const message = (role, content, citations = []) => ({
+			const message = (
+				role: Message["role"],
+				content: string,
+				citations: Citation[] = [],
+			) => ({
 				id: randomUUID(),
 				role,
 				content,
 				citations,
 				created_at: new Date().toISOString(),
 			});
-			history.push(message("user", data.content));
+			history.push(message("user", stringValue(data.content)));
 			event("run.started", { state: "running" });
 			const citation = {
 				id: "source",
@@ -150,7 +180,7 @@ export function startMockApi(port = 8107) {
 						? "Esta es una respuesta de prueba basada en fuentes públicas."
 						: "This is a deterministic answer based on public sources.";
 			const delay = data.content === "slow" ? 100 : 15;
-			const chunks = text.match(/.{1,40}/gs) ?? [];
+			const chunks = text.match(/[\s\S]{1,40}/g) ?? [];
 			let index = 0;
 			function next() {
 				if (cancelled || res.destroyed) return;
@@ -183,7 +213,7 @@ export function startMockApi(port = 8107) {
 		}
 		json({}, 404);
 	});
-	return new Promise((resolve) =>
+	return new Promise<Server>((resolve) =>
 		server.listen(port, "127.0.0.1", () => resolve(server)),
 	);
 }

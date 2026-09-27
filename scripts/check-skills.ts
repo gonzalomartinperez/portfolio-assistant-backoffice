@@ -1,3 +1,4 @@
+import { record, errorMessage } from "./json.ts";
 import {
 	readFileSync,
 	readdirSync,
@@ -10,18 +11,19 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { load, FAILSAFE_SCHEMA } from "js-yaml";
 
-export function validateSkills(directoryRoot) {
+export function validateSkills(directoryRoot: string) {
 	const root = realpathSync(directoryRoot);
-	const errors = [];
-	const names = new Set();
+	const errors: string[] = [];
+	const names = new Set<string>();
 	const canonical = path.join(root, ".claude/skills");
 	const discovery = path.join(root, ".agents/skills");
-	const packages = JSON.parse(
-		readFileSync(path.join(root, "package.json"), "utf8"),
+	const packages = record(
+		JSON.parse(readFileSync(path.join(root, "package.json"), "utf8")),
 	);
-	const inside = (target) =>
+	const commands = record(packages.scripts);
+	const inside = (target: string) =>
 		target === root || target.startsWith(root + path.sep);
-	const fail = (file, message) =>
+	const fail = (file: string, message: string) =>
 		errors.push(`${path.relative(root, file)}: ${message}`);
 	const folders = existsSync(canonical) ? readdirSync(canonical) : [];
 	if (!folders.length) errors.push("No canonical skills found");
@@ -34,9 +36,7 @@ export function validateSkills(directoryRoot) {
 			const source = readFileSync(entry, "utf8");
 			const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]+)$/.exec(source);
 			if (!match) throw new Error("Missing YAML frontmatter or skill body");
-			const meta = load(match[1], { schema: FAILSAFE_SCHEMA });
-			if (!meta || typeof meta !== "object" || Array.isArray(meta))
-				throw new Error("Frontmatter must be a mapping");
+			const meta = record(load(match[1] ?? "", { schema: FAILSAFE_SCHEMA }));
 			if (
 				Object.keys(meta).some((key) => !["name", "description"].includes(key))
 			)
@@ -70,7 +70,7 @@ export function validateSkills(directoryRoot) {
 				);
 			inspect(directory);
 		} catch (error) {
-			fail(entry, error.message);
+			fail(entry, errorMessage(error));
 		}
 	}
 	if (
@@ -84,7 +84,7 @@ export function validateSkills(directoryRoot) {
 		errors.push("Claude entry must import the canonical AGENTS.md only");
 	return { names: [...names].sort(), errors };
 
-	function inspect(directory) {
+	function inspect(directory: string) {
 		const entries = readdirSync(directory);
 		if (!entries.length) fail(directory, "Empty scaffold directory");
 		for (const name of entries) {
@@ -110,10 +110,11 @@ export function validateSkills(directoryRoot) {
 			if (!file.endsWith(".md")) continue;
 			for (const match of source.matchAll(/!?\[[^\]]*\]\(([^\s)]+)\)/g)) {
 				const ref = match[1];
+				if (!ref) continue;
 				if (/^(https?:|#)/.test(ref)) continue;
 				const target = path.resolve(
 					path.dirname(file),
-					decodeURIComponent(ref.split("#")[0]),
+					decodeURIComponent(ref.split("#")[0] ?? ""),
 				);
 				if (
 					!inside(target) ||
@@ -123,19 +124,20 @@ export function validateSkills(directoryRoot) {
 					fail(file, `Missing or external reference: ${ref}`);
 			}
 			for (const match of source.matchAll(/\bnpm run ([a-z][a-z0-9:-]*)/g)) {
-				if (!(match[1] in packages.scripts))
+				if (match[1] && !(match[1] in commands))
 					fail(file, `Unknown npm command: ${match[1]}`);
 			}
 			for (const match of source.matchAll(
 				/`(?:(node|bash) )?((?:\.\/)?scripts\/[\w./-]+)(?:[^`]*)`/g,
 			)) {
+				if (!match[2]) continue;
 				const target = path.resolve(root, match[2]);
 				if (!inside(target) || !existsSync(target))
 					fail(file, `Missing executable resource: ${match[2]}`);
 				else if (!match[1] && !(lstatSync(target).mode & 0o111))
 					fail(file, "Directly invoked script is not executable");
 				else if (
-					(match[1] === "node" && !/\.(mjs|js)$/.test(target)) ||
+					(match[1] === "node" && !/\.(ts|mts)$/.test(target)) ||
 					(match[1] === "bash" && !target.endsWith(".sh"))
 				)
 					fail(file, "Unsupported script invocation");

@@ -17,7 +17,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 Canonical architecture, design and API procedures are in `docs/architecture.md`,
 `docs/design-system.md` and `docs/api-contract.md`; do not fork them into another agent file.
 Compose transport and controller only at `src/features/assistant/entry.tsx`. Domain and
-application imports are enforced by `tests/unit/boundaries.test.mjs`. Preserve the pinned
+application imports are enforced by `tests/unit/boundaries.test.ts`. Preserve the pinned
 contract and validate untrusted payloads independently of generated types. Never retry a
 generation automatically. Keep anonymous credentials/conversation text out of browser
 storage, logs and public configuration. The sole public variable is the API origin.

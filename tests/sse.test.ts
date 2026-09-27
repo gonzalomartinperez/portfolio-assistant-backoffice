@@ -1,10 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readSse } from "../src/features/assistant/adapters/sse.ts";
+import {
+	readSse,
+	type StreamEvent,
+} from "../src/features/assistant/adapters/sse.ts";
 import { parseMessage } from "../src/features/assistant/adapters/validate.ts";
 
-function streamOf(text) {
-	return new ReadableStream({
+function streamOf(text: string) {
+	return new ReadableStream<Uint8Array>({
 		start(controller) {
 			controller.enqueue(new TextEncoder().encode(text));
 			controller.close();
@@ -16,8 +19,8 @@ test("parses UTF-8 and frame fragments without losing a terminal event", async (
 	const bytes = new TextEncoder().encode(
 		'event: message.delta\ndata: {"type":"message.delta","schema_version":"1","run_id":"a","conversation_id":"b","sequence":0,"timestamp":"x","payload":{"text":"Español"}}\n\nevent: run.completed\ndata: {"type":"run.completed","schema_version":"1","run_id":"a","conversation_id":"b","sequence":1,"timestamp":"x","payload":{}}\n\n',
 	);
-	const events = [];
-	const stream = new ReadableStream({
+	const events: StreamEvent[] = [];
+	const stream = new ReadableStream<Uint8Array>({
 		start(controller) {
 			for (let i = 0; i < bytes.length; i += 3)
 				controller.enqueue(bytes.slice(i, i + 3));
@@ -26,11 +29,11 @@ test("parses UTF-8 and frame fragments without losing a terminal event", async (
 	});
 	assert.equal(await readSse(stream, (event) => events.push(event)), true);
 	assert.equal(events.length, 2);
-	assert.equal(events[0].payload.text, "Español");
+	assert.equal(events[0]?.payload.text, "Español");
 });
 
 test("reports a nonterminal cut stream", async () => {
-	const stream = new ReadableStream({
+	const stream = new ReadableStream<Uint8Array>({
 		start(controller) {
 			controller.enqueue(
 				new TextEncoder().encode(
@@ -44,7 +47,7 @@ test("reports a nonterminal cut stream", async () => {
 });
 
 test("rejects an oversized event without retaining unbounded data", async () => {
-	const stream = new ReadableStream({
+	const stream = new ReadableStream<Uint8Array>({
 		start(controller) {
 			controller.enqueue(
 				new TextEncoder().encode(`data: ${"x".repeat(65_000)}`),
@@ -59,7 +62,7 @@ test("rejects an oversized event without retaining unbounded data", async () => 
 });
 
 test("rejects event spoofing, malformed payloads and a second terminal", async () => {
-	const frame = (type, sequence, payload) =>
+	const frame = (type: string, sequence: number, payload: unknown) =>
 		`event: ${type}\ndata: ${JSON.stringify({ type, schema_version: "1", run_id: "a", conversation_id: "b", sequence, timestamp: "x", payload })}\n\n`;
 	await assert.rejects(
 		readSse(streamOf(frame("message.delta", 0, {})), () => {}),
@@ -131,8 +134,8 @@ test("CRLF, comments and multiline data survive every byte boundary", async () =
 		"\r\n\r\n";
 	const bytes = new TextEncoder().encode(input);
 	for (let split = 1; split < bytes.length; split++) {
-		const events = [];
-		const stream = new ReadableStream({
+		const events: StreamEvent[] = [];
+		const stream = new ReadableStream<Uint8Array>({
 			start(controller) {
 				controller.enqueue(bytes.slice(0, split));
 				controller.enqueue(bytes.slice(split));
@@ -140,12 +143,12 @@ test("CRLF, comments and multiline data survive every byte boundary", async () =
 			},
 		});
 		assert.equal(await readSse(stream, (e) => events.push(e)), false);
-		assert.equal(events[0].payload.text, "¡Hola 🌎!");
+		assert.equal(events[0]?.payload.text, "¡Hola 🌎!");
 	}
 });
 test("terminal completion cancels an open connection and releases the reader", async () => {
 	let cancelled = false;
-	const stream = new ReadableStream({
+	const stream = new ReadableStream<Uint8Array>({
 		start(controller) {
 			controller.enqueue(
 				new TextEncoder().encode(
@@ -164,7 +167,7 @@ test("terminal completion cancels an open connection and releases the reader", a
 test("abort and malformed UTF-8 cancel and release their readers", async () => {
 	const abort = new AbortController();
 	let cancelled = false;
-	const stream = new ReadableStream({
+	const stream = new ReadableStream<Uint8Array>({
 		cancel() {
 			cancelled = true;
 		},
@@ -176,7 +179,7 @@ test("abort and malformed UTF-8 cancel and release their readers", async () => {
 	assert.equal(stream.locked, false);
 	await assert.rejects(
 		readSse(
-			new ReadableStream({
+			new ReadableStream<Uint8Array>({
 				start(controller) {
 					controller.enqueue(new Uint8Array([255]));
 					controller.close();

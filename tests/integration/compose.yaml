@@ -56,9 +56,9 @@ services:
     cpus: 1
   probe:
     image: portfolio-assistant-web:rc
-    command: [node, /probe.mjs]
+    command: [node, /probe.ts]
     networks: [edge]
-    volumes: [./stream-probe.mjs:/probe.mjs:ro]
+    volumes: [./stream-probe.ts:/probe.ts:ro]
     read_only: true
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]

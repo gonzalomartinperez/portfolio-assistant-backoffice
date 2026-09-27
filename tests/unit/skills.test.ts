@@ -12,7 +12,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { validateSkills } from "../../scripts/check-skills.mjs";
+import { validateSkills } from "../../scripts/check-skills.ts";
 
 test("canonical catalog and relative client discovery resolve", () => {
 	assert.deepEqual(validateSkills(process.cwd()).errors, []);
@@ -62,7 +62,7 @@ test("catalog rejects drift, escapes, malformed metadata and stale commands", ()
 			[`${original}\nnpm run invented-command`, /Unknown npm/],
 			[`${original}\nTODO`, /Unfinished/],
 			[`${original}\n/home/example/private`, /Machine-specific/],
-		]) {
+		] satisfies Array<[string, RegExp]>) {
 			writeFileSync(entry, change);
 			assert.match(validateSkills(root).errors.join("\n"), expected);
 		}

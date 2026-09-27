@@ -17,8 +17,9 @@ for (const file of files) {
 		/!?\[[^\]]*\]\(([^\s)]+)(?:\s+"[^"]*")?\)/g,
 	)) {
 		const target = match[1];
+		if (!target) continue;
 		if (/^(?:https?:|mailto:|#)/.test(target)) continue;
-		const pathname = decodeURIComponent(target.split("#")[0]);
+		const pathname = decodeURIComponent(target.split("#")[0] ?? "");
 		if (!pathname) continue;
 		count++;
 		if (!existsSync(path.resolve(path.dirname(file), pathname))) {
