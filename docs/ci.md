@@ -123,3 +123,21 @@ against actual PR #17 returned `manual-author` and made no changes. No eligible 
 PR existed, so no native automatic merge or privileged controller execution is claimed.
 Default-branch promotion and protection-read access remain activation blockers; see the
 [maintenance runbook](dependency-updates.md). Required application checks are unchanged.
+
+## Reviewed maintenance after main promotion
+
+Dependabot opened PRs #20–23 after owner-authorized promotion #19. These include major
+updates and receive manual compatibility review, not the automatic low-risk path.
+[Checkout 7](https://github.com/actions/checkout/blob/v7.0.1/README.md) uses Node 24 and
+rejects unsafe fork checkout on privileged events. Preserve default-branch-only checkout,
+`persist-credentials: false` and no unsafe opt-in. [Setup-node 7](https://github.com/actions/setup-node/blob/v7.0.0/README.md)
+keeps explicit lockfile-keyed npm caching in Quality; `package-manager-cache: false` prevents
+implicit caching in the privileged policy job. Both actions remain pinned to reviewed SHAs.
+
+[js-yaml 5 migration](https://github.com/nodeca/js-yaml/blob/5.4.2/docs/migrate_v4_to_v5.md)
+requires named imports and provides bundled declarations, replacing `@types/js-yaml`.
+Skill metadata still uses `FAILSAFE_SCHEMA`; workflow tests use YAML 1.2 loading. Existing
+malformed/duplicate-metadata tests exercise that compatibility. The contract generator keeps
+its own compatible transitive YAML 4 dependency; no override or forced peer resolution is
+introduced. Node types stay on the runtime-matching 24 major. Full image/browser/API CI
+must pass for the combined revision before integration; publication and deployment remain off.

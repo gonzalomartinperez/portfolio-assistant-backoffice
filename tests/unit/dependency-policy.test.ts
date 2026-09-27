@@ -3,7 +3,7 @@ import type { GitHubApi } from "../../scripts/dependency-automation.ts";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import yaml from "js-yaml";
+import { load } from "js-yaml";
 import {
 	dependencyDecision,
 	gateReason,
@@ -501,7 +501,7 @@ test("privileged workflow executes only default-branch policy with pinned action
 		new URL("../../.github/workflows/dependency-policy.yml", import.meta.url),
 		"utf8",
 	);
-	const workflow = record(yaml.load(raw));
+	const workflow = record(load(raw));
 	assert.deepEqual(workflow.permissions, {});
 	const steps = list(field(workflow, "jobs", "reconcile", "steps")).map(record);
 	assert.equal(
@@ -509,6 +509,11 @@ test("privileged workflow executes only default-branch policy with pinned action
 		`\${{ github.event.repository.default_branch }}`,
 	);
 	assert.equal(field(steps[0], "with", "persist-credentials"), false);
+	assert.equal(
+		field(steps[0], "with", "allow-unsafe-pr-checkout") ?? false,
+		false,
+	);
+	assert.equal(field(steps[1], "with", "package-manager-cache"), false);
 	for (const step of steps)
 		if (step.uses) assert.match(text(step.uses), /@[a-f0-9]{40}$/);
 	assert.equal(steps.filter((step) => step.run).length, 1);
