@@ -38,13 +38,14 @@ keys or private content via `NEXT_PUBLIC_*`.
 ## Deterministic preview
 
 ```sh
-npm run build
+NEXT_PUBLIC_ASSISTANT_API_URL= npm run build
 npm run preview:fixture
 ```
 
 Open `http://localhost:3107`. The fixture service on 8107 uses memory-only anonymous
 sessions and deterministic public example answers, not a model. Stop with Ctrl+C.
-Unset the local API override before building this preview (`env -u` does not override `.env.local`; temporarily remove that public setting). A test-only proxy preserves `/api/` and routes to the fixture.
+The empty build-time origin overrides `.env.local` for same-origin requests. A test-only
+proxy preserves `/api/` and routes to the fixture.
 This is the same real HTTP/SSE fixture used by browser tests. It supports normal questions
 and the test prompts `slow`, `interrupt`, `failed`, `reject` and `expired`.
 
@@ -57,7 +58,7 @@ npm run typecheck
 npm test
 npm run contract:generate
 git diff --exit-code contracts/types.d.ts
-npm run build
+NEXT_PUBLIC_ASSISTANT_API_URL= npm run build
 npx playwright install --with-deps chromium firefox webkit
 npm run test:browser
 ```

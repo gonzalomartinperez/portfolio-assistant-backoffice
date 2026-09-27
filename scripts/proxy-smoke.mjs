@@ -138,3 +138,43 @@ try {
 } finally {
 	await call("/session", "DELETE");
 }
+
+// SIGQUIT must drain an already-open stream before this test proxy exits.
+const { spawn } = await import("node:child_process");
+const compose = (...args) =>
+	new Promise((resolve, reject) => {
+		const child = spawn(
+			"docker",
+			[
+				"compose",
+				"-p",
+				"assistant-web-verification",
+				"-f",
+				"tests/integration/compose.yaml",
+				...args,
+			],
+			{ stdio: "ignore" },
+		);
+		child.on("error", reject);
+		child.on("exit", (code) =>
+			code === 0 ? resolve() : reject(new Error(`Compose exited ${code}`)),
+		);
+	});
+try {
+	const active = await fetch(`${base}/__stream_probe`);
+	const activeReader = active.body.getReader();
+	await activeReader.read();
+	const stopping = compose("stop", "proxy");
+	let remaining = "";
+	for (;;) {
+		const { done, value } = await activeReader.read();
+		if (done) break;
+		remaining += new TextDecoder().decode(value);
+	}
+	activeReader.releaseLock();
+	await stopping;
+	assert.match(remaining, /done/);
+	console.log("Nginx graceful shutdown drained the active delayed stream.");
+} finally {
+	await compose("up", "-d", "proxy");
+}

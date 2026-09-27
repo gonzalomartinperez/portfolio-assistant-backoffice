@@ -69,7 +69,7 @@ contract bytes, builds the API and initializes isolated PostgreSQL/Neo4j with fi
 providers. It never uses another agent's worktree or containers. Stop only this project;
 do not use `down -v`. Local HTTP cookies intentionally lack Secure; HTTPS/__Host behavior
 must be checked on the eventual TLS environment. Smoke tests cover preserved path, body
-limit, host cookie, origin/CSRF rejection, portfolio CORS, flushed SSE events, disconnect /
+limit, host cookie, origin/CSRF rejection, portfolio CORS, SSE events plus a delayed upstream probe proving delivery before completion, disconnect /
 explicit cancellation and deletion. Normal fixture responses can win a cancellation race;
 no zero-interruption or provider cancellation timing claim follows from that test.
 

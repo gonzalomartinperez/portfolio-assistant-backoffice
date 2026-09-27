@@ -87,3 +87,65 @@ the Google TypeScript guide adaptations; Biome/strict TypeScript/CI enforce appl
 rules without overriding React, Next or accessible native semantics. Security reporting
 uses the owner's verified public portfolio address; no reporting SLA is promised. Local
 link validation and a redacted high-confidence file scan supplement human review.
+
+## Container, clean checkout and shared-proxy evidence
+
+The frozen clean checkout at `c374aeb` installed 167 packages (zero npm audit findings),
+passed strict typing and all **27 unit/contract/boundary tests**. Generated HTTP types
+remain unchanged after importing API `94408ab`'s committed handoff. Formatting, lint,
+local documentation links and the redacted high-confidence scan passed.
+
+The standalone production image built locally as
+`sha256:8e243a07710542b91d38a81d7c6f199b9cb6c92189ec69167787db73958015f9`
+(96,542,449 bytes, about 92.1 MiB). This is a local image ID, not a published registry
+digest. It runs as UID 1000 with read-only root, no capabilities/new privileges, writable
+/tmp and a bounded UID-owned 32 MiB image cache. Review detected optimizer write failures
+when only /tmp was writable; the corrected mount preserves image optimization and clean
+runtime logs. No server/provider secret enters the image or browser configuration.
+
+Local full-stack fixture verification uses the pinned API, PostgreSQL/pgvector, Neo4j,
+Nginx and frontend containers on dedicated networks. **4/4 live browser tests passed**
+(13.0s). Proxy smoke passed preserved paths/no double prefix, host cookie, exact portfolio
+CORS, rejected origins/CSRF, 16 KiB request cap, no-store, 23 SSE deltas, disconnect/cancel
+and deletion. One cold fixture stream measured 208ms to first delta / 321ms total; a warm
+run measured 73ms / 178ms. A separate two-second delayed upstream proved event arrival
+before completion and Nginx SIGQUIT drained the active stream. These are local fixture
+observations, not paid-provider, TLS/CDN or VPS capacity results.
+
+After these flows, one idle Docker stats sample measured web 58.5 MiB, API 128.4 MiB,
+PostgreSQL 46.6 MiB, Neo4j 654.4 MiB and proxy 5.5 MiB (about 893 MiB total). Excludes OS,
+other projects, build/indexing peaks and test probe; it does not size the future VPS.
+The proposed frontend ceiling is 512 MiB / 1 vCPU, with shared capacity reservations and
+load/scaling gates in the deployment handoff. API indexing needs a Git-capable operations
+image; the isolated test indexer workaround and request are documented there.
+
+Final all-chunk bundle: 1,119,130 raw bytes / 343,867 independently gzipped bytes versus
+1,107,111 / 340,054 baseline (about +1.1%). Same tool and WSL machine, production webpack;
+the final sample comes from the standalone image. This is not initial transfer or CWV.
+
+An initial container browser run passed 46/48 while concurrent builds/indexing were
+active; Firefox's long flow and WebKit's desktop accessibility matrix hit the unchanged
+30s limit. Tests were not removed and limits were not increased. The final corrected
+container run uses two workers with builds/indexing complete; its result is recorded below.
+
+## Actual Actions run
+
+[Quality run 36319691105](https://github.com/gonzalomartinperez/portfolio-assistant-web/actions/runs/36319691105)
+passed at `c374aeb`: all 48 cross-browser cases, four live-fixture cases and proxy smoke,
+plus static validation and the production image. Total elapsed 289s including scheduling;
+job durations: static 22s, image 142s, browser 133s, live-fixture 129s, required checks 4s.
+Browser/live jobs overlapped after image export; one Next build served both. CI fixture
+first-delta/total were 36/62ms, separately from local measurements. No inference about
+production latency follows. The previous 164s run covered less and is not comparable.
+A final PR-head run is required after verification/documentation and graceful-proxy updates.
+
+Actionlint 1.7.12 passed with only its constant-false-condition diagnostic explicitly
+excluded for the intentionally disabled production job; no workflow behavior was changed
+to satisfy that diagnostic. The real GitHub run validates execution, not just syntax.
+
+The final local corrected-container run passed **48/48 cases in 2.7 minutes**, two workers,
+all three engines, with no retries or relaxed assertions/timeouts. Representative screenshots
+were refreshed from that run and inspected in English/light/desktop and Spanish/dark/narrow
+mobile. Container logs remained clean during image requests. Graceful-proxy smoke also
+passed after the final script change. The bounded acceptance criteria are met locally;
+production/device/operator gates in the deployment handoff remain open.

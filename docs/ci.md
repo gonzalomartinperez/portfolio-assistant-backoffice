@@ -24,7 +24,8 @@ the image. No repeated Next build in browser/live jobs; image publication also r
 verified artifact. Each runner still installs its own locked test dependencies. npm cache
 keys include OS/architecture and package-lock hash through setup-node; cache-dependency-path
 is explicit. BuildKit's GHA cache uses a dedicated Node24/amd64 scope and content-addressed
-Dockerfile/context layers. Caches accelerate builds, never replace npm ci or validation.
+Dockerfile/context layers. Only application/build inputs enter the build stage, so documentation
+edits do not invalidate compilation; the full validation graph still runs. Caches accelerate builds, never replace npm ci or validation.
 No node_modules/build/browser binary cache with loose restore keys. Browser OS dependencies
 are installed explicitly. Image tar is already gzip-compressed; artifact recompression is off.
 
