@@ -2,7 +2,7 @@ FROM node:24.21.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea41952009
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 COPY next.config.mjs next-env.d.ts tsconfig.json ./
 COPY src ./src
 COPY contracts/types.d.ts ./contracts/types.d.ts

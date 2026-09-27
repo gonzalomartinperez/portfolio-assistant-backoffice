@@ -7,6 +7,9 @@ on:
   workflow_call:
 permissions:
   contents: read
+defaults:
+  run:
+    shell: bash
 concurrency:
   group: quality-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -23,11 +26,18 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: package-lock.json
-      - run: npm ci
-      - run: npm run format:check && npm run lint && npm run typecheck
-      - run: npm test
-      - run: npm run security:check && npm run docs:check
-      - run: npm run contract:generate && git diff --exit-code contracts/types.d.ts
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Audit all locked dependencies
+        run: npm audit --audit-level=moderate
+      - name: Check formatting, lint and strict types
+        run: npm run format:check && npm run lint && npm run typecheck
+      - name: Test state, transport, contract and architecture
+        run: npm test
+      - name: Scan public files and documentation links
+        run: npm run security:check && npm run docs:check
+      - name: Reject generated contract drift
+        run: npm run contract:generate && git diff --exit-code contracts/types.d.ts
   image:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -43,7 +53,8 @@ jobs:
           tags: portfolio-assistant-web:rc
           cache-from: type=gha,scope=web-node24-amd64
           cache-to: type=gha,mode=max,scope=web-node24-amd64
-      - run: docker save portfolio-assistant-web:rc | gzip -1 > /tmp/image.tar.gz
+      - name: Export the verified production image
+        run: docker save portfolio-assistant-web:rc | gzip -1 > /tmp/image.tar.gz
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: production-image
@@ -63,15 +74,19 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: package-lock.json
-      - run: npm ci
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: production-image
           path: /tmp/image
-      - run: gunzip -c /tmp/image/image.tar.gz | docker load
+      - name: Load the exact production image
+        run: gunzip -c /tmp/image/image.tar.gz | docker load
       - run: docker run -d --name assistant-browser --read-only --tmpfs /tmp --tmpfs /app/.next/cache:uid=1000,gid=1000,mode=0700,size=32m --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:3108:3000 portfolio-assistant-web:rc
-      - run: npx playwright install --with-deps chromium firefox webkit
-      - run: npm run test:browser
+      - name: Install all browser engines and OS dependencies
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Verify browser interactions and accessibility
+        run: npm run test:browser
         env:
           WEB_UPSTREAM: http://127.0.0.1:3108
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -82,8 +97,12 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 14
-      - if: always()
-        run: docker logs assistant-browser && docker rm -f assistant-browser
+      - name: Collect container logs
+        if: always()
+        run: docker logs assistant-browser
+      - name: Remove only this job's container
+        if: always()
+        run: docker rm -f assistant-browser
   live-fixture:
     needs: image
     runs-on: ubuntu-latest
@@ -97,16 +116,22 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: package-lock.json
-      - run: npm ci
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: production-image
           path: /tmp/image
-      - run: gunzip -c /tmp/image/image.tar.gz | docker load
-      - run: npx playwright install --with-deps chromium
-      - run: bash scripts/integration-up.sh
-      - run: npx playwright test --config playwright.live.config.ts
-      - run: node scripts/proxy-smoke.mjs
+      - name: Load the exact production image
+        run: gunzip -c /tmp/image/image.tar.gz | docker load
+      - name: Install live-integration browser
+        run: npx playwright install --with-deps chromium
+      - name: Initialize isolated pinned backend and databases
+        run: bash scripts/integration-up.sh
+      - name: Verify actual API browser flows
+        run: npx playwright test --config playwright.live.config.ts
+      - name: Verify proxy security, streaming and graceful shutdown
+        run: node scripts/proxy-smoke.mjs
       - if: always()
         run: docker compose -p assistant-web-verification -f tests/integration/compose.yaml logs --no-color > /tmp/integration.log
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
