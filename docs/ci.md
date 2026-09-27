@@ -15,8 +15,8 @@ credentials. Actions documentation: [required checks](https://docs.github.com/en
 | --- | --- |
 | static | Frozen install, explicit dependency audit, Biome, strict typing, unit/contract/boundaries, redacted scan, local links, generated drift |
 | image | One standalone production build, pinned base, export exact image for downstream tests |
-| browser | Same image read-only/non-root, deterministic HTTP/SSE, 48 Chromium/Firefox/WebKit interaction/accessibility cases |
-| live-fixture | Same image with pinned real API, PostgreSQL/Neo4j, Nginx; four browser flows plus proxy/session/SSE smoke |
+| browser | Same image read-only/non-root, deterministic HTTP/SSE, 90 Chromium/Firefox/WebKit standalone/embedded interaction/accessibility cases |
+| live-fixture | Same image with pinned real API, PostgreSQL/Neo4j, Nginx; six browser flows plus proxy/session/SSE smoke |
 | checks | Always runs after every job; fails unless every result is success; preserves existing required status name |
 
 Static and image work run in parallel. Browser and live integration run independently after
@@ -94,3 +94,10 @@ Current dependency review: Node types remain on the runtime-matching 24 major. T
 7 fails the frozen install because the pinned contract generator requires ^5.x; compiler
 and Node-type major upgrades are held for a coordinated migration. No peer checks are
 bypassed. Next patch and reviewed Docker Action SHA updates receive the full CI graph.
+
+Embedded-first validation runs in the existing browser job, using the same production image
+with runtime `EMBED_ALLOWED_ORIGINS=http://localhost:3110`. The managed test-server lifecycle
+also owns the cross-origin host on 3110; no second frontend build or privileged workflow is
+added. The live-fixture job uses its own host lifecycle against the pinned API/proxy stack
+and verifies the combined response framing headers. Loopback origins belong only to tests,
+not the production default. Both standalone and embedded cases remain required.

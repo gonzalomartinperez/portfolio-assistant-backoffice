@@ -146,8 +146,11 @@ test("follow-up stays in the owned conversation without resending history", asyn
 			.first(),
 	).toBeVisible();
 	expect(streams).toHaveLength(2);
-	expect(streams[1].url).toBe(streams[0].url);
-	expect(streams[1].body).toEqual({
+	const [firstStream, followupStream] = streams;
+	if (!firstStream || !followupStream)
+		throw new Error("Expected two generation requests");
+	expect(followupStream.url).toBe(firstStream.url);
+	expect(followupStream.body).toEqual({
 		content: "Explain that technically",
 		locale: "en",
 	});
@@ -155,4 +158,26 @@ test("follow-up stays in the owned conversation without resending history", asyn
 	await expect(
 		page.getByRole("heading", { name: "Public sources" }),
 	).toHaveCount(2);
+});
+
+test("cross-origin embed preserves authorized saved history across minimize and restore", async ({
+	page,
+}) => {
+	await page.goto("http://localhost:3110");
+	await page.getByRole("button", { name: "Open assistant" }).click();
+	await expect(page.locator("#status")).toHaveText("Connected");
+	const chat = page.frameLocator("iframe");
+	await chat.getByRole("textbox").fill("What is Filomena?");
+	await chat.getByRole("button", { name: "Send", exact: true }).click();
+	await expect(
+		chat.getByRole("heading", { name: "Public sources" }),
+	).toBeVisible();
+	await page.getByRole("button", { name: "Minimize", exact: true }).click();
+	await page.getByRole("button", { name: "Open assistant" }).click();
+	await expect(
+		chat.getByText("What is Filomena?", { exact: true }),
+	).toBeVisible();
+	await expect(
+		chat.getByRole("heading", { name: "Public sources" }),
+	).toBeVisible();
 });

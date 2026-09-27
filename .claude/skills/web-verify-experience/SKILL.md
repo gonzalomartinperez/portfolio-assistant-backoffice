@@ -35,3 +35,8 @@ Return exact commands, engines/viewports, findings with reproduction, artifact l
 physical-device/human screen-reader limitations. Existing [evidence](../../../docs/verification/quality-chat.md)
 is historical context, not proof that the current change passes. Do not publish test artifacts
 containing credentials or personal conversation text.
+
+For embedded presentation changes, read the [v1 handoff](../../../docs/embed-integration.md).
+Keep one chat/controller and separate host protocol state. Verify exact origin/source checks,
+same-frame minimize/maximize, hidden streaming, cross-frame focus and standalone regressions
+with the cross-origin harness. Do not edit the portfolio or infer production deployment authority.

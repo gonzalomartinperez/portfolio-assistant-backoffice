@@ -4,11 +4,11 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 import styles from "./identity-avatar.module.css";
 
-export function IdentityAvatar() {
+export function IdentityAvatar({ active = true }: { active?: boolean }) {
 	const host = useRef<HTMLDivElement>(null);
 	useEffect(() => {
 		const node = host.current;
-		if (!node) return;
+		if (!node || !active) return;
 		const pointer = window.matchMedia("(hover: hover) and (pointer: fine)");
 		const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 		let frame = 0;
@@ -66,7 +66,7 @@ export function IdentityAvatar() {
 			reduced.removeEventListener("change", reset);
 			window.removeEventListener("blur", reset);
 		};
-	}, []);
+	}, [active]);
 	return (
 		<div
 			ref={host}

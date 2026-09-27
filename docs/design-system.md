@@ -59,3 +59,18 @@ Theme text and surface colors switch together without interpolation. Button feed
 shadow/border/transform transitions; do not animate text/background across theme palettes,
 which can create unreadable intermediate contrast. Browser regression samples frame-level
 contrast instead of waiting for a transition to hide the issue.
+
+## Embedded-first composition
+
+`/embed` uses the same native control variants, semantic surfaces, fonts, source cards,
+Markdown and avatar as standalone. The compact shell removes page-level introduction and
+preference controls; the host owns explicit theme/locale. Its toolbar is 1rem typography,
+content/composer gutters are 0.75rem, and the message measure stays capped at 800px when
+expanded. The iframe viewport drives existing responsive rules; no mobile chat fork exists.
+The conversation drawer remains available at every embedded width. Shared 44px targets,
+focus rings, safe-area padding and reduced-motion tokens remain authoritative.
+
+Minimizing pauses decorative activity and token-driven rendering; it never adds an entrance
+animation to each token. Source/follow-up actions remain after completed content. The
+[embed acceptance matrix](embed-integration.md) covers the real cross-origin panel, not just
+a full-page screenshot. The neutral host harness chrome is a test fixture, not portfolio styling.

@@ -11,8 +11,15 @@ import { IdentityAvatar } from "./identity-avatar";
 import { ChatMessage } from "./chat-message";
 import { useChat } from "./use-chat";
 
-export default function Chat({ assistant }: { assistant: Assistant }) {
-	const chat = useChat(assistant);
+import type { EmbedPresentation } from "../../embed/use-embed";
+export default function Chat({
+	assistant,
+	embed,
+}: {
+	assistant: Assistant;
+	embed?: EmbedPresentation | undefined;
+}) {
+	const chat = useChat(assistant, embed);
 	const t = copy[chat.locale];
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [renaming, setRenaming] = useState<string | null>(null);
@@ -32,6 +39,17 @@ export default function Chat({ assistant }: { assistant: Assistant }) {
 	const editFocus = useRef<string | null>(null);
 	const deleteCancel = useRef<HTMLButtonElement>(null);
 	const newChatButton = useRef<HTMLButtonElement>(null);
+	const embedded = !!embed;
+	const consumedFocus = useRef(0);
+	const embedFocus = embed?.focus;
+	const embedVisible = embed?.visible;
+	useEffect(() => {
+		if (embedFocus && embedFocus !== consumedFocus.current) {
+			consumedFocus.current = embedFocus;
+			if (embedVisible) composer.current?.focus();
+		}
+		if (embedVisible === false) setMobileOpen(false);
+	}, [embedFocus, embedVisible]);
 	useEffect(() => {
 		if (deleting) deleteCancel.current?.focus();
 	}, [deleting]);
@@ -69,11 +87,11 @@ export default function Chat({ assistant }: { assistant: Assistant }) {
 	useEffect(() => {
 		const media = window.matchMedia("(min-width: 901px)");
 		const update = () => {
-			if (media.matches) setMobileOpen(false);
+			if (media.matches && !embedded) setMobileOpen(false);
 		};
 		media.addEventListener("change", update);
 		return () => media.removeEventListener("change", update);
-	}, []);
+	}, [embedded]);
 	function closeMenu() {
 		setMobileOpen(false);
 	}
@@ -92,6 +110,7 @@ export default function Chat({ assistant }: { assistant: Assistant }) {
 		if (!focusable.length) return;
 		const first = focusable[0];
 		const last = focusable[focusable.length - 1];
+		if (!first || !last) return;
 		if (event.shiftKey && document.activeElement === first) {
 			event.preventDefault();
 			last.focus();
@@ -129,7 +148,11 @@ export default function Chat({ assistant }: { assistant: Assistant }) {
 		chat.busy &&
 		(chat.runConversation === chat.active || chat.runConversation === null);
 	return (
-		<div className={cx("shell")}>
+		<div
+			className={cx(`shell ${embed ? "embedded" : ""}`)}
+			inert={embed?.visible === false}
+			data-hidden={embed?.visible === false || undefined}
+		>
 			<a className={cx("skip-link")} href="#question">
 				{t.skip}
 			</a>
@@ -214,7 +237,10 @@ export default function Chat({ assistant }: { assistant: Assistant }) {
 										value={renameDraft}
 										onChange={(event) => setRenameDraft(event.target.value)}
 										onKeyDown={(event) => {
-											if (event.key === "Escape") setRenaming(null);
+											if (event.key === "Escape") {
+												event.preventDefault();
+												setRenaming(null);
+											}
 										}}
 									/>
 									<Button type="submit" aria-label={t.save}>
@@ -315,48 +341,50 @@ export default function Chat({ assistant }: { assistant: Assistant }) {
 							☰
 						</Button>
 						<div>
-							<p className={cx("eyebrow")}>{t.collection}</p>
+							{!embed && <p className={cx("eyebrow")}>{t.collection}</p>}
 							<h1>{t.title}</h1>
-							<p className={cx("intro")}>{t.subtitle}</p>
+							{!embed && <p className={cx("intro")}>{t.subtitle}</p>}
 						</div>
 					</div>
-					<div className={cx("settings")}>
-						<label>
-							<span className={cx("sr-only")}>{t.language}</span>
-							<select
-								value={chat.locale}
-								onChange={(event) => {
-									if (
-										event.target.value === "en" ||
-										event.target.value === "es"
-									)
-										chat.setLocale(event.target.value);
-								}}
-							>
-								<option value="en">English</option>
-								<option value="es">Español</option>
-							</select>
-						</label>
-						<label>
-							<span className={cx("sr-only")}>{t.theme}</span>
-							<select
-								value={chat.theme}
-								onChange={(event) => {
-									const value = event.target.value;
-									if (
-										value === "dark" ||
-										value === "light" ||
-										value === "system"
-									)
-										chat.setTheme(value);
-								}}
-							>
-								<option value="dark">{t.dark}</option>
-								<option value="light">{t.light}</option>
-								<option value="system">{t.system}</option>
-							</select>
-						</label>
-					</div>
+					{!embed && (
+						<div className={cx("settings")}>
+							<label>
+								<span className={cx("sr-only")}>{t.language}</span>
+								<select
+									value={chat.locale}
+									onChange={(event) => {
+										if (
+											event.target.value === "en" ||
+											event.target.value === "es"
+										)
+											chat.setLocale(event.target.value);
+									}}
+								>
+									<option value="en">English</option>
+									<option value="es">Español</option>
+								</select>
+							</label>
+							<label>
+								<span className={cx("sr-only")}>{t.theme}</span>
+								<select
+									value={chat.theme}
+									onChange={(event) => {
+										const value = event.target.value;
+										if (
+											value === "dark" ||
+											value === "light" ||
+											value === "system"
+										)
+											chat.setTheme(value);
+									}}
+								>
+									<option value="dark">{t.dark}</option>
+									<option value="light">{t.light}</option>
+									<option value="system">{t.system}</option>
+								</select>
+							</label>
+						</div>
+					)}
 				</header>
 				<div className={cx("context-notice")} role="note">
 					<span className={cx("status-dot")} aria-hidden="true" />
@@ -386,7 +414,7 @@ export default function Chat({ assistant }: { assistant: Assistant }) {
 						!runningHere &&
 						!chat.historyLoading && (
 							<section className={cx("empty")}>
-								<IdentityAvatar />
+								<IdentityAvatar active={embed?.visible ?? true} />
 								<p className={cx("eyebrow")}>GONZALO MARTIN PEREZ</p>
 								<h2>{t.emptyTitle}</h2>
 								<p>{t.empty}</p>

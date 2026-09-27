@@ -33,3 +33,7 @@ observations and VPS-only gaps. Keep production hard-disabled. No DNS, purchases
 secrets, paid model calls, shared-volume destruction or automatic main merge. If production
 execution is requested, stop at the reviewed handoff until the required separate approval,
 protected environment and vps-ops-owned deployment procedure exist; this skill does not deploy.
+
+Before compiler migration, read [ADR 003](../../../docs/adrs/003-typescript7-compatibility.md).
+Verify the actual checker and frozen peer resolution; do not force the generator peer or
+claim TypeScript 7 adoption while the project still checks with 5.9.3.

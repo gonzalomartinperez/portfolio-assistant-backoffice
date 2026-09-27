@@ -1,6 +1,19 @@
 import assert from "node:assert/strict";
 import { readSse } from "../src/features/assistant/adapters/sse.ts";
 const base = "http://localhost:3001";
+const shell = await fetch(base);
+assert.equal(
+	shell.headers.get("content-security-policy"),
+	"frame-ancestors 'none'",
+);
+assert.equal(shell.headers.get("x-frame-options"), "DENY");
+const embed = await fetch(`${base}/embed`);
+assert.equal(
+	embed.headers.get("content-security-policy"),
+	"frame-ancestors http://localhost:3110",
+);
+assert.equal(embed.headers.get("x-frame-options"), null);
+assert.match(embed.headers.get("cache-control"), /no-store/);
 // A separate test-only delayed upstream proves proxy flushing before completion.
 const probe = await fetch(`${base}/__stream_probe`);
 const reader = probe.body.getReader();

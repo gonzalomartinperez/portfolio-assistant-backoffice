@@ -112,3 +112,15 @@ PR with full CI validation. Image publishing is manual, and production deploymen
 disabled until separately authorized.
 
 Repository-local Codex and Claude Code workflows are documented in [Agent skills](docs/agent-skills.md).
+
+## Portfolio embedding
+
+`/embed` shares the standalone conversation implementation and accepts validated host
+theme/language preferences. The portfolio owns the floating panel and keeps one iframe
+instance across minimize/maximize. The [versioned integration handoff](docs/embed-integration.md)
+defines origins, headers, session limitations, accessibility and the local cross-origin harness.
+Production portfolio integration remains a separate owner task.
+
+Compiler status: [TypeScript 7 compatibility gate](docs/adrs/003-typescript7-compatibility.md).
+The working checker is explicitly TypeScript 5.9.3 with additional strict indexed/optional
+checks; the stable contract generator currently blocks the official 7/6 arrangement.

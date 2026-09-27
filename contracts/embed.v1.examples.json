@@ -1,0 +1,42 @@
+[
+  {
+    "version": 1,
+    "type": "assistant.ready",
+    "status": "initializing"
+  },
+  {
+    "version": 1,
+    "type": "host.initialize",
+    "preferences": {
+      "theme": "dark",
+      "locale": "en"
+    },
+    "visible": true
+  },
+  {
+    "version": 1,
+    "type": "assistant.ready",
+    "status": "ready"
+  },
+  {
+    "version": 1,
+    "type": "host.focus"
+  },
+  {
+    "version": 1,
+    "type": "host.visibility",
+    "visible": false
+  },
+  {
+    "version": 1,
+    "type": "host.preferences",
+    "preferences": {
+      "theme": "light",
+      "locale": "es"
+    }
+  },
+  {
+    "version": 1,
+    "type": "assistant.request-minimize"
+  }
+]

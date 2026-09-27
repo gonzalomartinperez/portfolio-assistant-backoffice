@@ -82,7 +82,7 @@ jobs:
           path: /tmp/image
       - name: Load the exact production image
         run: gunzip -c /tmp/image/image.tar.gz | docker load
-      - run: docker run -d --name assistant-browser --read-only --tmpfs /tmp --tmpfs /app/.next/cache:uid=1000,gid=1000,mode=0700,size=32m --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:3108:3000 portfolio-assistant-web:rc
+      - run: docker run -d --name assistant-browser -e EMBED_ALLOWED_ORIGINS=http://localhost:3110 --read-only --tmpfs /tmp --tmpfs /app/.next/cache:uid=1000,gid=1000,mode=0700,size=32m --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:3108:3000 portfolio-assistant-web:rc
       - name: Install all browser engines and OS dependencies
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Verify browser interactions and accessibility

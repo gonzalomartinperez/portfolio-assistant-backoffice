@@ -23,7 +23,7 @@ export const ChatMessage = memo(function ChatMessage({
 	message: Message;
 	locale: Locale;
 	onFeedback: (id: string, rating: "up" | "down") => void;
-	rating?: "up" | "down";
+	rating: "up" | "down" | undefined;
 }) {
 	const t = copy[locale];
 	return (

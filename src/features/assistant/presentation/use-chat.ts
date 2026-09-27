@@ -1,6 +1,7 @@
 "use client";
 import {
 	useEffect,
+	useCallback,
 	useState,
 	useSyncExternalStore,
 	type FormEvent,
@@ -9,13 +10,20 @@ import type { Assistant } from "../application/assistant";
 import { canSubmit, isRunning } from "../domain/models";
 import { copy } from "../../../shared/i18n/copy";
 import { usePreferences } from "../../../shared/theme/use-preferences";
-export function useChat(assistant: Assistant) {
+import type { EmbedPresentation } from "../../embed/use-embed";
+export function useChat(assistant: Assistant, embed?: EmbedPresentation) {
+	const visible = embed?.visible ?? true;
+	const subscribe = useCallback(
+		(listener: () => void) =>
+			visible ? assistant.subscribe(listener) : () => {},
+		[assistant, visible],
+	);
 	const state = useSyncExternalStore(
-		assistant.subscribe,
+		subscribe,
 		assistant.getSnapshot,
 		assistant.getSnapshot,
 	);
-	const preferences = usePreferences();
+	const preferences = usePreferences(embed?.preferences);
 	const [draft, setDraft] = useState("");
 	useEffect(() => {
 		assistant.start();
