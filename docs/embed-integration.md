@@ -30,6 +30,10 @@ The neutral outer fixture controls are not the production portfolio design.
 
 One warm WSL Chromium sample measured 639ms to operational readiness and 37ms to reopen;
 these are local interaction samples, not field performance or physical-phone measurements.
+The same CI-image measurement method (each JavaScript chunk gzip level 6, measured locally)
+compared pre-embed run 36331922611 with run 36335629077: 1,122,602 → 1,126,149 raw bytes
+and 344,565 → 345,823 gzip bytes (+1,258 gzip, about 0.37%). These are all generated client
+chunks, not initial route transfer, React render profiling or field Core Web Vitals.
 CI jobs took static 20s, image 94s, browser 179s and live-fixture 133s; the required aggregator
 passed. Production portfolio/Coolify headers, physical keyboards/safe areas and human
 assistive-technology review remain unverified. See the WebKit focus limitation below.
