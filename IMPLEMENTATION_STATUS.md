@@ -22,4 +22,5 @@ was edited. Integration instructions and the next contract request are in `docs/
 See the [bounded acceptance checklist](docs/release-checklist.md) and
 [verification report](docs/verification/quality-chat.md) for actual results and limits.
 Physical-device, human screen-reader, deployed production and paid-model behavior remain
-unverified. GitHub PR/check history records integration into develop; main is unchanged.
+unverified. GitHub PR/check history records integration into develop and any explicitly authorized
+promotion to main. Source promotion does not authorize production deployment.

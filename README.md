@@ -103,5 +103,6 @@ explain the public project conventions. Application code is [MIT licensed](LICEN
 Gonzalo’s identity assets and third-party materials retain separate terms.
 
 GitHub discovers some community files and Dependabot configuration from the default
-branch. This assignment integrates into `develop` only; publishing those files on `main`
-requires the repository's separate release workflow.
+branch. Feature work enters `develop`; owner-authorized promotions to `main` use a separate
+PR with full CI validation. Image publishing is manual, and production deployment remains
+disabled until separately authorized.

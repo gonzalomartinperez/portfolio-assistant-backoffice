@@ -1,6 +1,6 @@
 # Agent rules
 
-Use English for code, documentation and commits; UX is US English and neutral Latin American Spanish. No API keys in browser bundles. Use the versioned API contract snapshot. Integrate task branches through PRs into develop; leave main untouched.
+Use English for code, documentation and commits; UX is US English and neutral Latin American Spanish. No API keys in browser bundles. Use the versioned API contract snapshot. Integrate task branches through PRs into develop. Promote develop to main only with explicit owner authorization and a passing full PR validation run; production deployment requires separate authorization.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
