@@ -49,27 +49,20 @@ Artifacts contain synthetic fixtures only: browser reports/traces/screenshots fo
 live failure logs for 14 days, verified image for seven days. Always collect browser evidence;
 collect live logs on failure, and tear down only the dedicated test project.
 
-## Manual publishing and disabled deployment
+## Manual image publication; no production execution
 
-`Prepare immutable release` runs only on manual dispatch against develop, reruns the entire
-quality graph, then enters the `container-release` environment and publishes its exact image
-to GHCR with a source-SHA tag. Only that job has packages:write; no broad PAT or registry
-secret is needed. `release.json` records the registry digest and compatible API commit.
-Deploy by digest, never the mutable tag. The workflow has no automatic production consumer.
-GitHub discovers workflow_dispatch from the default branch. Owner-authorized promotion
-uses a separate develop-to-main PR with the same full validation graph. Merging source
-does not dispatch publishing or deployment; publishing still requires a manual invocation
-against develop. Production deployment remains hard-disabled.
+`release.yml` requires an explicit publication/visibility acknowledgment on a manual develop
+invocation, then runs the full quality graph. Its protected `container-release` environment
+must be configured with reviewers before use. Only the publication job has packages:write;
+untrusted PRs never receive publishing authority. It uploads the tested image's digest and
+frontend/API compatibility revisions. The workflow has not been dispatched here.
 
-Production is hard-disabled with `if: false`, has no SSH command or VPS secrets, names the
-production environment and serializes deployments without cancellation. Before enabling,
-the owner must configure required environment reviewers and branch restrictions, explicitly
-approve the combined release, and review an API-owned deployment implementation that checks
-compatibility, performs reviewed migrations, deploys exact digests, verifies readiness and
-real streaming, and can restore a known-compatible image pair. A named environment alone
-is **not** an approval gate unless protection rules are configured. Do not remove the hard
-disable merely because environment creation succeeds. Database recovery is separate from
-application rollback; follow [operations handoff](deployment.md).
+Production execution belongs exclusively to private vps-ops and the selected Coolify workflow.
+The previous hard-disabled placeholder job was retired after the owner confirmed that
+replacement authority; it contained no deploy implementation or useful infrastructure.
+There is no SSH, deployment webhook, production job or automatic deployment trigger in this
+repository. Merging/publishing does not authorize vps-ops to deploy. See the
+[runtime contract](deployment-contract.md) for the exact handoff and remaining decisions.
 
 Run timings and actual GitHub results belong in [verification](verification/quality-chat.md).
 The previous pipeline's latest successful run took 164s end-to-end (run 36264943719), but
@@ -85,7 +78,7 @@ a deliberate runtime migration; patch/digest updates remain monitored. API/integ
 image pins follow the API-owner contract handoff, not unrelated automated upgrades.
 Dependabot PRs use the same complete validation, read-only tokens and no repository secrets;
 there is no privileged bot auto-approval or bypass. Merge compatible updates only after
-review and successful checks, then include them in a verified main promotion.
+review and successful checks, integrate into develop without bypassing review.
 
 At the 2026-09-27 promotion audit, no Dependabot PR was open and npm audit reported zero
 vulnerabilities. GitHub's alerts endpoint returned “alerts are disabled” and a missing
@@ -96,3 +89,8 @@ The repository owner must enable those separately with appropriate account permi
 Browser binaries remain uncached following the [Playwright CI guidance](https://playwright.dev/docs/ci#caching-browsers):
 Linux OS dependencies still need installation, and restoring binary caches may cost as much
 as downloading them. This does not prevent using npm and content-addressed BuildKit caches.
+
+Current dependency review: Node types remain on the runtime-matching 24 major. TypeScript
+7 fails the frozen install because the pinned contract generator requires ^5.x; compiler
+and Node-type major upgrades are held for a coordinated migration. No peer checks are
+bypassed. Next patch and reviewed Docker Action SHA updates receive the full CI graph.

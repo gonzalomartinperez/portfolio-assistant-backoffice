@@ -1,6 +1,12 @@
 name: Prepare immutable release
 on:
   workflow_dispatch:
+    inputs:
+      publication_authorized:
+        description: "Image publication and GHCR package visibility have been explicitly approved"
+        required: true
+        type: boolean
+        default: false
 permissions:
   contents: read
 defaults:
@@ -11,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   verify:
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop' && inputs.publication_authorized
     uses: ./.github/workflows/quality.yml
   publish:
     needs: verify
@@ -55,14 +61,3 @@ jobs:
           name: release-compatibility
           path: release.json
           retention-days: 90
-  production:
-    # Hard disabled until the combined release is explicitly authorized and reviewed.
-    if: ${{ false }}
-    needs: publish
-    runs-on: ubuntu-latest
-    environment: production
-    concurrency:
-      group: assistant-production
-      cancel-in-progress: false
-    steps:
-      - run: echo 'Deployment disabled; follow the API-owned shared runbook.' && exit 1

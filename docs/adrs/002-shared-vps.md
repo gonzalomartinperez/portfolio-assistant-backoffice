@@ -28,12 +28,17 @@ No wildcard credentialed CORS; no assumption that parent-domain sharing removes 
 Do not add www/preview origins without a concrete consumer and review. Framing is not
 required; deny it at the edge. Both sites must use HTTPS for same-site cookie behavior.
 
-Docker Compose is the baseline. The API repository owns the single shared production
-specification/runbook; this repository owns its image and [handoff](../deployment.md).
-`tests/integration/compose.yaml` is isolated fixture verification, not a second production
-stack. Coolify is optional and unselected: if adopted, integrate with its existing proxy
-and networks rather than adding another public proxy. Only the shared proxy publishes
-application ports; restrict SSH/admin separately. Databases have private networks/volumes.
+Coolify is the selected management platform, coordinated through the private vps-ops
+repository. That repository owns production composition, proxy/TLS, private networks,
+volumes, budgets, release selection, migration scheduling, deployment and recovery.
+Application repositories own tested images and runtime contracts. The frontend
+[contract](../deployment-contract.md) is the committed integration handoff.
+`tests/integration/compose.yaml` remains isolated fixture verification, not a production
+stack. vps-ops will verify the exact supported Coolify prebuilt-image workflow; normal
+releases use immutable tested digests, not source rebuilds on the VPS. Do not add another
+proxy/controller, application SSH deployment, webhook or automatic deployment trigger.
+Only the shared proxy publishes application ports; restrict admin ingress separately.
+Image publication, package visibility and production execution require separate decisions.
 
 A single VPS is not HA. Graceful termination may interrupt active streams; the client
 must preserve partial content and avoid automatic regeneration. Capacity, backups, TLS,

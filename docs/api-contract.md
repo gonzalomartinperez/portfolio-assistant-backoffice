@@ -27,7 +27,7 @@ can omit the terminal frame. Preserve partial content and recover without regene
 ## API-owner deployment handoff
 
 The [frontend image/operation contract](deployment.md) and [ADR](adrs/002-shared-vps.md)
-are ready for the API-owned shared production stack. Preserve `/api/*`, empty root_path,
+are ready for the vps-ops-owned Coolify production composition. Preserve `/api/*`, empty root_path,
 relative browser URLs, host-only secure cookies and exact credentialed origin allowlists.
 Consume this frontend's merged commit and the manual release's immutable image digest;
 never use the mutable task branch as a release dependency. Production publication/deployment

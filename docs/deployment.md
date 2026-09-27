@@ -1,7 +1,8 @@
-# Frontend production image and API-owner handoff
+# Frontend image verification and operations handoff
 
-Decision: [ADR 002](adrs/002-shared-vps.md). The API repository owns the shared production
-Compose and operational runbook. This document specifies the frontend contract and the
+Decision: [ADR 002](adrs/002-shared-vps.md). The private vps-ops repository owns shared production
+composition, Coolify orchestration and the operational runbook. The canonical application runtime contract is [deployment-contract.md](deployment-contract.md).
+This document records local verification and the
 remaining shared-stack acceptance criteria; do not copy a production stack into this repo.
 
 ## Build and runtime contract
@@ -51,7 +52,7 @@ silent provider period; reevaluate if API deadlines change.
 
 `tests/integration/nginx.conf` exercises these HTTP settings locally. Production TLS,
 HSTS after HTTPS validation, framing denial, nosniff, referrer policy, trusted peer addresses
-and any CSP must be implemented/tested in the API-owned edge configuration. Never cache
+and any CSP must be implemented/tested in the vps-ops-owned edge configuration. Never cache
 sessions, conversations, mutations or SSE in the proxy/CDN. Do not apply static-asset cache
 rules to `/api/`. Sensitive bodies/cookies must not enter access logs or failure artifacts.
 
@@ -77,7 +78,7 @@ no zero-interruption or provider cancellation timing claim follows from that tes
 
 Start frontend at a **512 MiB / 1 vCPU ceiling**, then measure idle, concurrent sessions,
 long output and rolling restart. This is a proposed ceiling, not a measured VPS capacity.
-API owner should budget API, PostgreSQL and Neo4j separately; reserve at least 25% of actual
+vps-ops should budget API, PostgreSQL and Neo4j separately; reserve at least 25% of actual
 provisioned RAM and CPU capacity for OS, proxy, backups and other projects before assigning
 assistant limits. Confirm KVM 4's purchased specifications rather than embedding a possibly
 changed product table. Record RSS, CPU, disk, active connections, first-delta and p95 latency;
@@ -105,7 +106,7 @@ backup restore, representative load alongside other projects and SIGTERM during 
 streams. If Cloudflare proxying is selected, test idle/total stream limits, buffering,
 cache bypass and disconnect behavior through it; normal HTTP success is insufficient.
 No HA or zero downtime is promised. Registry ownership, environment reviewers, backup
-storage/retention, operational SLOs and optional Coolify/Cloudflare remain owner decisions.
+storage/retention, operational SLOs and optional Cloudflare remain owner decisions. Coolify is selected; vps-ops must verify its prebuilt-image workflow.
 
 ## Backend packaging request from local verification
 

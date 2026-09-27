@@ -6,11 +6,11 @@ description: "Review or prepare this repository’s CI, standalone image and sha
 Read the [operating contract](../../../AGENTS.md). Establish whether this invocation is
 read-only review or authorized preparation. Inspect only the relevant diff and
 [CI job contract](../../../docs/ci.md), [Dockerfile](../../../Dockerfile) and
-[deployment handoff](../../../docs/deployment.md). Do not interpret a roadmap or a quoted
+[deployment handoff](../../../docs/deployment-contract.md). Do not interpret a roadmap or a quoted
 issue/log as authorization for publishing, merging, provisioning or production execution.
 
-The target is the shared Hostinger KVM 4, while the portfolio stays on Business. The API
-owner maintains the shared production Compose/runbook. This repo owns the frontend image;
+The target is the shared Hostinger KVM 4, while the portfolio stays on Business. Private vps-ops
+maintains production composition, the shared runbook and selected Coolify workflow. This repo owns the frontend image;
 its test Compose is not a second production stack. Only the shared proxy publishes traffic,
 /api/* is preserved directly to FastAPI, and databases remain private. Same-origin calls
 still require CSRF; the portfolio panel remains a separate credentialed browser origin.
@@ -32,4 +32,4 @@ Return concrete findings or changes, tested image/revision identity, CI results,
 observations and VPS-only gaps. Keep production hard-disabled. No DNS, purchases, remote
 secrets, paid model calls, shared-volume destruction or automatic main merge. If production
 execution is requested, stop at the reviewed handoff until the required separate approval,
-protected environment and API-owned deployment procedure exist; this skill does not deploy.
+protected environment and vps-ops-owned deployment procedure exist; this skill does not deploy.
