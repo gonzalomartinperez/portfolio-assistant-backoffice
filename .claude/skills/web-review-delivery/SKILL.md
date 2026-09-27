@@ -37,3 +37,10 @@ protected environment and vps-ops-owned deployment procedure exist; this skill d
 Before compiler migration, read [ADR 003](../../../docs/adrs/003-typescript7-compatibility.md).
 Verify the actual checker and frozen peer resolution; do not force the generator peer or
 claim TypeScript 7 adoption while the project still checks with 5.9.3.
+
+For dependency automation work, read [the eligibility and activation procedure](../../../docs/dependency-updates.md).
+Run the policy/controller tests through `npm test`; inspect real required checks and current
+head metadata. Never approve bots, execute PR code with write tokens or promote main to
+activate a workflow without authority. A paused automatic merge switch must still revoke
+previously armed PRs; keep the required policy workflow running. Local fixture decisions
+are not evidence of live native auto-merge.

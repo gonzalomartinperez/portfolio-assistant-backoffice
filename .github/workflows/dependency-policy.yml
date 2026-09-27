@@ -1,0 +1,44 @@
+name: Dependency policy
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited, ready_for_review, converted_to_draft, labeled, unlabeled, auto_merge_enabled]
+  workflow_run:
+    workflows: [Quality]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to reevaluate (no generation, rebase or approval)
+        required: true
+        type: string
+permissions: {}
+concurrency:
+  group: dependency-policy-${{ github.event.pull_request.number || github.event.workflow_run.pull_requests[0].number || inputs.pr_number || github.run_id }}
+  cancel-in-progress: false
+jobs:
+  reconcile:
+    if: vars.DEPENDABOT_POLICY_READY == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
+      actions: read
+    steps:
+      # Never use the PR head, merge ref, artifacts or dependencies in this job.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: scripts
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Validate authenticated PR data and reconcile native auto-merge
+        run: node scripts/dependency-automation.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          DEPENDABOT_AUTOMERGE: ${{ vars.DEPENDABOT_AUTOMERGE }}
+          APPLY_DEPENDENCY_POLICY: 'true'

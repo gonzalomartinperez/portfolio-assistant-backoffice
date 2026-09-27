@@ -124,3 +124,7 @@ Production portfolio integration remains a separate owner task.
 Compiler status: [TypeScript 7 compatibility gate](docs/adrs/003-typescript7-compatibility.md).
 The working checker is explicitly TypeScript 5.9.3 with additional strict indexed/optional
 checks; the stable contract generator currently blocks the official 7/6 arrangement.
+
+Dependency updates follow the [conservative maintenance policy](docs/dependency-updates.md).
+Automatic merging is staged; default-branch activation and its required protection gate
+remain separate from application releases and production deployment.

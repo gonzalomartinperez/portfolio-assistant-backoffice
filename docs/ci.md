@@ -1,7 +1,9 @@
 # Actions design and release preparation
 
 Every workflow was audited: `quality.yml` is the required validation pipeline;
-`release.yml` is new manual preparation. There is no push/develop deployment trigger.
+`release.yml` is manual image preparation and `dependency-policy.yml` is a staged
+control-only dependency gate. See [dependency maintenance](dependency-updates.md) for its
+policy, job permissions, activation prerequisites and pause procedure. There is no push/develop deployment trigger.
 All third-party actions are full SHA pins, resolved against their upstream v4/v3/v6 refs
 on 2026-09-27; review source/release notes when Dependabot proposes changes. Existing
 checkout/setup-node/upload pins were retained. New download-artifact, setup-buildx and
@@ -41,8 +43,9 @@ Explicit Bash defaults enable pipefail, so failed image save/load commands canno
 by a successful downstream command. Cleanup runs independently of container log collection.
 Step names describe purpose; the required job ID remains `checks`.
 
-Default permissions are contents:read, checkout credentials are not persisted. PR jobs use
-no repository secrets, no pull_request_target or privileged workflow_run bridge. Fixture
+Default permissions are contents:read, checkout credentials are not persisted. Quality PR jobs use
+no repository secrets. The separate dependency control workflow uses privileged events
+but executes only trusted default-branch scripts, never PR code or artifacts. Fixture
 credentials are intentionally public and isolated. Fork PR images are never published.
 Production images contain neither tests/dev dependencies nor environment/secret files.
 Artifacts contain synthetic fixtures only: browser reports/traces/screenshots for 14 days,
@@ -101,3 +104,22 @@ also owns the cross-origin host on 3110; no second frontend build or privileged 
 added. The live-fixture job uses its own host lifecycle against the pinned API/proxy stack
 and verifies the combined response framing headers. Loopback origins belong only to tests,
 not the production default. Both standalone and embedded cases remain required.
+
+## Dependency policy verification
+
+[Run 36336926719](https://github.com/gonzalomartinperez/portfolio-assistant-web/actions/runs/36336926719)
+at `4216a7272ed729dcf91b6c661b1cd649c09ac716` verified the 44 unit/contract/boundary tests,
+including 13 dependency decision/controller/security cases. All 90 browser tests, six live
+API fixture flows, image build and proxy smoke also passed. Jobs: static 23s, cached image
+28s, browser 197s, live-fixture 127s and aggregator 3s; first job to completion 234s. These
+are observed durations, not a like-for-like speedup claim. The actual read-only workflow
+token received GraphQL protection-access denial. The diagnostic confirmed both activation
+switches are disabled and reported an explicit warning. It fails if either switch is on;
+the mutation controller never arms auto-merge without verified protection. The initial probe
+run 36336719405 failed on that denial; no permission was broadened to conceal the limitation.
+
+Actionlint 1.7.12 passed all three workflows without exclusions. A read-only invocation
+against actual PR #17 returned `manual-author` and made no changes. No eligible Dependabot
+PR existed, so no native automatic merge or privileged controller execution is claimed.
+Default-branch promotion and protection-read access remain activation blockers; see the
+[maintenance runbook](dependency-updates.md). Required application checks are unchanged.
