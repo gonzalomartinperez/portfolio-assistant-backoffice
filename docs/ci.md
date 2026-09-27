@@ -13,7 +13,7 @@ credentials. Actions documentation: [required checks](https://docs.github.com/en
 
 | Job | Purpose |
 | --- | --- |
-| static | Frozen install, Biome, strict typing, unit/contract/boundaries, redacted scan, local links, generated drift |
+| static | Frozen install, explicit dependency audit, Biome, strict typing, unit/contract/boundaries, redacted scan, local links, generated drift |
 | image | One standalone production build, pinned base, export exact image for downstream tests |
 | browser | Same image read-only/non-root, deterministic HTTP/SSE, 48 Chromium/Firefox/WebKit interaction/accessibility cases |
 | live-fixture | Same image with pinned real API, PostgreSQL/Neo4j, Nginx; four browser flows plus proxy/session/SSE smoke |
@@ -21,7 +21,9 @@ credentials. Actions documentation: [required checks](https://docs.github.com/en
 
 Static and image work run in parallel. Browser and live integration run independently after
 the image. No repeated Next build in browser/live jobs; image publication also reuses the
-verified artifact. Each runner still installs its own locked test dependencies. npm cache
+verified artifact. Each runner still installs its own locked test dependencies. Installs disable duplicate
+audit/funding requests; one required `npm audit --audit-level=moderate` step checks all
+locked production and development dependencies. A registry/audit failure fails validation. npm cache
 keys include OS/architecture and package-lock hash through setup-node; cache-dependency-path
 is explicit. BuildKit's GHA cache uses a dedicated Node24/amd64 scope and content-addressed
 Dockerfile/context layers. Only application/build inputs enter the build stage, so documentation
@@ -34,6 +36,10 @@ whole graph. No path filters or diff-based conditional tests can leave required 
 pending or bypass coverage. Do not use CI-skip commit messages. The always-running aggregator
 rejects failed/cancelled/skipped jobs. Obsolete runs for the same workflow/ref are cancelled;
 independent PR refs do not cancel each other. Timeouts bound stalled jobs.
+
+Explicit Bash defaults enable pipefail, so failed image save/load commands cannot be hidden
+by a successful downstream command. Cleanup runs independently of container log collection.
+Step names describe purpose; the required job ID remains `checks`.
 
 Default permissions are contents:read, checkout credentials are not persisted. PR jobs use
 no repository secrets, no pull_request_target or privileged workflow_run bridge. Fixture
@@ -70,3 +76,23 @@ The previous pipeline's latest successful run took 164s end-to-end (run 36264943
 had narrower coverage; it is not a like-for-like speed benchmark. Record new job durations
 and critical path, not an unsupported percentage speedup. Tests/security/reproducibility
 must remain intact when tuning caches or workers.
+
+## Dependabot review
+
+Version-update configuration covers npm, SHA-pinned Actions and the root Dockerfile's Node
+image, targeting develop with bounded monthly PR counts. Node Docker major updates require
+a deliberate runtime migration; patch/digest updates remain monitored. API/integration
+image pins follow the API-owner contract handoff, not unrelated automated upgrades.
+Dependabot PRs use the same complete validation, read-only tokens and no repository secrets;
+there is no privileged bot auto-approval or bypass. Merge compatible updates only after
+review and successful checks, then include them in a verified main promotion.
+
+At the 2026-09-27 promotion audit, no Dependabot PR was open and npm audit reported zero
+vulnerabilities. GitHub's alerts endpoint returned “alerts are disabled” and a missing
+administrative token scope, so no clean GitHub-alert claim is made and token scopes were
+not expanded. Version-update configuration does not substitute for enabling security alerts.
+The repository owner must enable those separately with appropriate account permissions.
+
+Browser binaries remain uncached following the [Playwright CI guidance](https://playwright.dev/docs/ci#caching-browsers):
+Linux OS dependencies still need installation, and restoring binary caches may cost as much
+as downloading them. This does not prevent using npm and content-addressed BuildKit caches.
