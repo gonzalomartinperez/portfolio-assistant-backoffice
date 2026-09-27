@@ -45,6 +45,20 @@ export async function readProtection(api) {
 	};
 }
 
+export async function inspectReadiness(api, enabled, policyReady) {
+	try {
+		return { status: "inspectable", protection: await readProtection(api) };
+	} catch (error) {
+		if (error.name !== "GitHubPermissionError" || enabled || policyReady)
+			throw error;
+		return {
+			status: "blocked",
+			reason: "workflow-token-cannot-inspect-protection",
+			automation: "disabled",
+		};
+	}
+}
+
 export async function reconcile({
 	api,
 	repository,
@@ -209,17 +223,29 @@ async function main() {
 		});
 		if (!response.ok) throw new Error(`GitHub API HTTP ${response.status}`);
 		const value = await response.json();
-		if (value.errors) throw new Error("GitHub GraphQL rejected operation");
+		if (value.errors) {
+			if (value.errors.some((error) => error.type === "FORBIDDEN")) {
+				const denied = new Error(
+					"GitHub token cannot inspect required protection",
+				);
+				denied.name = "GitHubPermissionError";
+				throw denied;
+			}
+			throw new Error("GitHub GraphQL rejected operation");
+		}
 		return value;
 	};
 	if (process.env.DEPENDENCY_INSPECT === "true") {
-		const protection = await readProtection(api);
-		console.log(
-			JSON.stringify({
-				inspection: "read-only workflow-token protection query",
-				...protection,
-			}),
+		const result = await inspectReadiness(
+			api,
+			process.env.DEPENDABOT_AUTOMERGE === "true",
+			process.env.DEPENDABOT_POLICY_READY === "true",
 		);
+		console.log(JSON.stringify(result));
+		if (result.status === "blocked")
+			console.log(
+				"::warning::Dependency automation remains blocked and disabled: workflow-token protection access is unavailable.",
+			);
 		return;
 	}
 

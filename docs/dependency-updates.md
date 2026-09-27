@@ -2,7 +2,10 @@
 
 Implementation is staged on develop. **Automatic merging is not activated.** Default branch
 main does not yet contain the trusted policy scripts/workflow; repository auto-merge is off.
-This is an activation dependency, not permission to merge the application release into main.
+An actual Actions probe also found that its read-only GITHUB_TOKEN cannot inspect the full
+branch protection via GraphQL. Both activation switches must remain off until a supported
+least-privilege inspection mechanism is verified. This is a blocker, not permission to use
+a broad PAT or merge the application release into main.
 
 ## Eligibility
 
@@ -42,7 +45,11 @@ The control job needs contents:write and pull-requests:write for native auto-mer
 checks:write for the head-bound `dependency-policy` check, and actions:read to inspect Quality.
 Protection uses the GraphQL branchProtectionRule read path; the REST protection endpoint
 requires Administration:read, which GITHUB_TOKEN cannot request. The existing static job
-verifies the GraphQL query with its read-only workflow token. No production secret, PAT,
+probes the GraphQL query with its read-only workflow token. If GitHub explicitly denies it,
+the static job requires BOTH activation switches to be disabled and reports the blocker.
+Network/schema errors still fail; denial while either switch is enabled also fails. The
+mutation controller always fails closed on inaccessible protection. This diagnostic does
+not declare deployment/automation readiness. No production secret, PAT,
 environment or self-hosted runner is used. All other permissions
 are absent. A permission/API error fails closed; do not add a broad PAT to work around it.
 The API client prints fixed decision codes, never raw API responses or credentials.
@@ -80,6 +87,11 @@ plan/protection availability after any visibility/ownership change, rather than 
 
 Activation must be a separately authorized, reviewed operation:
 
+0. Resolve protection inspection access first. Run 36336719405 demonstrated GraphQL
+   rejection with the read-only workflow token; local admin success is not compatibility
+   evidence. A separately reviewed repository-scoped read-only GitHub App may be needed;
+   no App/PAT or new secret is created here. Do not enable either switch until the exact
+   intended token path is tested. This repository does not silently weaken the requirement.
 1. Promote only the approved workflow, both policy scripts and Dependabot configuration to
    the default branch through its normal PR/review process. Do not merge an application
    release merely to activate maintenance. The scripts have no npm dependency prerequisite.

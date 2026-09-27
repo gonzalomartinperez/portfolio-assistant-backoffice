@@ -7,7 +7,10 @@ import {
 	gateReason,
 	identityReason,
 } from "../../scripts/dependency-policy.mjs";
-import { reconcile } from "../../scripts/dependency-automation.mjs";
+import {
+	reconcile,
+	inspectReadiness,
+} from "../../scripts/dependency-automation.mjs";
 const repository = "gonzalomartinperez/portfolio-assistant-web";
 const bot = { id: 49699333, login: "dependabot[bot]", type: "Bot" };
 const head = "a".repeat(40);
@@ -466,4 +469,27 @@ test("privileged workflow executes only default-branch policy with pinned action
 	assert.equal(steps.at(-1).run, "node scripts/dependency-automation.mjs");
 	assert.equal(raw.includes("secrets."), false);
 	assert.equal(workflow.on.pull_request_target.paths, undefined);
+});
+
+test("unavailable token capability is safe only with both activation switches disabled", async () => {
+	const denied = async () => {
+		const error = new Error("denied");
+		error.name = "GitHubPermissionError";
+		throw error;
+	};
+	assert.equal(
+		(await inspectReadiness(denied, false, false)).status,
+		"blocked",
+	);
+	await assert.rejects(inspectReadiness(denied, true, false));
+	await assert.rejects(inspectReadiness(denied, false, true));
+	await assert.rejects(
+		inspectReadiness(
+			async () => {
+				throw new Error("network failure");
+			},
+			false,
+			false,
+		),
+	);
 });

@@ -36,11 +36,13 @@ jobs:
         run: npm test
       - name: Scan public files and documentation links
         run: npm run security:check && npm run docs:check && npm run skills:check
-      - name: Verify read-only workflow-token access to dependency controls
+      - name: Verify dependency protection access or mandatory disabled state
         run: node scripts/dependency-automation.mjs
         env:
           GH_TOKEN: ${{ github.token }}
           DEPENDENCY_INSPECT: 'true'
+          DEPENDABOT_AUTOMERGE: ${{ vars.DEPENDABOT_AUTOMERGE }}
+          DEPENDABOT_POLICY_READY: ${{ vars.DEPENDABOT_POLICY_READY }}
       - name: Reject generated contract drift
         run: npm run contract:generate && git diff --exit-code contracts/types.d.ts
   image:
