@@ -65,3 +65,9 @@ linked docs; don't duplicate them in tool-specific files.
 Never commit credentials, private documents, `.env.local`, build output or browser traces
 containing personal sessions. `npm run security:check` reports only rule names and file
 paths, never matched values; it complements review and does not prove absence of secrets.
+
+TypeScript currently remains 5.9.3 because the stable contract generator rejects the
+official TypeScript 7/6 compatibility arrangement. See [ADR 003](docs/adrs/003-typescript7-compatibility.md)
+for the reproducible blocker, exact compiler used by each command and migration gate.
+`noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` are enforced; model missing
+values explicitly and guard indexed access instead of suppressing errors.

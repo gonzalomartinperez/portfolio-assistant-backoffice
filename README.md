@@ -120,3 +120,7 @@ theme/language preferences. The portfolio owns the floating panel and keeps one 
 instance across minimize/maximize. The [versioned integration handoff](docs/embed-integration.md)
 defines origins, headers, session limitations, accessibility and the local cross-origin harness.
 Production portfolio integration remains a separate owner task.
+
+Compiler status: [TypeScript 7 compatibility gate](docs/adrs/003-typescript7-compatibility.md).
+The working checker is explicitly TypeScript 5.9.3 with additional strict indexed/optional
+checks; the stable contract generator currently blocks the official 7/6 arrangement.

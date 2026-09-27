@@ -26,6 +26,7 @@ function minimize() {
 }
 function focusChat() {
 	if (!panel.hidden && operational && pendingFocus) {
+		frame?.focus();
 		send({ type: "host.focus" });
 		pendingFocus = false;
 	}

@@ -564,7 +564,10 @@ test("theme changes preserve readable suggestion contrast on every sampled frame
 						? channel / 12.92
 						: ((channel + 0.055) / 1.055) ** 2.4;
 				});
-				return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+				const [red, green, blue] = linear;
+				if (red === undefined || green === undefined || blue === undefined)
+					throw new Error("Expected three RGB channels");
+				return red * 0.2126 + green * 0.7152 + blue * 0.0722;
 			}
 			function contrast() {
 				const style = getComputedStyle(button);

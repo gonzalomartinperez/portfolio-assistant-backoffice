@@ -146,8 +146,11 @@ test("follow-up stays in the owned conversation without resending history", asyn
 			.first(),
 	).toBeVisible();
 	expect(streams).toHaveLength(2);
-	expect(streams[1].url).toBe(streams[0].url);
-	expect(streams[1].body).toEqual({
+	const [firstStream, followupStream] = streams;
+	if (!firstStream || !followupStream)
+		throw new Error("Expected two generation requests");
+	expect(followupStream.url).toBe(firstStream.url);
+	expect(followupStream.body).toEqual({
 		content: "Explain that technically",
 		locale: "en",
 	});

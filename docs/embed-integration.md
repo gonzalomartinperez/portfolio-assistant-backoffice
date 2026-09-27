@@ -30,7 +30,9 @@ Use a **non-modal named region**, not `aria-modal` or a cross-frame focus trap. 
 iframe an accessible localized title. Host owns one set of minimize/maximize
 controls; the embedded conversation menu only manages saved conversations. Keyboard Tab
 and Shift+Tab cross the iframe naturally. Move focus into the composer only after ready
-and explicit opening. Escape in the chat requests minimize, except when consumed by its
+and explicit opening: call `iframe.focus()` in the host, then send `host.focus`.
+Firefox needs the parent-side focus step. Cancel deferred focus if the visitor navigates
+elsewhere while initialization is pending. Visibility changes alone never replay focus. Escape in the chat requests minimize, except when consumed by its
 conversation menu/edit action. Minimize must hide and make the entire panel inert, move
 focus back to the launcher, and set `aria-expanded=false`. Keep the rest of the portfolio
 usable. A future modal design needs separate cross-frame containment tests and is not v1.
