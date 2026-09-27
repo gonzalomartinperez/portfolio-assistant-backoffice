@@ -1,7 +1,9 @@
 # Actions design and release preparation
 
 Every workflow was audited: `quality.yml` is the required validation pipeline;
-`release.yml` is new manual preparation. There is no push/develop deployment trigger.
+`release.yml` is manual image preparation and `dependency-policy.yml` is a staged
+control-only dependency gate. See [dependency maintenance](dependency-updates.md) for its
+policy, job permissions, activation prerequisites and pause procedure. There is no push/develop deployment trigger.
 All third-party actions are full SHA pins, resolved against their upstream v4/v3/v6 refs
 on 2026-09-27; review source/release notes when Dependabot proposes changes. Existing
 checkout/setup-node/upload pins were retained. New download-artifact, setup-buildx and
@@ -41,8 +43,9 @@ Explicit Bash defaults enable pipefail, so failed image save/load commands canno
 by a successful downstream command. Cleanup runs independently of container log collection.
 Step names describe purpose; the required job ID remains `checks`.
 
-Default permissions are contents:read, checkout credentials are not persisted. PR jobs use
-no repository secrets, no pull_request_target or privileged workflow_run bridge. Fixture
+Default permissions are contents:read, checkout credentials are not persisted. Quality PR jobs use
+no repository secrets. The separate dependency control workflow uses privileged events
+but executes only trusted default-branch scripts, never PR code or artifacts. Fixture
 credentials are intentionally public and isolated. Fork PR images are never published.
 Production images contain neither tests/dev dependencies nor environment/secret files.
 Artifacts contain synthetic fixtures only: browser reports/traces/screenshots for 14 days,
