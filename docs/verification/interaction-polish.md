@@ -32,13 +32,13 @@ Baseline client chunks: 1,119,067 raw bytes / 343,820 gzip bytes, summed individ
 1. **Master UX upgrade** — implement useful frontend interactions on the existing state and
    pinned transport; verify the full conversation/security/accessibility matrix, rendered
    before/after evidence and bundle impact. Backend personality changes remain API-owned;
-   no new wire actions are assumed. Status: implementation complete, verification in progress.
+   no new wire actions are assumed. Status: implemented; local mock/browser/live verification passed; final combined CI pending.
 2. **Repository skills** — four canonical workflows, two client discovery paths, isolated
    validator regressions and honest behavior/client limits. Status: PR #13 passed full CI;
    both clients also discovered the catalog from a clean Linux clone without model calls.
 3. **Deployment handoff** — committed application runtime contract for Coolify/vps-ops,
    local fixtures retained, no production controller or trigger. Status: implemented;
-   final image/check verification pending. Package visibility and VPS-only validation deferred.
+   non-root/read-only image and local live/proxy checks passed; final combined CI pending. Package visibility and VPS-only validation deferred.
 
 Across all three: preserve architecture, strict typing, safe rendering, pinned API provenance,
 reproducible CI, existing work and develop-only integration. Main promotion requires the owner-authorized develop-to-main PR and its full passing CI;
@@ -89,3 +89,17 @@ Formatting, lint, strict typing, 29 unit/contract/boundary/skill tests, generate
 local documentation links, redacted public-file scanning and Actionlint 1.7.12 passed.
 `npm audit --audit-level=moderate` reported zero vulnerabilities. Structural secret scanning
 is limited to high-confidence patterns. No paid model, production or physical-device test ran.
+
+The local pinned FastAPI/PostgreSQL/Neo4j/Nginx fixture stack passed all four live browser
+flows (18.4s). Proxy security/path/body-limit checks, a delayed flushing probe, disconnect /
+cancellation, deletion and graceful active-stream drainage passed. The fixture answer had
+23 deltas, first delta 167ms and total 280ms in this run; these are local fixture timings,
+not provider or VPS latency. Only the dedicated verification project was stopped afterward;
+its volumes and other agents' services were preserved.
+
+Compatible Dependabot updates were reviewed and merged: Docker build-push action #8,
+Next 16.3.6 #11, and setup-buildx action #9. Each passed the complete CI graph at its merge
+head. TypeScript 7 (#12) was rejected after actual frozen-install ERESOLVE against the
+contract generator's ^5.x peer; Node 26 types (#10) were rejected because runtime is Node 24.
+Their major updates are held for a supported migration, not forced past checks. The final
+combined PR also validates the Next patch and both Docker Action SHAs together with this UI.
