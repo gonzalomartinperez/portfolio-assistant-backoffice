@@ -1,11 +1,11 @@
 # Conservative dependency maintenance
 
-Implementation is staged on develop. **Automatic merging is not activated.** Default branch
-main does not yet contain the trusted policy scripts/workflow; repository auto-merge is off.
+**Automatic merging is not activated.** Owner-authorized promotion PR #19 placed the trusted
+policy scripts/workflow on main; repository auto-merge remains off.
 An actual Actions probe also found that its read-only GITHUB_TOKEN cannot inspect the full
 branch protection via GraphQL. Both activation switches must remain off until a supported
 least-privilege inspection mechanism is verified. This is a blocker, not permission to use
-a broad PAT or merge the application release into main.
+a broad PAT or bypass branch protection.
 
 ## Eligibility
 
@@ -92,9 +92,10 @@ Activation must be a separately authorized, reviewed operation:
    evidence. A separately reviewed repository-scoped read-only GitHub App may be needed;
    no App/PAT or new secret is created here. Do not enable either switch until the exact
    intended token path is tested. This repository does not silently weaken the requirement.
-1. Promote only the approved workflow, policy scripts, their `scripts/json.ts` helper and Dependabot configuration to
-   the default branch through its normal PR/review process. Do not merge an application
-   release merely to activate maintenance. The scripts have no npm dependency prerequisite.
+1. Verify the approved workflow, policy scripts, their `scripts/json.ts` helper and Dependabot
+   configuration exist on the default branch. PR #19 fulfilled this prerequisite through the
+   separately authorized application promotion; it did not activate automatic merging.
+   The scripts have no npm dependency prerequisite.
 2. Set repository variable `DEPENDABOT_POLICY_READY=true`. This bootstrap switch stays true
    during ordinary pauses. With `DEPENDABOT_AUTOMERGE` unset/false the job evaluates and
    revokes bot auto-merge but does not arm it. Dispatch against an ordinary open PR to
@@ -109,8 +110,8 @@ Activation must be a separately authorized, reviewed operation:
    checks and merge result. If an essential control is unavailable, leave automation off.
 
 Neither variable, repository auto-merge setting nor required policy check was activated by
-this implementation. Full mutation/token behavior remains unverified until the authorized
-default-branch promotion. The ordinary Quality tests do exercise the decision/controller
+this implementation. Full mutation/token behavior remains blocked by protection inspection
+access. The ordinary Quality tests do exercise the decision/controller
 against deterministic authenticated-API fixtures; those are not a live automatic merge.
 
 ## Rebasing, security and maintenance
@@ -127,8 +128,8 @@ Security updates concern the **default branch**, even though version updates tar
 Do not retarget/close them blindly, suppress alerts or mistake a green develop build for a
 security fix on main. Security fixes receive prompt manual attention and the same risk checks.
 The earlier alert API inspection could not establish enabled alert access; owner verification
-of Dependabot alerts/security updates remains required. Develop-only ignore/cooldown settings
-are not effective until the default-branch configuration is promoted.
+of Dependabot alerts/security updates remains required. Ignore/cooldown configuration became
+available on the default branch through PR #19; new version-update PRs were observed afterward.
 
 GitHub-token mutations do not generally trigger ordinary push workflows. This repository
 intentionally has no post-merge deployment/push pipeline; the tested PR revision is the gate.
