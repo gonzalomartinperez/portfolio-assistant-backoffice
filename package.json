@@ -15,7 +15,8 @@
 		"format:check": "biome format src tests scripts docs package.json biome.json playwright.config.ts playwright.live.config.ts",
 		"security:check": "node scripts/check-public-files.mjs",
 		"docs:check": "node scripts/check-docs.mjs",
-		"preview:fixture": "node scripts/test-server.mjs"
+		"preview:fixture": "node scripts/test-server.mjs",
+		"skills:check": "node scripts/check-skills.mjs"
 	},
 	"engines": {
 		"node": ">=24 <25"
@@ -35,6 +36,7 @@
 		"@types/node": "24.13.5",
 		"@types/react": "19.3.0",
 		"@types/react-dom": "19.3.0",
+		"js-yaml": "4.3.2",
 		"openapi-typescript": "7.13.0",
 		"typescript": "5.9.3"
 	},
