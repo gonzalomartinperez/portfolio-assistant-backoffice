@@ -1,5 +1,5 @@
 import { createServer, request } from "node:http";
-// Test-only reverse proxy. Production routing belongs to the API-owned stack.
+// Test-only reverse proxy. Production routing belongs to vps-ops and its Coolify configuration.
 export function startTestProxy(port, webOrigin, apiOrigin) {
 	const server = createServer((incoming, outgoing) => {
 		const origin = incoming.url.startsWith("/api/") ? apiOrigin : webOrigin;

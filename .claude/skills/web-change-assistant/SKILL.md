@@ -20,6 +20,9 @@ For review-only requests, return findings without edits, commits or PR mutations
 3. For UI/copy changes, read [design conventions](../../../docs/design-system.md).
    Extend existing native button variants and CSS Modules; preserve data-theme, font
    identity, semantic tokens and both dictionaries. Avoid a second shadcn preset/library.
+   Keep avatar motion decorative, fine-pointer-only and static under reduced motion;
+   release listeners/frames on unmount. Suggestions fill drafts rather than generating.
+   Copy feedback must follow clipboard success and handle permission failure.
    Model Markdown remains sanitized, without raw HTML, remote images or unsafe URLs.
 4. Add a behavioral regression at the responsible boundary. Run `npm run typecheck`,
    `npm run lint` and `npm test`; use the browser matrix in the README for visible changes.

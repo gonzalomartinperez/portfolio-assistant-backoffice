@@ -31,8 +31,8 @@ PRs into develop; do not modify the API or portfolio as part of a frontend task.
 Use CONTRIBUTING.md for the Google TypeScript readability adaptations; Biome and strict
 TypeScript are the mechanical authority. Run security:check and docs:check before PRs.
 
-Deployment authority: docs/adrs/002-shared-vps.md and docs/deployment.md. The API owns
-the shared production stack. Keep production CD disabled. CI builds one same-origin
+Deployment authority: docs/adrs/002-shared-vps.md and docs/deployment-contract.md. Private vps-ops owns
+production composition and Coolify execution; this repository owns its image/runtime contract. Keep production CD disabled. CI builds one same-origin
 image reused by browser/live jobs; required checks aggregates every validation result.
 
 ## Scope and reusable workflows

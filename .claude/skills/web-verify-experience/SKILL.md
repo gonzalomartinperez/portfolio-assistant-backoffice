@@ -22,6 +22,7 @@ Inspect rendered screenshots and failures, not just the exit code. Review comple
 interrupted conversations, sources, stop/recovery, drawer/confirmation focus restoration,
 IME and Enter/Shift+Enter, long content, near-bottom auto-follow and jump-to-latest.
 Use the existing 320/430 mobile, tablet, landscape and desktop cases with both themes/locales.
+Verify copy success/failure, draft-only follow-ups, pointer capability and avatar cleanup.
 Check reduced motion, blocked preference storage and the keyboard-sized viewport. Screen
 reader announcements should describe lifecycle progress, not every token.
 

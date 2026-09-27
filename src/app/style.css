@@ -13,6 +13,9 @@
 	--accent-wash: rgb(76 214 255 / 12%);
 	--accent-ink: #001820;
 	--danger: #ffb4b4;
+	--duration-micro: 140ms;
+	--duration-transition: 320ms;
+	--ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 	--radius-sm: 6px;
 	--radius-md: 12px;
 	--radius-lg: 20px;

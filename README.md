@@ -9,13 +9,17 @@ incomplete even when sources are included.
 These screenshots show the implemented interface using deterministic fixture answers,
 not live model output or personal conversations.
 
-![English desktop conversation in the dark theme, with a public source and feedback controls](docs/verification/final-desktop-dark.png)
+![English desktop conversation in the dark theme, with sources, copy, feedback and follow-up questions](docs/verification/interaction-polish/after-conversation-desktop.png)
 
-![Spanish narrow-mobile conversation with source, feedback and safe-area composer visible](docs/verification/final-mobile-conversation.png)
+![Spanish mobile conversation with sources, copy, follow-up choices and the composer visible](docs/verification/interaction-polish/after-conversation-mobile.png)
 
 [Light desktop](docs/verification/final-desktop-light.png) ·
 [Light mobile](docs/verification/final-mobile-light.png) ·
 [Landscape conversation](docs/verification/final-landscape.png)
+
+[Before/after evidence](docs/verification/interaction-polish.md) ·
+[Avatar and conversation interaction demo](docs/verification/interaction-polish/signature-demo.webm) ·
+[Full-stack fixture follow-up](docs/verification/interaction-polish/live-context-desktop.png)
 
 ## Local development
 
@@ -83,8 +87,8 @@ anonymous session/retention policy. Only theme and language preferences use loca
 The future shared Hostinger KVM 4 runs the standalone frontend and FastAPI behind one
 reverse proxy; the portfolio stays on Hostinger Business. Browser calls use relative
 `/api/v1/...`, routed directly to FastAPI. See the [deployment ADR](docs/adrs/002-shared-vps.md),
-[image and shared-stack handoff](docs/deployment.md) and [CI job design](docs/ci.md).
-Production CD is disabled. No DNS, remote deployment or paid-model call is authorized.
+[Coolify/vps-ops runtime contract](docs/deployment-contract.md) and [local image verification](docs/deployment.md) and [CI job design](docs/ci.md).
+Private vps-ops owns production composition and Coolify execution. Production CD is disabled. No DNS, remote deployment or paid-model call is authorized.
 
 See [architecture](docs/architecture.md), [design system](docs/design-system.md),
 [contract refresh and integration handoffs](docs/api-contract.md),

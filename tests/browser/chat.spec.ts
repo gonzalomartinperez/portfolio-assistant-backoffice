@@ -369,3 +369,219 @@ test("keyboard focus survives rename, delete confirmation, cancellation and dele
 		page.getByRole("button", { name: "New chat", exact: true }),
 	).toBeFocused();
 });
+
+test("copy reports clipboard success and failure; follow-ups only prepare a draft", async ({
+	page,
+}) => {
+	let sends = 0;
+	page.on("request", (request) => {
+		if (request.url().endsWith("/stream")) sends++;
+	});
+	await page.addInitScript(() => {
+		Object.defineProperty(navigator, "clipboard", {
+			configurable: true,
+			value: {
+				writeText: async (text: string) => {
+					document.documentElement.dataset.copiedText = text;
+				},
+			},
+		});
+	});
+	await ready(page);
+	await page
+		.getByRole("button", { name: "What is Filomena?", exact: true })
+		.click();
+	await expect(page.getByRole("textbox")).toBeFocused();
+	expect(sends).toBe(0);
+	await page.getByRole("button", { name: "Send", exact: true }).click();
+	await page.getByRole("button", { name: "Copy answer", exact: true }).click();
+	await expect(page.getByText("Copied", { exact: true })).toBeVisible();
+	expect(await page.locator("html").getAttribute("data-copied-text")).toContain(
+		"public sources",
+	);
+	await page
+		.getByRole("button", { name: "How was this portfolio built?", exact: true })
+		.click();
+	await expect(page.getByRole("textbox")).toHaveValue(
+		"How was this portfolio built?",
+	);
+	await expect(page.getByRole("textbox")).toBeFocused();
+	expect(sends).toBe(1);
+	await page.evaluate(() => {
+		Object.defineProperty(navigator, "clipboard", {
+			configurable: true,
+			value: {
+				writeText: async () => {
+					throw new Error("Permission denied");
+				},
+			},
+		});
+	});
+	await page
+		.getByRole("combobox", { name: "Language", exact: true })
+		.selectOption("es");
+	await page
+		.getByRole("button", { name: "Copiar respuesta", exact: true })
+		.click();
+	await expect(
+		page.getByRole("status").filter({ hasText: "No se pudo copiar" }),
+	).toBeVisible();
+	await expect(page.getByText("Copiada", { exact: true })).toHaveCount(0);
+	expect(sends).toBe(1);
+});
+
+test("decorative identity respects pointer capability, reduced motion and unmount", async ({
+	page,
+}) => {
+	const errors: string[] = [];
+	page.on("pageerror", (error) => errors.push(error.message));
+	await ready(page);
+	const avatar = page.locator("[data-identity-avatar]");
+	await expect(avatar).toHaveAttribute("aria-hidden", "true");
+	expect(await avatar.evaluate((node) => node.tabIndex)).toBe(-1);
+	await avatar.dispatchEvent("pointermove", {
+		pointerType: "mouse",
+		clientX: 0,
+		clientY: 0,
+	});
+	await expect
+		.poll(() =>
+			avatar.evaluate((node) => node.style.getPropertyValue("--tilt-x")),
+		)
+		.toBe("7deg");
+	await avatar.dispatchEvent("pointerleave");
+	await expect
+		.poll(() =>
+			avatar.evaluate((node) => node.style.getPropertyValue("--tilt-x")),
+		)
+		.toBe("");
+	await avatar.dispatchEvent("pointermove", {
+		pointerType: "touch",
+		clientX: 0,
+		clientY: 0,
+	});
+	expect(
+		await avatar.evaluate((node) => node.style.getPropertyValue("--tilt-x")),
+	).toBe("");
+	await avatar.dispatchEvent("pointerdown", { pointerType: "touch" });
+	await expect(avatar).toHaveAttribute("data-pressed", "true");
+	await expect
+		.poll(() =>
+			avatar
+				.locator("div")
+				.evaluate((node) => Number(getComputedStyle(node, "::after").opacity)),
+		)
+		.toBeGreaterThan(0.5);
+	await avatar.dispatchEvent("pointerup", { pointerType: "touch" });
+	await expect(avatar).not.toHaveAttribute("data-pressed");
+	await avatar.dispatchEvent("pointerdown", { pointerType: "touch" });
+	await avatar.dispatchEvent("pointercancel");
+	await expect(avatar).not.toHaveAttribute("data-pressed");
+	await page.emulateMedia({ reducedMotion: "reduce" });
+	await avatar.dispatchEvent("pointerdown", { pointerType: "touch" });
+	await expect(avatar).not.toHaveAttribute("data-pressed");
+	await avatar.dispatchEvent("pointermove", {
+		pointerType: "mouse",
+		clientX: 0,
+		clientY: 0,
+	});
+	expect(
+		await avatar.evaluate((node) => node.style.getPropertyValue("--tilt-x")),
+	).toBe("");
+	expect(
+		await avatar
+			.locator("div")
+			.evaluate((node) => getComputedStyle(node).transform),
+	).toBe("none");
+	await page.emulateMedia({ reducedMotion: "no-preference" });
+	await avatar.dispatchEvent("pointermove", {
+		pointerType: "mouse",
+		clientX: 0,
+		clientY: 0,
+	});
+	await send(page);
+	await expect(avatar).toHaveCount(0);
+	await page.goto("about:blank");
+	expect(errors).toEqual([]);
+});
+
+test("pending clipboard writes retain keyboard focus and prevent duplicate copies", async ({
+	page,
+}) => {
+	await page.addInitScript(() => {
+		let calls = 0;
+		Object.defineProperty(navigator, "clipboard", {
+			configurable: true,
+			value: {
+				writeText: () =>
+					new Promise<void>((resolve, reject) => {
+						calls++;
+						document.documentElement.dataset.copyCalls = String(calls);
+						window.addEventListener("finish-copy", () => resolve(), {
+							once: true,
+						});
+						window.addEventListener(
+							"fail-copy",
+							() => reject(new Error("Denied")),
+							{ once: true },
+						);
+					}),
+			},
+		});
+	});
+	await ready(page);
+	await send(page);
+	const button = page.getByRole("button", { name: "Copy answer", exact: true });
+	await button.focus();
+	await button.press("Enter");
+	await expect(button).toHaveAttribute("aria-disabled", "true");
+	await expect(button).toBeFocused();
+	await button.press("Enter");
+	expect(await page.locator("html").getAttribute("data-copy-calls")).toBe("1");
+	await page.evaluate(() => window.dispatchEvent(new Event("finish-copy")));
+	await expect(page.getByText("Copied", { exact: true })).toBeVisible();
+	await expect(button).toBeFocused();
+	await button.press("Enter");
+	await page.evaluate(() => window.dispatchEvent(new Event("fail-copy")));
+	await expect(page.getByText(/Could not copy/)).toBeVisible();
+	await expect(button).toBeFocused();
+});
+
+test("theme changes preserve readable suggestion contrast on every sampled frame", async ({
+	page,
+}) => {
+	await ready(page);
+	const minimum = await page
+		.getByRole("button", { name: "What is Filomena?", exact: true })
+		.evaluate(async (button) => {
+			function luminance(color: string) {
+				const channels = color.match(/\d+/g)?.map(Number);
+				if (channels?.length !== 3)
+					throw new Error("Expected an opaque RGB surface");
+				const linear = channels.map((value) => {
+					const channel = value / 255;
+					return channel <= 0.04045
+						? channel / 12.92
+						: ((channel + 0.055) / 1.055) ** 2.4;
+				});
+				return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+			}
+			function contrast() {
+				const style = getComputedStyle(button);
+				const a = luminance(style.color),
+					b = luminance(style.backgroundColor);
+				return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+			}
+			let lowest = contrast();
+			for (const theme of ["light", "dark"]) {
+				document.documentElement.dataset.theme = theme;
+				lowest = Math.min(lowest, contrast());
+				for (let frame = 0; frame < 12; frame++) {
+					await new Promise(requestAnimationFrame);
+					lowest = Math.min(lowest, contrast());
+				}
+			}
+			return lowest;
+		});
+	expect(minimum).toBeGreaterThanOrEqual(4.5);
+});

@@ -41,7 +41,7 @@ structural checks cannot prove instruction quality or absence of secrets.
 ## Compatibility evidence and limits
 
 Tested on WSL Linux with Node 24.21.0, Codex CLI 0.157.1 and Claude Code 2.1.283.
-Both clients actually discovered all four names: Codex through local app-server
+Both clients actually discovered all four names in the working tree and a clean Linux Git clone: Codex through local app-server
 `skills/list`; Claude through its stream-JSON initialization control response's command
 list. No model turn was submitted. Temporary client configuration directories isolated
 these probes from global configuration; Claude's model endpoint was unreachable by design.
