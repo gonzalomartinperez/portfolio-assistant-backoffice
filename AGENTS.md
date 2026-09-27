@@ -11,3 +11,26 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Assistant implementation conventions
+
+Canonical architecture, design and API procedures are in `docs/architecture.md`,
+`docs/design-system.md` and `docs/api-contract.md`; do not fork them into another agent file.
+Compose transport and controller only at `src/features/assistant/entry.tsx`. Domain and
+application imports are enforced by `tests/unit/boundaries.test.mjs`. Preserve the pinned
+contract and validate untrusted payloads independently of generated types. Never retry a
+generation automatically. Keep anonymous credentials/conversation text out of browser
+storage, logs and public configuration. The sole public variable is the API origin.
+
+Before PRs run formatting, lint, strict typing, contract/type drift, unit checks, production
+build and Playwright. The deterministic suite owns ports 3107/8107 and the production web
+server lifecycle; live API fixture checks are separate. Inspect rendered screenshots in
+both themes/locales and record gaps honestly. Preserve existing uncommitted work and use
+PRs into develop; do not modify the API or portfolio as part of a frontend task.
+
+Use CONTRIBUTING.md for the Google TypeScript readability adaptations; Biome and strict
+TypeScript are the mechanical authority. Run security:check and docs:check before PRs.
+
+Deployment authority: docs/adrs/002-shared-vps.md and docs/deployment.md. The API owns
+the shared production stack. Keep production CD disabled. CI builds one same-origin
+image reused by browser/live jobs; required checks aggregates every validation result.

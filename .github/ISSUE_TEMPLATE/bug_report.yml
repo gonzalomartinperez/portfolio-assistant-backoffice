@@ -1,0 +1,21 @@
+name: Bug report
+description: Report a reproducible frontend problem without private data.
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+      description: Include reproducible steps and public fixture prompts only. Do not include credentials or personal conversations. See SECURITY.md for vulnerabilities.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser, device, language and theme
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Safe screenshots or relevant public errors
+      description: Redact personal data before attaching evidence.

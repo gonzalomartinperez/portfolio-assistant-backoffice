@@ -8,3 +8,7 @@ test-results
 playwright-report
 api
 public-portfolio
+
+.env.*
+.integration
+docs/verification/*.png

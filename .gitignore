@@ -5,3 +5,5 @@ node_modules/
 *.tsbuildinfo
 test-results/
 playwright-report/
+
+.integration/

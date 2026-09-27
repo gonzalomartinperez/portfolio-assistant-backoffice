@@ -1,3 +1,3 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = { output: "standalone", poweredByHeader: false };
 export default nextConfig;
