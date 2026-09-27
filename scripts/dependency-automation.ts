@@ -1,3 +1,4 @@
+import { field, record, list, text, integer, errorMessage } from "./json.ts";
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import {
@@ -6,9 +7,15 @@ import {
 	identityReason,
 	isDependabot,
 	POLICY_CHECK,
-} from "./dependency-policy.mjs";
+} from "./dependency-policy.ts";
 
-export async function readProtection(api) {
+export type GitHubApi = (
+	path: string,
+	body?: unknown,
+	method?: "GET" | "POST" | "PATCH",
+) => Promise<unknown>;
+
+export async function readProtection(api: GitHubApi) {
 	const response = await api("/graphql", {
 		query: `query { repository(owner:"gonzalomartinperez", name:"portfolio-assistant-web") {
 			ref(qualifiedName:"refs/heads/develop") { branchProtectionRule {
@@ -17,9 +24,10 @@ export async function readProtection(api) {
 			} }
 		} }`,
 	});
-	const rule = response.data?.repository?.ref?.branchProtectionRule;
+	const rule = record(
+		field(response, "data", "repository", "ref", "branchProtectionRule"),
+	);
 	if (
-		!rule ||
 		[
 			"requiresStatusChecks",
 			"requiresStrictStatusChecks",
@@ -34,9 +42,9 @@ export async function readProtection(api) {
 		required_status_checks: {
 			enabled: rule.requiresStatusChecks,
 			strict: rule.requiresStrictStatusChecks,
-			checks: rule.requiredStatusChecks.map((check) => ({
-				context: check.context,
-				app_id: check.app?.databaseId ?? null,
+			checks: rule.requiredStatusChecks.map((check: unknown) => ({
+				context: text(field(check, "context")),
+				app_id: field(check, "app", "databaseId") ?? null,
 			})),
 		},
 		enforce_admins: { enabled: rule.isAdminEnforced },
@@ -45,11 +53,20 @@ export async function readProtection(api) {
 	};
 }
 
-export async function inspectReadiness(api, enabled, policyReady) {
+export async function inspectReadiness(
+	api: GitHubApi,
+	enabled: boolean,
+	policyReady: boolean,
+) {
 	try {
 		return { status: "inspectable", protection: await readProtection(api) };
 	} catch (error) {
-		if (error.name !== "GitHubPermissionError" || enabled || policyReady)
+		if (
+			!(error instanceof Error) ||
+			error.name !== "GitHubPermissionError" ||
+			enabled ||
+			policyReady
+		)
 			throw error;
 		return {
 			status: "blocked",
@@ -65,25 +82,34 @@ export async function reconcile({
 	number,
 	enabled,
 	mutate = false,
-}) {
+}: {
+	api: GitHubApi;
+	repository: string;
+	number: number;
+	enabled: boolean;
+	mutate?: boolean;
+}): Promise<string> {
 	const root = `/repos/${repository}`;
-	const pr = await api(`${root}/pulls/${number}`);
+	const pr = record(await api(`${root}/pulls/${number}`));
 	if (pr.state !== "open") return "closed";
-	let check;
+	const headSha = text(field(pr, "head", "sha"));
+	const baseSha = text(field(pr, "base", "sha"));
+	const nodeId = text(pr.node_id);
+	let checkId: number | undefined;
 	const disable = async () => {
 		if (mutate && pr.auto_merge) {
 			await api("/graphql", {
 				query:
 					"mutation($id:ID!){disablePullRequestAutoMerge(input:{pullRequestId:$id}){clientMutationId}}",
-				variables: { id: pr.node_id },
+				variables: { id: nodeId },
 			});
 			pr.auto_merge = null;
 		}
 	};
-	const finish = async (reason, success = true) => {
-		if (check)
+	const finish = async (reason: string, success = true) => {
+		if (checkId !== undefined)
 			await api(
-				`${root}/check-runs/${check.id}`,
+				`${root}/check-runs/${checkId}`,
 				{
 					status: "completed",
 					conclusion: success ? "success" : "failure",
@@ -99,41 +125,50 @@ export async function reconcile({
 	};
 	try {
 		if (mutate)
-			check = await api(`${root}/check-runs`, {
-				name: POLICY_CHECK,
-				head_sha: pr.head.sha,
-				status: "in_progress",
-				output: {
-					title: "Evaluating dependency policy",
-					summary: "No PR code is executed.",
-				},
-			});
+			checkId = integer(
+				field(
+					await api(`${root}/check-runs`, {
+						name: POLICY_CHECK,
+						head_sha: headSha,
+						status: "in_progress",
+						output: {
+							title: "Evaluating dependency policy",
+							summary: "No PR code is executed.",
+						},
+					}),
+					"id",
+				),
+			);
 		if (!isDependabot(pr.user)) return await finish("manual-author");
 		// Revoke before reevaluation, including vetoes, base edits and modified bot PRs.
 		await disable();
 		const commits = await api(`${root}/pulls/${number}/commits?per_page=100`);
 		const identity = identityReason(pr, repository, commits);
 		if (identity) return await finish(identity);
-		const files = await api(`${root}/pulls/${number}/files?per_page=100`);
+		const files = list(await api(`${root}/pulls/${number}/files?per_page=100`));
 		if (files.length !== pr.changed_files || files.length > 2)
 			return await finish("incomplete-file-scope");
-		const read = async (ref, path) => {
+		const read = async (ref: string, path: string): Promise<unknown> => {
 			if (!/^[a-f0-9]{40}$/.test(ref)) throw new Error("invalid-revision");
-			const tree = await api(`${root}/git/trees/${ref}`);
-			const entry = tree.tree?.find((item) => item.path === path);
-			if (tree.truncated || entry?.type !== "blob" || entry.mode !== "100644")
+			const tree = record(await api(`${root}/git/trees/${ref}`));
+			const entry = record(
+				list(tree.tree).find((item) => field(item, "path") === path),
+			);
+			if (tree.truncated || entry.type !== "blob" || entry.mode !== "100644")
 				throw new Error("unexpected-file-mode");
-			const blob = await api(`${root}/git/blobs/${entry.sha}`);
-			if (blob.encoding !== "base64" || blob.size > 1_000_000)
+			const blob = record(await api(`${root}/git/blobs/${text(entry.sha)}`));
+			if (blob.encoding !== "base64" || integer(blob.size) > 1_000_000)
 				throw new Error("unsupported-blob");
-			return JSON.parse(Buffer.from(blob.content, "base64").toString("utf8"));
+			return JSON.parse(
+				Buffer.from(text(blob.content), "base64").toString("utf8"),
+			);
 		};
 		const [beforeManifest, afterManifest, beforeLock, afterLock] =
 			await Promise.all([
-				read(pr.base.sha, "package.json"),
-				read(pr.head.sha, "package.json"),
-				read(pr.base.sha, "package-lock.json"),
-				read(pr.head.sha, "package-lock.json"),
+				read(baseSha, "package.json"),
+				read(headSha, "package.json"),
+				read(baseSha, "package-lock.json"),
+				read(headSha, "package-lock.json"),
 			]);
 		const decision = dependencyDecision({
 			files,
@@ -147,16 +182,16 @@ export async function reconcile({
 		const [settings, protection, comparison, runs, branch] = await Promise.all([
 			api(root),
 			readProtection(api),
-			api(`${root}/compare/${pr.base.sha}...${pr.head.sha}`),
+			api(`${root}/compare/${baseSha}...${headSha}`),
 			api(
-				`${root}/actions/workflows/quality.yml/runs?head_sha=${pr.head.sha}&event=pull_request&per_page=100`,
+				`${root}/actions/workflows/quality.yml/runs?head_sha=${headSha}&event=pull_request&per_page=100`,
 			),
 			api(`${root}/git/ref/heads/develop`),
 		]);
-		const quality = runs.workflow_runs?.[0];
+		const quality = list(field(runs, "workflow_runs"))[0];
 		const jobs = quality
 			? await api(
-					`${root}/actions/runs/${quality.id}/jobs?filter=latest&per_page=100`,
+					`${root}/actions/runs/${integer(field(quality, "id"))}/jobs?filter=latest&per_page=100`,
 				)
 			: { jobs: [] };
 		const fresh = await api(`${root}/pulls/${number}`);
@@ -166,13 +201,16 @@ export async function reconcile({
 				protection,
 				repository: settings,
 				pr: fresh,
-				currentHead: pr.head.sha,
-				currentBase: branch.object.sha,
+				currentHead: headSha,
+				currentBase: text(field(branch, "object", "sha")),
 				comparison,
 				quality,
-				jobs: jobs.jobs,
+				jobs: field(jobs, "jobs"),
 			});
-		if (fresh.base.sha !== pr.base.sha || jobs.total_count > 100)
+		if (
+			field(fresh, "base", "sha") !== baseSha ||
+			integer(field(jobs, "total_count") ?? 0) > 100
+		)
 			return await finish("snapshot-changed");
 		if (reason) return await finish(reason);
 		if (!mutate) return "eligible-dry-run";
@@ -181,14 +219,14 @@ export async function reconcile({
 		await api("/graphql", {
 			query:
 				"mutation($id:ID!){enablePullRequestAutoMerge(input:{pullRequestId:$id,mergeMethod:SQUASH}){clientMutationId}}",
-			variables: { id: pr.node_id },
+			variables: { id: nodeId },
 		});
 		pr.auto_merge = true;
 		const final = await api(`${root}/pulls/${number}`);
 		if (
 			identityReason(final, repository, commits) ||
-			final.head.sha !== pr.head.sha ||
-			final.base.sha !== pr.base.sha
+			field(final, "head", "sha") !== headSha ||
+			field(final, "base", "sha") !== baseSha
 		) {
 			await disable();
 			return await finish("changed-before-arming");
@@ -210,7 +248,7 @@ async function main() {
 		throw new Error("Unexpected repository");
 	const token = process.env.GH_TOKEN;
 	if (!token) throw new Error("Missing API token");
-	const api = async (path, body, method = body ? "POST" : "GET") => {
+	const api: GitHubApi = async (path, body, method = body ? "POST" : "GET") => {
 		const response = await fetch(`https://api.github.com${path}`, {
 			method,
 			headers: {
@@ -222,9 +260,10 @@ async function main() {
 			signal: AbortSignal.timeout(20_000),
 		});
 		if (!response.ok) throw new Error(`GitHub API HTTP ${response.status}`);
-		const value = await response.json();
-		if (value.errors) {
-			if (value.errors.some((error) => error.type === "FORBIDDEN")) {
+		const value: unknown = await response.json();
+		const errors = field(value, "errors");
+		if (errors) {
+			if (list(errors).some((error) => field(error, "type") === "FORBIDDEN")) {
 				const denied = new Error(
 					"GitHub token cannot inspect required protection",
 				);
@@ -249,19 +288,25 @@ async function main() {
 		return;
 	}
 
-	const event = process.env.GITHUB_EVENT_PATH
+	const event: unknown = process.env.GITHUB_EVENT_PATH
 		? JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"))
 		: {};
 	const number = Number(
 		process.env.PR_NUMBER ||
-			event.pull_request?.number ||
-			event.workflow_run?.pull_requests?.[0]?.number,
+			field(event, "pull_request", "number") ||
+			field(
+				list(field(event, "workflow_run", "pull_requests") ?? [])[0],
+				"number",
+			),
 	);
 	if (!Number.isSafeInteger(number) || number < 1) {
 		console.log("No single PR to reconcile; no action.");
 		return;
 	}
-	if (event.workflow_run && event.workflow_run.pull_requests.length !== 1)
+	if (
+		field(event, "workflow_run") &&
+		list(field(event, "workflow_run", "pull_requests")).length !== 1
+	)
 		return;
 	const reason = await reconcile({
 		api,
@@ -277,7 +322,7 @@ if (
 	import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
 	main().catch((error) => {
-		console.error(error.message);
+		console.error(errorMessage(error));
 		process.exitCode = 1;
 	});
 }

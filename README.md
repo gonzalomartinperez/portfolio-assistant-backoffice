@@ -70,7 +70,7 @@ npm run test:browser
 Playwright manages a single production web/fixture-server pair on isolated ports 3107/8107.
 It refuses to reuse an existing process. These are mocked contract/interaction tests,
 not proof of live API integration or model quality. Browser artifacts go to `test-results/`
-and `playwright-report/`. `node scripts/measure-bundle.mjs` measures all built JS chunks.
+and `playwright-report/`. `node scripts/measure-bundle.ts` measures all built JS chunks.
 
 To run the separate live-fixture suite, build with the actual API origin, run the API in
 fixture mode and the web on 3001, then run
@@ -128,3 +128,6 @@ checks; the stable contract generator currently blocks the official 7/6 arrangem
 Dependency updates follow the [conservative maintenance policy](docs/dependency-updates.md).
 Automatic merging is staged; default-branch activation and its required protection gate
 remain separate from application releases and production deployment.
+
+Application code, tooling and fixtures use TypeScript. Node 24 runs the scripts directly;
+`npm run typecheck` also checks tests and tooling. See the [execution conventions](CONTRIBUTING.md#typescript-source-and-execution).

@@ -1,3 +1,5 @@
+import { field, record, list, text } from "../../scripts/json.ts";
+import type { GitHubApi } from "../../scripts/dependency-automation.ts";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -6,16 +8,26 @@ import {
 	dependencyDecision,
 	gateReason,
 	identityReason,
-} from "../../scripts/dependency-policy.mjs";
+} from "../../scripts/dependency-policy.ts";
 import {
 	reconcile,
 	inspectReadiness,
-} from "../../scripts/dependency-automation.mjs";
+} from "../../scripts/dependency-automation.ts";
 const repository = "gonzalomartinperez/portfolio-assistant-web";
 const bot = { id: 49699333, login: "dependabot[bot]", type: "Bot" };
 const head = "a".repeat(40);
 const base = "b".repeat(40);
-const entry = (name, version) => ({
+function first<T>(values: readonly T[]): T {
+	const value = values[0];
+	assert.ok(value !== undefined);
+	return value;
+}
+type Lock = { lockfileVersion: number; packages: Record<string, unknown> };
+type Call = { path: string; body: Record<string, unknown> | undefined };
+function query(call: Call): string {
+	return typeof call.body?.query === "string" ? call.body.query : "";
+}
+const entry = (name: string, version: string) => ({
 	version,
 	resolved: `https://registry.npmjs.org/${name}/-/${name.split("/").at(-1)}-${version}.tgz`,
 	integrity: `sha512-${"A".repeat(86)}==`,
@@ -28,7 +40,7 @@ function fixture() {
 	};
 	const afterManifest = structuredClone(beforeManifest);
 	afterManifest.devDependencies["@types/react"] = "19.3.1";
-	const lock = (manifest) => ({
+	const lock = (manifest: typeof beforeManifest): Lock => ({
 		lockfileVersion: 3,
 		packages: {
 			"": { devDependencies: structuredClone(manifest.devDependencies) },
@@ -52,19 +64,20 @@ function fixture() {
 	};
 }
 function identity() {
+	const labels: { name: string }[] = [];
 	const pr = {
 		user: bot,
 		node_id: "PR_fixture",
 		state: "open",
 		draft: false,
-		labels: [],
+		labels,
 		commits: 1,
 		changed_files: 2,
 		head: { sha: head, repo: { full_name: repository } },
 		base: { sha: base, ref: "develop", repo: { full_name: repository } },
 		mergeable: true,
 		mergeable_state: "blocked",
-		auto_merge: null,
+		auto_merge: {},
 	};
 	const commits = [
 		{
@@ -111,9 +124,10 @@ function gate() {
 		),
 	};
 }
-function setVersion(f, value) {
+function setVersion(f: ReturnType<typeof fixture>, value: string) {
 	f.afterManifest.devDependencies["@types/react"] = value;
-	f.afterLock.packages[""].devDependencies["@types/react"] = value;
+	record(record(f.afterLock.packages[""]).devDependencies)["@types/react"] =
+		value;
 	f.afterLock.packages["node_modules/@types/react"] = entry(
 		"@types/react",
 		value,
@@ -156,31 +170,33 @@ test("all grouped and transitive changes must qualify", () => {
 });
 test("unexpected files, scripts, package hooks, sources and lock-only changes fail closed", () => {
 	for (const mutate of [
-		(f) =>
+		(f: ReturnType<typeof fixture>) =>
 			f.files.push({
 				filename: ".github/workflows/quality.yml",
 				status: "modified",
 			}),
-		(f) => {
+		(f: ReturnType<typeof fixture>) => {
 			f.afterManifest.scripts.test = "true";
 		},
-		(f) => {
-			f.afterLock.packages["node_modules/@types/react"].hasInstallScript = true;
+		(f: ReturnType<typeof fixture>) => {
+			record(
+				f.afterLock.packages["node_modules/@types/react"],
+			).hasInstallScript = true;
 		},
-		(f) => {
-			f.afterLock.packages["node_modules/@types/react"].resolved =
+		(f: ReturnType<typeof fixture>) => {
+			record(f.afterLock.packages["node_modules/@types/react"]).resolved =
 				"https://example.com/package.tgz";
 		},
-		(f) => {
-			f.afterLock.packages["node_modules/@types/react"].dependencies = {
+		(f: ReturnType<typeof fixture>) => {
+			record(f.afterLock.packages["node_modules/@types/react"]).dependencies = {
 				unexpected: "1.0.0",
 			};
 		},
-		(f) => {
+		(f: ReturnType<typeof fixture>) => {
 			f.afterManifest = f.beforeManifest;
 		},
-		(f) => {
-			f.files[0].status = "renamed";
+		(f: ReturnType<typeof fixture>) => {
+			record(f.files[0]).status = "renamed";
 		},
 	]) {
 		const f = fixture();
@@ -193,36 +209,39 @@ test("authenticated bot identity, signed single commit, repository and develop a
 	const valid = identity();
 	assert.equal(identityReason(valid.pr, repository, valid.commits), null);
 	for (const mutate of [
-		(f) => {
-			delete f.pr.labels;
+		(f: ReturnType<typeof identity>) => {
+			Reflect.deleteProperty(f.pr, "labels");
 		},
-		(f) => {
-			delete f.pr.draft;
+		(f: ReturnType<typeof identity>) => {
+			Reflect.deleteProperty(f.pr, "draft");
 		},
-		(f) => {
+		(f: ReturnType<typeof identity>) => {
 			f.pr.user = { ...bot, id: 123 };
-			f.pr.title = "Bump @types/react";
+			Object.assign(f.pr, { title: "Bump @types/react" });
 			f.pr.labels = [{ name: "dependencies" }];
 		},
-		(f) => {
+		(f: ReturnType<typeof identity>) => {
 			f.pr.base.ref = "main";
 		},
-		(f) => {
+		(f: ReturnType<typeof identity>) => {
 			f.pr.head.repo.full_name = "attacker/fork";
 		},
-		(f) => {
+		(f: ReturnType<typeof identity>) => {
 			f.pr.labels = [{ name: "dependencies:manual" }];
 		},
-		(f) => {
-			f.commits.push({ author: { login: "human" } });
+		(f: ReturnType<typeof identity>) => {
+			f.commits.push({
+				...first(f.commits),
+				author: { ...bot, id: 123, login: "human" },
+			});
 		},
-		(f) => {
-			f.commits[0].author = { ...bot, id: 123 };
+		(f: ReturnType<typeof identity>) => {
+			first(f.commits).author = { ...bot, id: 123 };
 		},
-		(f) => {
-			f.commits[0].commit.verification.verified = false;
+		(f: ReturnType<typeof identity>) => {
+			first(f.commits).commit.verification.verified = false;
 		},
-		(f) => {
+		(f: ReturnType<typeof identity>) => {
 			f.pr.head.sha = "c".repeat(40);
 		},
 	]) {
@@ -235,11 +254,18 @@ test("failed, missing, cancelled, skipped and pending verification cannot arm au
 	assert.equal(gateReason(gate()), null);
 	for (const state of ["failure", "cancelled", "skipped", null]) {
 		const f = gate();
-		f.quality.conclusion = state;
-		assert.notEqual(gateReason(f), null);
+		assert.notEqual(
+			gateReason({ ...f, quality: { ...f.quality, conclusion: state } }),
+			null,
+		);
 		const job = gate();
-		job.jobs[0].conclusion = state;
-		assert.notEqual(gateReason(job), null);
+		assert.notEqual(
+			gateReason({
+				...job,
+				jobs: [{ ...first(job.jobs), conclusion: state }, ...job.jobs.slice(1)],
+			}),
+			null,
+		);
 	}
 	const f = gate();
 	f.jobs.pop();
@@ -247,34 +273,34 @@ test("failed, missing, cancelled, skipped and pending verification cannot arm au
 });
 test("new heads, base advancement, conflicts and absent protection block arming", () => {
 	for (const mutate of [
-		(f) => {
+		(f: ReturnType<typeof gate>) => {
 			f.protection.required_status_checks.enabled = false;
 		},
-		(f) => {
+		(f: ReturnType<typeof gate>) => {
 			f.currentHead = "c".repeat(40);
 		},
-		(f) => {
+		(f: ReturnType<typeof gate>) => {
 			f.currentBase = "c".repeat(40);
 		},
-		(f) => {
+		(f: ReturnType<typeof gate>) => {
 			f.comparison.behind_by = 1;
 		},
-		(f) => {
+		(f: ReturnType<typeof gate>) => {
 			f.pr.mergeable = false;
 		},
-		(f) => {
+		(f: ReturnType<typeof gate>) => {
 			f.protection.required_status_checks.strict = false;
 		},
-		(f) => {
+		(f: ReturnType<typeof gate>) => {
 			f.protection.required_status_checks.checks.pop();
 		},
-		(f) => {
-			f.protection.required_status_checks.checks[1].app_id = null;
+		(f: ReturnType<typeof gate>) => {
+			record(f.protection.required_status_checks.checks[1]).app_id = null;
 		},
-		(f) => {
-			f.quality.triggering_actor = { login: "human" };
+		(f: ReturnType<typeof gate>) => {
+			f.quality.triggering_actor = { ...bot, login: "human" };
 		},
-		(f) => {
+		(f: ReturnType<typeof gate>) => {
 			f.quality.head_sha = "c".repeat(40);
 		},
 	]) {
@@ -292,12 +318,12 @@ function service({
 	const f = fixture(),
 		id = identity(),
 		g = gate(),
-		calls = [];
+		calls: Call[] = [];
 	id.pr.auto_merge = {};
 	if (veto) id.pr.labels.push({ name: "dependencies:manual" });
 	let reads = 0;
-	const api = async (path, body) => {
-		calls.push({ path, body });
+	const api: GitHubApi = async (path, body) => {
+		calls.push({ path, body: body === undefined ? undefined : record(body) });
 		if (path.endsWith("/pulls/1")) {
 			reads++;
 			const pr = structuredClone(id.pr);
@@ -306,7 +332,11 @@ function service({
 			return pr;
 		}
 		if (path.endsWith("/check-runs")) return { id: 1 };
-		if (path === "/graphql" && body.query.startsWith("query")) {
+		if (
+			path === "/graphql" &&
+			typeof field(body, "query") === "string" &&
+			text(field(body, "query")).startsWith("query")
+		) {
 			if (broken) throw new Error("HTTP 403");
 			return {
 				data: {
@@ -384,16 +414,20 @@ test("controller revokes first, arms native auto-merge while policy pending, nev
 		"eligible-native-auto-merge-armed",
 	);
 	const writes = s.calls.filter(
-		(call) => call.body && !call.body.query?.startsWith("query"),
+		(call) => call.body && !query(call).startsWith("query"),
 	);
-	assert.equal(writes[0].body.status, "in_progress");
-	assert.match(writes[1].body.query, /disablePullRequestAutoMerge/);
-	assert.match(writes[2].body.query, /enablePullRequestAutoMerge/);
-	assert.equal(writes[3].body.conclusion, "success");
+	assert.equal(field(writes[0]?.body, "status"), "in_progress");
+	assert.match(
+		text(field(writes[1]?.body, "query")),
+		/disablePullRequestAutoMerge/,
+	);
+	assert.match(
+		text(field(writes[2]?.body, "query")),
+		/enablePullRequestAutoMerge/,
+	);
+	assert.equal(field(writes[3]?.body, "conclusion"), "success");
 	assert.equal(
-		writes.some((call) =>
-			/approve|mergePullRequest/.test(call.body.query ?? ""),
-		),
+		writes.some((call) => /approve|mergePullRequest/.test(query(call))),
 		false,
 	);
 });
@@ -409,13 +443,13 @@ test("controller veto, pause, head race and API failure never retain automatic e
 		});
 		assert.equal(
 			s.calls.some((call) =>
-				call.body?.query?.includes("enablePullRequestAutoMerge"),
+				query(call).includes("enablePullRequestAutoMerge"),
 			),
 			false,
 		);
 		assert.equal(
 			s.calls.some((call) =>
-				call.body?.query?.includes("disablePullRequestAutoMerge"),
+				query(call).includes("disablePullRequestAutoMerge"),
 			),
 			true,
 		);
@@ -424,7 +458,7 @@ test("controller veto, pause, head race and API failure never retain automatic e
 	await assert.rejects(
 		reconcile({ ...s, repository, number: 1, enabled: true, mutate: true }),
 	);
-	assert.equal(s.calls.at(-1).body.conclusion, "failure");
+	assert.equal(s.calls.at(-1)?.body?.conclusion, "failure");
 });
 test("a head changed after arming revokes auto-merge before completing the old policy check", async () => {
 	const s = service({ lateRace: true });
@@ -439,11 +473,17 @@ test("a head changed after arming revokes auto-merge before completing the old p
 		"changed-before-arming",
 	);
 	const mutations = s.calls.filter((call) =>
-		call.body?.query?.startsWith("mutation"),
+		query(call).startsWith("mutation"),
 	);
 	assert.equal(mutations.length, 3);
-	assert.match(mutations[1].body.query, /enablePullRequestAutoMerge/);
-	assert.match(mutations[2].body.query, /disablePullRequestAutoMerge/);
+	assert.match(
+		text(field(mutations[1]?.body, "query")),
+		/enablePullRequestAutoMerge/,
+	);
+	assert.match(
+		text(field(mutations[2]?.body, "query")),
+		/disablePullRequestAutoMerge/,
+	);
 });
 test("read-only invocation never writes, even when eligible", async () => {
 	const s = service();
@@ -452,7 +492,7 @@ test("read-only invocation never writes, even when eligible", async () => {
 		"eligible-dry-run",
 	);
 	assert.equal(
-		s.calls.some((call) => call.body && !call.body.query?.startsWith("query")),
+		s.calls.some((call) => call.body && !query(call).startsWith("query")),
 		false,
 	);
 });
@@ -461,20 +501,23 @@ test("privileged workflow executes only default-branch policy with pinned action
 		new URL("../../.github/workflows/dependency-policy.yml", import.meta.url),
 		"utf8",
 	);
-	const workflow = yaml.load(raw);
+	const workflow = record(yaml.load(raw));
 	assert.deepEqual(workflow.permissions, {});
-	const steps = workflow.jobs.reconcile.steps;
+	const steps = list(field(workflow, "jobs", "reconcile", "steps")).map(record);
 	assert.equal(
-		steps[0].with.ref,
+		field(steps[0], "with", "ref"),
 		`\${{ github.event.repository.default_branch }}`,
 	);
-	assert.equal(steps[0].with["persist-credentials"], false);
+	assert.equal(field(steps[0], "with", "persist-credentials"), false);
 	for (const step of steps)
-		if (step.uses) assert.match(step.uses, /@[a-f0-9]{40}$/);
+		if (step.uses) assert.match(text(step.uses), /@[a-f0-9]{40}$/);
 	assert.equal(steps.filter((step) => step.run).length, 1);
-	assert.equal(steps.at(-1).run, "node scripts/dependency-automation.mjs");
+	assert.equal(steps.at(-1)?.run, "node scripts/dependency-automation.ts");
 	assert.equal(raw.includes("secrets."), false);
-	assert.equal(workflow.on.pull_request_target.paths, undefined);
+	assert.equal(
+		field(workflow, "on", "pull_request_target", "paths"),
+		undefined,
+	);
 });
 
 test("unavailable token capability is safe only with both activation switches disabled", async () => {

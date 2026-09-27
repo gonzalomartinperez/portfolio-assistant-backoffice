@@ -38,3 +38,8 @@ For embedded presentation changes, read the [v1 handoff](../../../docs/embed-int
 Keep one chat/controller and separate host protocol state. Verify exact origin/source checks,
 same-frame minimize/maximize, hidden streaming, cross-frame focus and standalone regressions
 with the cross-origin harness. Do not edit the portfolio or infer production deployment authority.
+
+Use TypeScript for scripts and fixtures as well as application code. Follow the
+[execution conventions](../../../CONTRIBUTING.md#typescript-source-and-execution): Node 24
+erases types but does not validate them. Keep the complete `npm run typecheck` check and
+existing browser fixture compilation; do not add a parallel runner or untyped escape hatch.

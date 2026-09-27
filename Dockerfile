@@ -3,7 +3,7 @@ WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
-COPY next.config.mjs next-env.d.ts tsconfig.json ./
+COPY next.config.ts next-env.d.ts tsconfig.json ./
 COPY src ./src
 COPY contracts/types.d.ts ./contracts/types.d.ts
 COPY public ./public

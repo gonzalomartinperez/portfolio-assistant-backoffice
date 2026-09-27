@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
-import { startMockApi } from "./mock-api.mjs";
-import { startTestProxy } from "./test-proxy.mjs";
-import { startEmbedHost } from "./embed-host.mjs";
+import { startMockApi } from "./mock-api.ts";
+import { startTestProxy } from "./test-proxy.ts";
+import { startEmbedHost } from "./embed-host.ts";
 const host = await startEmbedHost();
 const api = await startMockApi();
 const web = process.env.WEB_UPSTREAM

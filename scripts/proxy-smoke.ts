@@ -1,3 +1,4 @@
+import { record, text } from "./json.ts";
 import assert from "node:assert/strict";
 import { readSse } from "../src/features/assistant/adapters/sse.ts";
 const base = "http://localhost:3001";
@@ -13,21 +14,22 @@ assert.equal(
 	"frame-ancestors http://localhost:3110",
 );
 assert.equal(embed.headers.get("x-frame-options"), null);
-assert.match(embed.headers.get("cache-control"), /no-store/);
+assert.match(embed.headers.get("cache-control") ?? "", /no-store/);
 // A separate test-only delayed upstream proves proxy flushing before completion.
 const probe = await fetch(`${base}/__stream_probe`);
+assert.ok(probe.body);
 const reader = probe.body.getReader();
 const first = await reader.read();
 assert.match(new TextDecoder().decode(first.value), /first/);
 assert.equal(
-	(await (await fetch(`${base}/__stream_status`)).json()).completed,
+	record(await (await fetch(`${base}/__stream_status`)).json()).completed,
 	false,
 );
 while (!(await reader.read()).done) {
 	/* Drain the bounded two-second fixture. */
 }
 reader.releaseLock();
-const headers = {
+const headers: Record<string, string> = {
 	Origin: base,
 	"Content-Type": "application/json",
 	"X-Session-Bootstrap": "1",
@@ -39,11 +41,12 @@ const bootstrap = await fetch(`${base}/api/v1/session`, {
 });
 assert.equal(bootstrap.status, 200);
 const cookie = bootstrap.headers.get("set-cookie");
-assert.ok(cookie?.includes("HttpOnly"));
+assert.ok(cookie);
+assert.ok(cookie.includes("HttpOnly"));
 assert.ok(!/domain=/i.test(cookie));
-headers.Cookie = cookie.split(";")[0];
-headers["X-CSRF-Token"] = (await bootstrap.json()).csrf_token;
-const call = (path, method = "GET", body) =>
+headers.Cookie = text(cookie.split(";")[0]);
+headers["X-CSRF-Token"] = text(record(await bootstrap.json()).csrf_token);
+const call = (path: string, method = "GET", body?: unknown) =>
 	fetch(`${base}/api/v1${path}`, {
 		method,
 		headers,
@@ -83,14 +86,14 @@ try {
 		body: `{}${" ".repeat(20000)}`,
 	});
 	assert.equal(belowProxyLimit.status, 200);
-	const paddedConversation = await belowProxyLimit.json();
+	const paddedConversation = record(await belowProxyLimit.json());
 	assert.equal(
 		(await call(`/conversations/${paddedConversation.id}`, "DELETE")).status,
 		204,
 	);
 	const created = await call("/conversations", "POST", {});
 	assert.equal(created.status, 200);
-	const conversation = await created.json();
+	const conversation = record(await created.json());
 	const controller = new AbortController();
 	const started = performance.now();
 	const stream = await fetch(
@@ -103,10 +106,11 @@ try {
 		},
 	);
 	assert.equal(stream.status, 200);
-	assert.match(stream.headers.get("cache-control"), /no-store/);
+	assert.match(stream.headers.get("cache-control") ?? "", /no-store/);
 	let deltas = 0;
-	let firstDelta;
+	let firstDelta: number | undefined;
 	let complete = false;
+	assert.ok(stream.body);
 	await readSse(
 		stream.body,
 		(event) => {
@@ -119,6 +123,7 @@ try {
 		controller.signal,
 	);
 	assert.ok(complete && deltas > 0);
+	assert.ok(firstDelta !== undefined);
 	console.log(
 		JSON.stringify({
 			proxy: "nginx",
@@ -142,9 +147,9 @@ try {
 	assert.ok(run);
 	cancelled.abort();
 	assert.equal((await call(`/runs/${run}/cancel`, "POST", {})).status, 200);
-	let state;
+	let state = "";
 	for (let attempt = 0; attempt < 30; attempt++) {
-		state = (await (await call(`/runs/${run}`)).json()).state;
+		state = text(record(await (await call(`/runs/${run}`)).json()).state);
 		if (["cancelled", "interrupted", "completed", "failed"].includes(state))
 			break;
 		await new Promise((resolve) => setTimeout(resolve, 200));
@@ -165,8 +170,8 @@ try {
 
 // SIGQUIT must drain an already-open stream before this test proxy exits.
 const { spawn } = await import("node:child_process");
-const compose = (...args) =>
-	new Promise((resolve, reject) => {
+const compose = (...args: string[]) =>
+	new Promise<void>((resolve, reject) => {
 		const child = spawn(
 			"docker",
 			[
@@ -186,6 +191,7 @@ const compose = (...args) =>
 	});
 try {
 	const active = await fetch(`${base}/__stream_probe`);
+	assert.ok(active.body);
 	const activeReader = active.body.getReader();
 	await activeReader.read();
 	const stopping = compose("stop", "proxy");

@@ -1,11 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { boundaryErrors } from "../../scripts/check-boundaries.mjs";
+import { boundaryErrors } from "../../scripts/check-boundaries.ts";
 test("source dependency boundaries and public environment allowlist", () => {
-	for (const file of readdirSync("src", { recursive: true }).filter((file) =>
-		/\.(ts|tsx)$/.test(file),
-	)) {
+	for (const file of readdirSync("src", {
+		recursive: true,
+		encoding: "utf8",
+	}).filter((file) => /\.(ts|tsx)$/.test(file))) {
 		const name = `src/${file}`;
 		assert.deepEqual(
 			boundaryErrors(name, readFileSync(name, "utf8")),
@@ -35,4 +36,18 @@ test("boundaries resolve traversal and inspect dynamic and type-only imports", (
 		).length,
 		0,
 	);
+});
+
+test("owned application, fixtures and tooling remain type-checked TypeScript", () => {
+	for (const directory of ["src", "scripts", "tests"]) {
+		const javascript = readdirSync(directory, {
+			recursive: true,
+			encoding: "utf8",
+		}).filter((file) => /\.(?:cjs|mjs|js|jsx)$/.test(file));
+		assert.deepEqual(
+			javascript,
+			[],
+			`${directory}: authored JavaScript needs an explicit compatibility decision`,
+		);
+	}
 });

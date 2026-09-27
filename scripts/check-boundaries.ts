@@ -1,16 +1,16 @@
 import path from "node:path";
 import ts from "typescript";
 const feature = path.resolve("src/features/assistant");
-const within = (file, directory) =>
+const within = (file: string, directory: string) =>
 	file === directory || file.startsWith(directory + path.sep);
-export function boundaryErrors(file, source) {
+export function boundaryErrors(file: string, source: string) {
 	const filename = path.resolve(file);
 	const domain = within(filename, path.join(feature, "domain"));
 	const application = within(filename, path.join(feature, "application"));
 	const presentation = within(filename, path.join(feature, "presentation"));
 	const adapter = within(filename, path.join(feature, "adapters"));
-	const errors = [];
-	function dependency(specifier) {
+	const errors: string[] = [];
+	function dependency(specifier: unknown) {
 		if (typeof specifier !== "string") {
 			if (domain || application || presentation)
 				errors.push("computed dependency");
@@ -52,7 +52,7 @@ export function boundaryErrors(file, source) {
 		ts.ScriptTarget.Latest,
 		true,
 	);
-	function inspect(node) {
+	function inspect(node: ts.Node) {
 		if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
 			if (node.moduleSpecifier)
 				dependency(

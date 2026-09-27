@@ -15,7 +15,7 @@ There is no backend-for-frontend, shared runtime package or new state library.
 - `shared`: bilingual dictionaries and preference handling; no general utility bucket.
 - `components/ui`: owned native control variants adapted from the portfolio primitives.
 
-`tests/unit/boundaries.test.mjs` traverses TypeScript imports and identifiers. Domain
+`tests/unit/boundaries.test.ts` traverses TypeScript imports and identifiers. Domain
 and application cannot reach presentation/infrastructure; presentation cannot import
 adapters/generated contracts/server-only modules. Only the public API origin is allowed
 as a `NEXT_PUBLIC_*` identifier. The composition root is the deliberate exception for

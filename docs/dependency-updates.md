@@ -9,7 +9,7 @@ a broad PAT or merge the application release into main.
 
 ## Eligibility
 
-[Policy implementation](../scripts/dependency-policy.mjs) is deliberately small:
+[Policy implementation](../scripts/dependency-policy.ts) is deliberately small:
 
 | Dependency | Automatic candidate |
 | --- | --- |
@@ -92,7 +92,7 @@ Activation must be a separately authorized, reviewed operation:
    evidence. A separately reviewed repository-scoped read-only GitHub App may be needed;
    no App/PAT or new secret is created here. Do not enable either switch until the exact
    intended token path is tested. This repository does not silently weaken the requirement.
-1. Promote only the approved workflow, both policy scripts and Dependabot configuration to
+1. Promote only the approved workflow, policy scripts, their `scripts/json.ts` helper and Dependabot configuration to
    the default branch through its normal PR/review process. Do not merge an application
    release merely to activate maintenance. The scripts have no npm dependency prerequisite.
 2. Set repository variable `DEPENDABOT_POLICY_READY=true`. This bootstrap switch stays true
@@ -144,7 +144,7 @@ never rewrite shared history or automatically roll back a deployment.
 
 ## Verification
 
-`node --test tests/unit/dependency-policy.test.mjs` runs policy, mocked controller and workflow
+`node --test tests/unit/dependency-policy.test.ts` runs policy, mocked controller and workflow
 security tests; `npm test` includes them in the existing static job. They cover allowlisted
 patch/minor, major/prerelease/0.x/unknown, groups/transitives, spoofing, files/scripts, human
 commits, wrong base, head changes, stale branches, conflicts, failed/missing/cancelled/pending
@@ -154,7 +154,7 @@ For an authorized read-only audit with an existing local gh login:
 
 ```sh
 GITHUB_REPOSITORY=gonzalomartinperez/portfolio-assistant-web \
-PR_NUMBER=123 GH_TOKEN="$(gh auth token)" node scripts/dependency-automation.mjs
+PR_NUMBER=123 GH_TOKEN="$(gh auth token)" node scripts/dependency-automation.ts
 ```
 
 The default is read-only; do not set `APPLY_DEPENDENCY_POLICY` locally. Replace 123 with the

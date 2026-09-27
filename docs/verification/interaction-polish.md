@@ -25,7 +25,7 @@ Acceptance criteria:
 - Production ownership moves in documentation to vps-ops; no deployment is activated.
 
 Baseline client chunks: 1,119,067 raw bytes / 343,820 gzip bytes, summed individually by
-`node scripts/measure-bundle.mjs`. This is build output, not a field performance metric.
+`node scripts/measure-bundle.ts`. This is build output, not a field performance metric.
 
 ## Consolidated remaining-work checklist
 

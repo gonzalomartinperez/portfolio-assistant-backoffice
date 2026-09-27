@@ -11,7 +11,7 @@ const files = [
 			.filter(Boolean),
 	),
 ];
-const rules = [
+const rules: ReadonlyArray<readonly [string, RegExp]> = [
 	["private-key", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/],
 	["provider-token", /\bsk-(?:proj-)?[A-Za-z0-9_-]{24,}\b/],
 	[

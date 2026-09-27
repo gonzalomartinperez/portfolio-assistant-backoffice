@@ -18,7 +18,7 @@ export default defineConfig({
 		{ name: "webkit", use: { ...devices["Desktop Safari"] } },
 	],
 	webServer: {
-		command: "node scripts/test-server.mjs",
+		command: "node scripts/test-server.ts",
 		url: "http://localhost:3107",
 		reuseExistingServer: false,
 		timeout: 60_000,

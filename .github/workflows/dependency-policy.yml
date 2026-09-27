@@ -34,9 +34,9 @@ jobs:
           sparse-checkout: scripts
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '24'
+          node-version-file: .nvmrc
       - name: Validate authenticated PR data and reconcile native auto-merge
-        run: node scripts/dependency-automation.mjs
+        run: node scripts/dependency-automation.ts
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ inputs.pr_number }}

@@ -37,7 +37,7 @@ jobs:
       - name: Scan public files and documentation links
         run: npm run security:check && npm run docs:check && npm run skills:check
       - name: Verify dependency protection access or mandatory disabled state
-        run: node scripts/dependency-automation.mjs
+        run: node scripts/dependency-automation.ts
         env:
           GH_TOKEN: ${{ github.token }}
           DEPENDENCY_INSPECT: 'true'
@@ -138,7 +138,7 @@ jobs:
       - name: Verify actual API browser flows
         run: npx playwright test --config playwright.live.config.ts
       - name: Verify proxy security, streaming and graceful shutdown
-        run: node scripts/proxy-smoke.mjs
+        run: node scripts/proxy-smoke.ts
       - if: always()
         run: docker compose -p assistant-web-verification -f tests/integration/compose.yaml logs --no-color > /tmp/integration.log
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

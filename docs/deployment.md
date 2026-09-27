@@ -61,7 +61,7 @@ rules to `/api/`. Sensitive bodies/cookies must not enter access logs or failure
 bash scripts/integration-up.sh
 npx playwright install --with-deps chromium
 npx playwright test --config playwright.live.config.ts
-node scripts/proxy-smoke.mjs
+node scripts/proxy-smoke.ts
 docker compose -p assistant-web-verification -f tests/integration/compose.yaml stop
 ```
 
