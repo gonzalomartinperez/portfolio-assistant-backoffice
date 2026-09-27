@@ -61,8 +61,8 @@ Pinned Node 24.21.0 executes erasable TypeScript directly: `node scripts/check-d
 `import type`; no enum/parameter-property transform, ts-node or additional execution runner.
 The cross-origin fixture is authored in TypeScript and compiled once at server startup with
 the installed compiler API; browsers receive `/host.js`, never raw TypeScript. This compiler
-is test tooling and does not enter the application image/browser bundle. `@types/js-yaml`
-provides declarations for the existing YAML validator; no runtime library was added.
+is test tooling and does not enter the application image/browser bundle. The YAML validator
+includes its own TypeScript declarations; no separate declaration package is needed.
 
 Generated Next server/browser JavaScript, synchronous inline browser bootstrap code, YAML,
 CSS and shell/container glue keep their native formats. Do not rewrite working operations
