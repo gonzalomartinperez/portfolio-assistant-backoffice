@@ -1,16 +1,38 @@
 # Embedded assistant protocol v1
 
-Status: implementation and local verification in progress. The production portfolio is
-not changed by this repository. One assistant controller/transport/chat serves primary `/embed` and the public standalone
-`/` development/demo surface; only the shell and preference ownership differ. No API contract change is needed.
+Status: implemented and verified in the cross-origin fixture; production portfolio integration
+is deferred. One conversation implementation serves both routes.
 
-## Prioritized acceptance checklist
+## Acceptance results
 
-1. Shared compact shell, safe protocol and session behavior: implemented; tests pending.
-2. Cross-origin harness, keyboard/mobile/security/failure flows and standalone regressions:
-   in progress. Inspect rendered evidence before approval.
-3. Committed portfolio/vps-ops handoff, skills and CI: in progress. Production integration,
-   real phones and human assistive-technology review remain unverified.
+[Quality run 36335629077](https://github.com/gonzalomartinperez/portfolio-assistant-web/actions/runs/36335629077)
+verified revision `26f7957a0b72bd7bc550a0f3cc85a8af940a2fa2`: 31 unit/contract/boundary checks,
+90 browser cases (30 embedded, 60 standalone across Chromium, Firefox and WebKit), six
+real API fixture flows, production image and proxy/session/SSE/shutdown smoke checks passed.
+API revision: `6b1e65f2406ba5ddf21d15c56c34ccf672d90bbb`; no paid provider calls.
+
+Embedded acceptance covers persistent minimize/maximize, hidden streaming, cancellation,
+readiness failure, invalid messages/origins, host preferences, focus/Escape, long content,
+320px width, landscape, tablet, increased text size and reduced motion. Standalone retains
+its independent session, conversation and preference interaction suite. Automated accessibility
+checks and cross-frame keyboard interactions passed; these do not replace human screen-reader review.
+
+Actual fixture captures: [initial embedded draft](verification/embed/initial-desktop-light.png),
+[compact dark empty state](verification/embed/compact-dark-en.png),
+[dark conversation](verification/embed/conversation-dark-en.png),
+[expanded desktop](verification/embed/expanded-dark-en.png),
+[Spanish/light compact](verification/embed/compact-light-es.png),
+[mobile](verification/embed/mobile-light-es.png),
+[landscape](verification/embed/landscape-light-es.png) and
+[panel interaction recording](verification/embed/panel-demo.webm).
+The initial draft is not a pre-existing product baseline: `/embed` did not exist before this increment.
+The neutral outer fixture controls are not the production portfolio design.
+
+One warm WSL Chromium sample measured 639ms to operational readiness and 37ms to reopen;
+these are local interaction samples, not field performance or physical-phone measurements.
+CI jobs took static 20s, image 94s, browser 179s and live-fixture 133s; the required aggregator
+passed. Production portfolio/Coolify headers, physical keyboards/safe areas and human
+assistive-technology review remain unverified. See the WebKit focus limitation below.
 
 ## Host responsibilities
 

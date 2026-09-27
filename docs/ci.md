@@ -15,8 +15,8 @@ credentials. Actions documentation: [required checks](https://docs.github.com/en
 | --- | --- |
 | static | Frozen install, explicit dependency audit, Biome, strict typing, unit/contract/boundaries, redacted scan, local links, generated drift |
 | image | One standalone production build, pinned base, export exact image for downstream tests |
-| browser | Same image read-only/non-root, deterministic HTTP/SSE, 48 Chromium/Firefox/WebKit interaction/accessibility cases |
-| live-fixture | Same image with pinned real API, PostgreSQL/Neo4j, Nginx; four browser flows plus proxy/session/SSE smoke |
+| browser | Same image read-only/non-root, deterministic HTTP/SSE, 90 Chromium/Firefox/WebKit standalone/embedded interaction/accessibility cases |
+| live-fixture | Same image with pinned real API, PostgreSQL/Neo4j, Nginx; six browser flows plus proxy/session/SSE smoke |
 | checks | Always runs after every job; fails unless every result is success; preserves existing required status name |
 
 Static and image work run in parallel. Browser and live integration run independently after
