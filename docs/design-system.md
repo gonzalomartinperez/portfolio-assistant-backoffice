@@ -54,3 +54,8 @@ See [interaction acceptance and evidence](verification/interaction-polish.md) fo
 regressions, screenshots and performance measurements. Run the browser suite for clipboard
 failure/success, draft semantics, pointer capability, reduced motion and cleanup, in addition
 to the existing keyboard, scrolling, source-security and locale/theme matrix.
+
+Theme text and surface colors switch together without interpolation. Button feedback uses
+shadow/border/transform transitions; do not animate text/background across theme palettes,
+which can create unreadable intermediate contrast. Browser regression samples frame-level
+contrast instead of waiting for a transition to hide the issue.

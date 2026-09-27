@@ -463,7 +463,23 @@ test("decorative identity respects pointer capability, reduced motion and unmoun
 	expect(
 		await avatar.evaluate((node) => node.style.getPropertyValue("--tilt-x")),
 	).toBe("");
+	await avatar.dispatchEvent("pointerdown", { pointerType: "touch" });
+	await expect(avatar).toHaveAttribute("data-pressed", "true");
+	await expect
+		.poll(() =>
+			avatar
+				.locator("div")
+				.evaluate((node) => Number(getComputedStyle(node, "::after").opacity)),
+		)
+		.toBeGreaterThan(0.5);
+	await avatar.dispatchEvent("pointerup", { pointerType: "touch" });
+	await expect(avatar).not.toHaveAttribute("data-pressed");
+	await avatar.dispatchEvent("pointerdown", { pointerType: "touch" });
+	await avatar.dispatchEvent("pointercancel");
+	await expect(avatar).not.toHaveAttribute("data-pressed");
 	await page.emulateMedia({ reducedMotion: "reduce" });
+	await avatar.dispatchEvent("pointerdown", { pointerType: "touch" });
+	await expect(avatar).not.toHaveAttribute("data-pressed");
 	await avatar.dispatchEvent("pointermove", {
 		pointerType: "mouse",
 		clientX: 0,
@@ -529,4 +545,43 @@ test("pending clipboard writes retain keyboard focus and prevent duplicate copie
 	await page.evaluate(() => window.dispatchEvent(new Event("fail-copy")));
 	await expect(page.getByText(/Could not copy/)).toBeVisible();
 	await expect(button).toBeFocused();
+});
+
+test("theme changes preserve readable suggestion contrast on every sampled frame", async ({
+	page,
+}) => {
+	await ready(page);
+	const minimum = await page
+		.getByRole("button", { name: "What is Filomena?", exact: true })
+		.evaluate(async (button) => {
+			function luminance(color: string) {
+				const channels = color.match(/\d+/g)?.map(Number);
+				if (channels?.length !== 3)
+					throw new Error("Expected an opaque RGB surface");
+				const linear = channels.map((value) => {
+					const channel = value / 255;
+					return channel <= 0.04045
+						? channel / 12.92
+						: ((channel + 0.055) / 1.055) ** 2.4;
+				});
+				return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+			}
+			function contrast() {
+				const style = getComputedStyle(button);
+				const a = luminance(style.color),
+					b = luminance(style.backgroundColor);
+				return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+			}
+			let lowest = contrast();
+			for (const theme of ["light", "dark"]) {
+				document.documentElement.dataset.theme = theme;
+				lowest = Math.min(lowest, contrast());
+				for (let frame = 0; frame < 12; frame++) {
+					await new Promise(requestAnimationFrame);
+					lowest = Math.min(lowest, contrast());
+				}
+			}
+			return lowest;
+		});
+	expect(minimum).toBeGreaterThanOrEqual(4.5);
 });

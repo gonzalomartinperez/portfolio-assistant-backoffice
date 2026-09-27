@@ -70,7 +70,7 @@ review found no further actionable issues. Final results follow after testing th
 
 ## Corrected local image verification
 
-The final interaction image (Next 16.3.5, linux/amd64) built successfully from the frozen
+The local interaction image before the touch-feedback correction (Next 16.3.5, linux/amd64) built successfully from the frozen
 lockfile: local image ID `sha256:01e207190b4345ed20fe9313c804904291557e3dd041c6e6f7f53710dc625ab6`,
 96,545,957 image bytes. This is a local image ID, not a published registry digest.
 The non-root/read-only container became healthy with only the documented tmpfs mounts;
@@ -103,3 +103,17 @@ head. TypeScript 7 (#12) was rejected after actual frozen-install ERESOLVE again
 contract generator's ^5.x peer; Node 26 types (#10) were rejected because runtime is Node 24.
 Their major updates are held for a supported migration, not forced past checks. The final
 combined PR also validates the Next patch and both Docker Action SHAs together with this UI.
+
+A direct Chromium touch-start probe exposed unreliable CSS :active feedback on the decorative
+avatar. Explicit passive pointer press/release tracking replaces that selector; cancellation,
+window release, blur, media changes and unmount clear the attribute. The automated identity
+case now verifies press, release, cancellation and reduced-motion suppression.
+
+
+CI run 36331246177 on the combined Next 16.3.6 branch completed in 295s: static 26s,
+image 113s, browser 169s, live fixture 120s and aggregator 4s. The browser job had two
+WebKit retries, so that green aggregate was not accepted as final evidence. Its axe failure
+showed 1.01:1 contrast during a theme transition: new text color against the still-transitioning
+suggestion background. Text/surface interpolation was removed rather than delaying scans;
+a frame-sampled 4.5:1 regression now covers both theme directions. Final CI must verify this
+correction and the touch feedback together (60 browser cases).

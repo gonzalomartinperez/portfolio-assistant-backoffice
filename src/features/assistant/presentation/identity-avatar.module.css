@@ -31,15 +31,15 @@
 .disc img {
 	object-fit: contain;
 }
-.identity:active .disc::after {
-	opacity: 0.6;
-	transform: scale(1.04);
-}
 @media (hover: hover) and (pointer: fine) {
 	.identity:hover .disc::after {
 		opacity: 0.4;
 		transform: scale(1.04);
 	}
+}
+.identity[data-pressed] .disc::after {
+	opacity: 0.6;
+	transform: scale(1.04);
 }
 @media (max-width: 620px) {
 	.identity {

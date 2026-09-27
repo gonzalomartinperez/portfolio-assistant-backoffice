@@ -807,7 +807,6 @@
 .examples button,
 .followups button {
 	transition:
-		background-color var(--duration-micro),
 		border-color var(--duration-micro),
 		transform var(--duration-micro) var(--ease-out);
 }

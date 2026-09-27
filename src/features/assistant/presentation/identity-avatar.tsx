@@ -14,7 +14,14 @@ export function IdentityAvatar() {
 		let frame = 0;
 		let x = 0;
 		let y = 0;
+		function release() {
+			node?.removeAttribute("data-pressed");
+		}
+		function press() {
+			if (!reduced.matches) node?.setAttribute("data-pressed", "true");
+		}
 		function reset() {
+			release();
 			cancelAnimationFrame(frame);
 			frame = 0;
 			node?.style.removeProperty("--tilt-x");
@@ -40,6 +47,8 @@ export function IdentityAvatar() {
 				frame = 0;
 			});
 		}
+		node.addEventListener("pointerdown", press, { passive: true });
+		window.addEventListener("pointerup", release, { passive: true });
 		node.addEventListener("pointermove", move);
 		node.addEventListener("pointerleave", reset);
 		node.addEventListener("pointercancel", reset);
@@ -48,6 +57,8 @@ export function IdentityAvatar() {
 		window.addEventListener("blur", reset);
 		return () => {
 			reset();
+			node.removeEventListener("pointerdown", press);
+			window.removeEventListener("pointerup", release);
 			node.removeEventListener("pointermove", move);
 			node.removeEventListener("pointerleave", reset);
 			node.removeEventListener("pointercancel", reset);
