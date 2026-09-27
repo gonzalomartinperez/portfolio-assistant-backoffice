@@ -27,7 +27,7 @@ const translations = {
 		closeBackdrop: "Dismiss conversation menu overlay",
 		emptyTitle: "Where would you like to start?",
 		empty:
-			"Choose a question or write your own. Answers use available public sources and may contain mistakes.",
+			"Projects, experience, education. Choose a starting point, then make the question your own.",
 		examples: [
 			"What is Filomena?",
 			"What did Gonzalo do at Rampy?",
@@ -57,6 +57,15 @@ const translations = {
 		dark: "Dark",
 		you: "You",
 		assistant: "Assistant",
+		copyAnswer: "Copy answer",
+		copying: "Copying…",
+		copied: "Copied",
+		copyFailed: "Could not copy. Select the answer text to copy it manually.",
+		explore: "Explore next",
+		followups: [
+			"How was this portfolio built?",
+			"What other projects can I explore?",
+		],
 		up: "Helpful",
 		down: "Not helpful",
 		thanks: "Feedback saved",
@@ -64,7 +73,7 @@ const translations = {
 		reconnect: "Reconnect",
 		composerNote:
 			"Enter to send · Shift+Enter for a new line · Public questions only",
-		thinking: "Finding public evidence…",
+		thinking: "Waiting for a response…",
 		noConversations: "Your conversations will appear here.",
 	},
 	es: {
@@ -95,7 +104,7 @@ const translations = {
 		closeBackdrop: "Cerrar el menú de conversaciones",
 		emptyTitle: "¿Por dónde quieres empezar?",
 		empty:
-			"Elige una pregunta o escribe la tuya. Las respuestas usan las fuentes públicas disponibles y pueden contener errores.",
+			"Proyectos, experiencia y formación. Elige un punto de partida y adapta la pregunta.",
 		examples: [
 			"¿Qué es Filomena?",
 			"¿Qué hizo Gonzalo en Rampy?",
@@ -125,6 +134,16 @@ const translations = {
 		dark: "Oscuro",
 		you: "Tú",
 		assistant: "Asistente",
+		copyAnswer: "Copiar respuesta",
+		copying: "Copiando…",
+		copied: "Copiada",
+		copyFailed:
+			"No se pudo copiar. Selecciona el texto de la respuesta para copiarlo manualmente.",
+		explore: "Sigue explorando",
+		followups: [
+			"¿Cómo se construyó este portafolio?",
+			"¿Qué otros proyectos puedo explorar?",
+		],
 		up: "Útil",
 		down: "No útil",
 		thanks: "Opinión guardada",
@@ -132,7 +151,7 @@ const translations = {
 		reconnect: "Volver a conectarme",
 		composerNote:
 			"Enter para enviar · Mayús+Enter para una línea nueva · Solo preguntas públicas",
-		thinking: "Buscando evidencia pública…",
+		thinking: "Esperando una respuesta…",
 		noConversations: "Tus conversaciones aparecerán aquí.",
 	},
 } as const;

@@ -9,13 +9,17 @@ incomplete even when sources are included.
 These screenshots show the implemented interface using deterministic fixture answers,
 not live model output or personal conversations.
 
-![English desktop conversation in the dark theme, with a public source and feedback controls](docs/verification/final-desktop-dark.png)
+![English desktop conversation in the dark theme, with sources, copy, feedback and follow-up questions](docs/verification/interaction-polish/after-conversation-desktop.png)
 
-![Spanish narrow-mobile conversation with source, feedback and safe-area composer visible](docs/verification/final-mobile-conversation.png)
+![Spanish mobile conversation with sources, copy, follow-up choices and the composer visible](docs/verification/interaction-polish/after-conversation-mobile.png)
 
 [Light desktop](docs/verification/final-desktop-light.png) ·
 [Light mobile](docs/verification/final-mobile-light.png) ·
 [Landscape conversation](docs/verification/final-landscape.png)
+
+[Before/after evidence](docs/verification/interaction-polish.md) ·
+[Avatar and conversation interaction demo](docs/verification/interaction-polish/signature-demo.webm) ·
+[Full-stack fixture follow-up](docs/verification/interaction-polish/live-context-desktop.png)
 
 ## Local development
 
@@ -66,7 +70,7 @@ npm run test:browser
 Playwright manages a single production web/fixture-server pair on isolated ports 3107/8107.
 It refuses to reuse an existing process. These are mocked contract/interaction tests,
 not proof of live API integration or model quality. Browser artifacts go to `test-results/`
-and `playwright-report/`. `node scripts/measure-bundle.mjs` measures all built JS chunks.
+and `playwright-report/`. `node scripts/measure-bundle.ts` measures all built JS chunks.
 
 To run the separate live-fixture suite, build with the actual API origin, run the API in
 fixture mode and the web on 3001, then run
@@ -83,8 +87,8 @@ anonymous session/retention policy. Only theme and language preferences use loca
 The future shared Hostinger KVM 4 runs the standalone frontend and FastAPI behind one
 reverse proxy; the portfolio stays on Hostinger Business. Browser calls use relative
 `/api/v1/...`, routed directly to FastAPI. See the [deployment ADR](docs/adrs/002-shared-vps.md),
-[image and shared-stack handoff](docs/deployment.md) and [CI job design](docs/ci.md).
-Production CD is disabled. No DNS, remote deployment or paid-model call is authorized.
+[Coolify/vps-ops runtime contract](docs/deployment-contract.md) and [local image verification](docs/deployment.md) and [CI job design](docs/ci.md).
+Private vps-ops owns production composition and Coolify execution. Production CD is disabled. No DNS, remote deployment or paid-model call is authorized.
 
 See [architecture](docs/architecture.md), [design system](docs/design-system.md),
 [contract refresh and integration handoffs](docs/api-contract.md),
@@ -106,3 +110,24 @@ GitHub discovers some community files and Dependabot configuration from the defa
 branch. Feature work enters `develop`; owner-authorized promotions to `main` use a separate
 PR with full CI validation. Image publishing is manual, and production deployment remains
 disabled until separately authorized.
+
+Repository-local Codex and Claude Code workflows are documented in [Agent skills](docs/agent-skills.md).
+
+## Portfolio embedding
+
+`/embed` shares the standalone conversation implementation and accepts validated host
+theme/language preferences. The portfolio owns the floating panel and keeps one iframe
+instance across minimize/maximize. The [versioned integration handoff](docs/embed-integration.md)
+defines origins, headers, session limitations, accessibility and the local cross-origin harness.
+Production portfolio integration remains a separate owner task.
+
+Compiler status: [TypeScript 7 compatibility gate](docs/adrs/003-typescript7-compatibility.md).
+The working checker is explicitly TypeScript 5.9.3 with additional strict indexed/optional
+checks; the stable contract generator currently blocks the official 7/6 arrangement.
+
+Dependency updates follow the [conservative maintenance policy](docs/dependency-updates.md).
+Automatic merging is staged; default-branch activation and its required protection gate
+remain separate from application releases and production deployment.
+
+Application code, tooling and fixtures use TypeScript. Node 24 runs the scripts directly;
+`npm run typecheck` also checks tests and tooling. See the [execution conventions](CONTRIBUTING.md#typescript-source-and-execution).

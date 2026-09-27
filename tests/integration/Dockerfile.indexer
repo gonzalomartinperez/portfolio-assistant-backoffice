@@ -1,5 +1,0 @@
-# Test-only indexing tool. The committed API runtime currently omits Git.
-FROM assistant-web-api:contract-94408ab
-USER root
-RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
-USER 65532:65532

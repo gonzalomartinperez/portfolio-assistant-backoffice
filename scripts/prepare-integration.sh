@@ -11,7 +11,7 @@ prepare() {
   git -C "$destination" fetch -q --depth=1 "https://github.com/gonzalomartinperez/$repository.git" "$revision"
   git -C "$destination" checkout -q --detach FETCH_HEAD
 }
-prepare .integration/api portfolio-assistant-api 94408ab4b59297e93e2574320b3049ee2f5d4f2e
+prepare .integration/api portfolio-assistant-api 6b1e65f2406ba5ddf21d15c56c34ccf672d90bbb
 prepare .integration/corpus portfolio 1acbe54906c88398652aebb8eae0c217fd0d8821
 for artifact in openapi.json sse.schema.json sse.examples.json; do
   cmp "contracts/$artifact" ".integration/api/contracts/$artifact"

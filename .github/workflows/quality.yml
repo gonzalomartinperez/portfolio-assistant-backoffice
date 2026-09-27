@@ -35,7 +35,14 @@ jobs:
       - name: Test state, transport, contract and architecture
         run: npm test
       - name: Scan public files and documentation links
-        run: npm run security:check && npm run docs:check
+        run: npm run security:check && npm run docs:check && npm run skills:check
+      - name: Verify dependency protection access or mandatory disabled state
+        run: node scripts/dependency-automation.ts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPENDENCY_INSPECT: 'true'
+          DEPENDABOT_AUTOMERGE: ${{ vars.DEPENDABOT_AUTOMERGE }}
+          DEPENDABOT_POLICY_READY: ${{ vars.DEPENDABOT_POLICY_READY }}
       - name: Reject generated contract drift
         run: npm run contract:generate && git diff --exit-code contracts/types.d.ts
   image:
@@ -45,8 +52,8 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           load: true
@@ -82,7 +89,7 @@ jobs:
           path: /tmp/image
       - name: Load the exact production image
         run: gunzip -c /tmp/image/image.tar.gz | docker load
-      - run: docker run -d --name assistant-browser --read-only --tmpfs /tmp --tmpfs /app/.next/cache:uid=1000,gid=1000,mode=0700,size=32m --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:3108:3000 portfolio-assistant-web:rc
+      - run: docker run -d --name assistant-browser -e EMBED_ALLOWED_ORIGINS=http://localhost:3110 --read-only --tmpfs /tmp --tmpfs /app/.next/cache:uid=1000,gid=1000,mode=0700,size=32m --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:3108:3000 portfolio-assistant-web:rc
       - name: Install all browser engines and OS dependencies
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Verify browser interactions and accessibility
@@ -131,7 +138,7 @@ jobs:
       - name: Verify actual API browser flows
         run: npx playwright test --config playwright.live.config.ts
       - name: Verify proxy security, streaming and graceful shutdown
-        run: node scripts/proxy-smoke.mjs
+        run: node scripts/proxy-smoke.ts
       - if: always()
         run: docker compose -p assistant-web-verification -f tests/integration/compose.yaml logs --no-color > /tmp/integration.log
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

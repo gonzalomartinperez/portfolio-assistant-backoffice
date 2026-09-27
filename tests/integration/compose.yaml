@@ -1,4 +1,4 @@
-# Verification only. API repository owns the shared production stack.
+# Local verification only. Private vps-ops owns production composition through Coolify.
 services:
   postgres:
     image: pgvector/pgvector:0.8.1-pg17@sha256:3e8b3adfd27b5707128f60956f62a793c3c9326ea8cfaf0eab7adccb5d700b21
@@ -25,8 +25,8 @@ services:
       test: [CMD, cypher-shell, -u, neo4j, -p, change-me, RETURN 1]
       interval: 5s
       retries: 40
-  api: &api
-    image: assistant-web-api:contract-94408ab
+  api:
+    image: assistant-web-api:contract-6b1e65f
     build: ../../.integration/api
     environment:
       DATABASE_URL: postgresql://assistant:assistant@postgres:5432/assistant
@@ -42,21 +42,10 @@ services:
     tmpfs: [/tmp]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    stop_grace_period: 20s
-  indexer:
-    <<: *api
-    image: assistant-web-indexer:contract-94408ab
-    build:
-      context: .
-      dockerfile: Dockerfile.indexer
-    profiles: [tools]
-    environment:
-      DATABASE_URL: postgresql://assistant:assistant@postgres:5432/assistant
-      NEO4J_URI: bolt://neo4j:7687
-      NEO4J_PASSWORD: change-me
-      AI_PROVIDER: fixture
-      ALLOW_PAID_AI: 'false'
+    stop_grace_period: 25s
   web:
+    environment:
+      EMBED_ALLOWED_ORIGINS: http://localhost:3110
     image: portfolio-assistant-web:rc
     networks: [edge]
     read_only: true
@@ -67,9 +56,9 @@ services:
     cpus: 1
   probe:
     image: portfolio-assistant-web:rc
-    command: [node, /probe.mjs]
+    command: [node, /probe.ts]
     networks: [edge]
-    volumes: [./stream-probe.mjs:/probe.mjs:ro]
+    volumes: [./stream-probe.ts:/probe.ts:ro]
     read_only: true
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]

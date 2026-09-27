@@ -2,6 +2,7 @@
 
 This bounded checklist supplements the implementation plan. A candidate is not a production
 release; remaining deployment/device gates are explicit in the verification report.
+The current three-deliverable status and evidence live in the [interaction checklist](verification/interaction-polish.md).
 
 | Gate | Acceptance evidence |
 | --- | --- |

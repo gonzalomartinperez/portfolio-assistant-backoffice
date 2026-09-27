@@ -5,7 +5,7 @@ export default defineConfig({
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 1 : 0,
-	workers: process.env.CI ? 2 : undefined,
+	...(process.env.CI ? { workers: 2 } : {}),
 	reporter: [["list"], ["html", { open: "never" }]],
 	use: {
 		baseURL: "http://localhost:3107",
@@ -18,7 +18,7 @@ export default defineConfig({
 		{ name: "webkit", use: { ...devices["Desktop Safari"] } },
 	],
 	webServer: {
-		command: "node scripts/test-server.mjs",
+		command: "node scripts/test-server.ts",
 		url: "http://localhost:3107",
 		reuseExistingServer: false,
 		timeout: 60_000,

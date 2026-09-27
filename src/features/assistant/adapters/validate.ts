@@ -7,10 +7,10 @@ export function record(value: unknown): value is Record<string, unknown> {
 export function text(value: unknown, max = 20_000): value is string {
 	return typeof value === "string" && value.length > 0 && value.length <= max;
 }
-function line(value: unknown): number | undefined {
+function line(value: unknown): number | null {
 	return typeof value === "number" && Number.isSafeInteger(value) && value > 0
 		? value
-		: undefined;
+		: null;
 }
 export function parseCitation(value: unknown): Citation | null {
 	if (
@@ -29,7 +29,7 @@ export function parseCitation(value: unknown): Citation | null {
 		label: value.label,
 		url: value.url,
 		source_type: value.source_type,
-		path: text(value.path, 1000) ? value.path : undefined,
+		path: text(value.path, 1000) ? value.path : null,
 		start_line: line(value.start_line),
 		end_line: line(value.end_line),
 	} satisfies components["schemas"]["Citation"];

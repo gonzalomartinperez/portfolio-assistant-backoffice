@@ -3,22 +3,32 @@ updates:
   - package-ecosystem: npm
     directory: /
     target-branch: develop
+    rebase-strategy: auto
     schedule:
       interval: monthly
     open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+    cooldown:
+      default-days: 7
     groups:
-      development-tools:
-        dependency-type: development
-        update-types: [minor, patch]
+      approved-react-types:
+        patterns: ["@types/react", "@types/react-dom"]
+        update-types: [patch]
   - package-ecosystem: github-actions
     directory: /
     target-branch: develop
+    rebase-strategy: auto
     schedule:
       interval: monthly
     open-pull-requests-limit: 2
   - package-ecosystem: docker
     directory: /
     target-branch: develop
+    rebase-strategy: auto
     schedule:
       interval: monthly
     open-pull-requests-limit: 2

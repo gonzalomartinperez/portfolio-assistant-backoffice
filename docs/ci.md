@@ -1,7 +1,9 @@
 # Actions design and release preparation
 
 Every workflow was audited: `quality.yml` is the required validation pipeline;
-`release.yml` is new manual preparation. There is no push/develop deployment trigger.
+`release.yml` is manual image preparation and `dependency-policy.yml` is a staged
+control-only dependency gate. See [dependency maintenance](dependency-updates.md) for its
+policy, job permissions, activation prerequisites and pause procedure. There is no push/develop deployment trigger.
 All third-party actions are full SHA pins, resolved against their upstream v4/v3/v6 refs
 on 2026-09-27; review source/release notes when Dependabot proposes changes. Existing
 checkout/setup-node/upload pins were retained. New download-artifact, setup-buildx and
@@ -15,8 +17,8 @@ credentials. Actions documentation: [required checks](https://docs.github.com/en
 | --- | --- |
 | static | Frozen install, explicit dependency audit, Biome, strict typing, unit/contract/boundaries, redacted scan, local links, generated drift |
 | image | One standalone production build, pinned base, export exact image for downstream tests |
-| browser | Same image read-only/non-root, deterministic HTTP/SSE, 48 Chromium/Firefox/WebKit interaction/accessibility cases |
-| live-fixture | Same image with pinned real API, PostgreSQL/Neo4j, Nginx; four browser flows plus proxy/session/SSE smoke |
+| browser | Same image read-only/non-root, deterministic HTTP/SSE, 90 Chromium/Firefox/WebKit standalone/embedded interaction/accessibility cases |
+| live-fixture | Same image with pinned real API, PostgreSQL/Neo4j, Nginx; six browser flows plus proxy/session/SSE smoke |
 | checks | Always runs after every job; fails unless every result is success; preserves existing required status name |
 
 Static and image work run in parallel. Browser and live integration run independently after
@@ -41,35 +43,29 @@ Explicit Bash defaults enable pipefail, so failed image save/load commands canno
 by a successful downstream command. Cleanup runs independently of container log collection.
 Step names describe purpose; the required job ID remains `checks`.
 
-Default permissions are contents:read, checkout credentials are not persisted. PR jobs use
-no repository secrets, no pull_request_target or privileged workflow_run bridge. Fixture
+Default permissions are contents:read, checkout credentials are not persisted. Quality PR jobs use
+no repository secrets. The separate dependency control workflow uses privileged events
+but executes only trusted default-branch scripts, never PR code or artifacts. Fixture
 credentials are intentionally public and isolated. Fork PR images are never published.
 Production images contain neither tests/dev dependencies nor environment/secret files.
 Artifacts contain synthetic fixtures only: browser reports/traces/screenshots for 14 days,
 live failure logs for 14 days, verified image for seven days. Always collect browser evidence;
 collect live logs on failure, and tear down only the dedicated test project.
 
-## Manual publishing and disabled deployment
+## Manual image publication; no production execution
 
-`Prepare immutable release` runs only on manual dispatch against develop, reruns the entire
-quality graph, then enters the `container-release` environment and publishes its exact image
-to GHCR with a source-SHA tag. Only that job has packages:write; no broad PAT or registry
-secret is needed. `release.json` records the registry digest and compatible API commit.
-Deploy by digest, never the mutable tag. The workflow has no automatic production consumer.
-GitHub discovers workflow_dispatch from the default branch. Owner-authorized promotion
-uses a separate develop-to-main PR with the same full validation graph. Merging source
-does not dispatch publishing or deployment; publishing still requires a manual invocation
-against develop. Production deployment remains hard-disabled.
+`release.yml` requires an explicit publication/visibility acknowledgment on a manual develop
+invocation, then runs the full quality graph. Its protected `container-release` environment
+must be configured with reviewers before use. Only the publication job has packages:write;
+untrusted PRs never receive publishing authority. It uploads the tested image's digest and
+frontend/API compatibility revisions. The workflow has not been dispatched here.
 
-Production is hard-disabled with `if: false`, has no SSH command or VPS secrets, names the
-production environment and serializes deployments without cancellation. Before enabling,
-the owner must configure required environment reviewers and branch restrictions, explicitly
-approve the combined release, and review an API-owned deployment implementation that checks
-compatibility, performs reviewed migrations, deploys exact digests, verifies readiness and
-real streaming, and can restore a known-compatible image pair. A named environment alone
-is **not** an approval gate unless protection rules are configured. Do not remove the hard
-disable merely because environment creation succeeds. Database recovery is separate from
-application rollback; follow [operations handoff](deployment.md).
+Production execution belongs exclusively to private vps-ops and the selected Coolify workflow.
+The previous hard-disabled placeholder job was retired after the owner confirmed that
+replacement authority; it contained no deploy implementation or useful infrastructure.
+There is no SSH, deployment webhook, production job or automatic deployment trigger in this
+repository. Merging/publishing does not authorize vps-ops to deploy. See the
+[runtime contract](deployment-contract.md) for the exact handoff and remaining decisions.
 
 Run timings and actual GitHub results belong in [verification](verification/quality-chat.md).
 The previous pipeline's latest successful run took 164s end-to-end (run 36264943719), but
@@ -85,7 +81,7 @@ a deliberate runtime migration; patch/digest updates remain monitored. API/integ
 image pins follow the API-owner contract handoff, not unrelated automated upgrades.
 Dependabot PRs use the same complete validation, read-only tokens and no repository secrets;
 there is no privileged bot auto-approval or bypass. Merge compatible updates only after
-review and successful checks, then include them in a verified main promotion.
+review and successful checks, integrate into develop without bypassing review.
 
 At the 2026-09-27 promotion audit, no Dependabot PR was open and npm audit reported zero
 vulnerabilities. GitHub's alerts endpoint returned “alerts are disabled” and a missing
@@ -96,3 +92,34 @@ The repository owner must enable those separately with appropriate account permi
 Browser binaries remain uncached following the [Playwright CI guidance](https://playwright.dev/docs/ci#caching-browsers):
 Linux OS dependencies still need installation, and restoring binary caches may cost as much
 as downloading them. This does not prevent using npm and content-addressed BuildKit caches.
+
+Current dependency review: Node types remain on the runtime-matching 24 major. TypeScript
+7 fails the frozen install because the pinned contract generator requires ^5.x; compiler
+and Node-type major upgrades are held for a coordinated migration. No peer checks are
+bypassed. Next patch and reviewed Docker Action SHA updates receive the full CI graph.
+
+Embedded-first validation runs in the existing browser job, using the same production image
+with runtime `EMBED_ALLOWED_ORIGINS=http://localhost:3110`. The managed test-server lifecycle
+also owns the cross-origin host on 3110; no second frontend build or privileged workflow is
+added. The live-fixture job uses its own host lifecycle against the pinned API/proxy stack
+and verifies the combined response framing headers. Loopback origins belong only to tests,
+not the production default. Both standalone and embedded cases remain required.
+
+## Dependency policy verification
+
+[Run 36336926719](https://github.com/gonzalomartinperez/portfolio-assistant-web/actions/runs/36336926719)
+at `4216a7272ed729dcf91b6c661b1cd649c09ac716` verified the 44 unit/contract/boundary tests,
+including 13 dependency decision/controller/security cases. All 90 browser tests, six live
+API fixture flows, image build and proxy smoke also passed. Jobs: static 23s, cached image
+28s, browser 197s, live-fixture 127s and aggregator 3s; first job to completion 234s. These
+are observed durations, not a like-for-like speedup claim. The actual read-only workflow
+token received GraphQL protection-access denial. The diagnostic confirmed both activation
+switches are disabled and reported an explicit warning. It fails if either switch is on;
+the mutation controller never arms auto-merge without verified protection. The initial probe
+run 36336719405 failed on that denial; no permission was broadened to conceal the limitation.
+
+Actionlint 1.7.12 passed all three workflows without exclusions. A read-only invocation
+against actual PR #17 returned `manual-author` and made no changes. No eligible Dependabot
+PR existed, so no native automatic merge or privileged controller execution is claimed.
+Default-branch promotion and protection-read access remain activation blockers; see the
+[maintenance runbook](dependency-updates.md). Required application checks are unchanged.

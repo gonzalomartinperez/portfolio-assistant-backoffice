@@ -2,10 +2,12 @@
 	"compilerOptions": {
 		"target": "ES2017",
 		"lib": ["dom", "dom.iterable", "esnext"],
-		"allowJs": true,
+		"allowJs": false,
 		"skipLibCheck": true,
 		"strict": true,
 		"noEmit": true,
+		"erasableSyntaxOnly": true,
+		"verbatimModuleSyntax": true,
 		"esModuleInterop": true,
 		"module": "esnext",
 		"moduleResolution": "bundler",
@@ -18,7 +20,9 @@
 				"name": "next"
 			}
 		],
-		"allowImportingTsExtensions": true
+		"allowImportingTsExtensions": true,
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true
 	},
 	"include": [
 		"next-env.d.ts",

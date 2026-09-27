@@ -1,7 +1,8 @@
-# Frontend production image and API-owner handoff
+# Frontend image verification and operations handoff
 
-Decision: [ADR 002](adrs/002-shared-vps.md). The API repository owns the shared production
-Compose and operational runbook. This document specifies the frontend contract and the
+Decision: [ADR 002](adrs/002-shared-vps.md). The private vps-ops repository owns shared production
+composition, Coolify orchestration and the operational runbook. The canonical application runtime contract is [deployment-contract.md](deployment-contract.md).
+This document records local verification and the
 remaining shared-stack acceptance criteria; do not copy a production stack into this repo.
 
 ## Build and runtime contract
@@ -45,13 +46,13 @@ Production must preserve `/api/v1/...` without rewriting; empty FastAPI root_pat
 Disable response/request buffering and cache for `/api/`, use HTTP/1.1, omit Connection,
 forward original Host/protocol and overwrite rather than append client-supplied forwarded
 addresses. API trust must list actual immediate proxy peers, never `*`. Request size
-16 KiB, body read 15s, upstream read/send 135s are the tested baseline; the API deadline is
-at most 120s. No fabricated heartbeat is added. Proxy idle limits must exceed the maximum
+32 KiB, body read 15s, upstream read/send 135s are the tested baseline; the API deadline is
+at most 120s. The API emits heartbeat comments after 15s of silence; the proxy does not fabricate them. Proxy idle limits must exceed the maximum
 silent provider period; reevaluate if API deadlines change.
 
 `tests/integration/nginx.conf` exercises these HTTP settings locally. Production TLS,
 HSTS after HTTPS validation, framing denial, nosniff, referrer policy, trusted peer addresses
-and any CSP must be implemented/tested in the API-owned edge configuration. Never cache
+and any CSP must be implemented/tested in the vps-ops-owned edge configuration. Never cache
 sessions, conversations, mutations or SSE in the proxy/CDN. Do not apply static-asset cache
 rules to `/api/`. Sensitive bodies/cookies must not enter access logs or failure artifacts.
 
@@ -60,7 +61,7 @@ rules to `/api/`. Sensitive bodies/cookies must not enter access logs or failure
 bash scripts/integration-up.sh
 npx playwright install --with-deps chromium
 npx playwright test --config playwright.live.config.ts
-node scripts/proxy-smoke.mjs
+node scripts/proxy-smoke.ts
 docker compose -p assistant-web-verification -f tests/integration/compose.yaml stop
 ```
 
@@ -77,7 +78,7 @@ no zero-interruption or provider cancellation timing claim follows from that tes
 
 Start frontend at a **512 MiB / 1 vCPU ceiling**, then measure idle, concurrent sessions,
 long output and rolling restart. This is a proposed ceiling, not a measured VPS capacity.
-API owner should budget API, PostgreSQL and Neo4j separately; reserve at least 25% of actual
+vps-ops should budget API, PostgreSQL and Neo4j separately; reserve at least 25% of actual
 provisioned RAM and CPU capacity for OS, proxy, backups and other projects before assigning
 assistant limits. Confirm KVM 4's purchased specifications rather than embedding a possibly
 changed product table. Record RSS, CPU, disk, active connections, first-delta and p95 latency;
@@ -105,16 +106,14 @@ backup restore, representative load alongside other projects and SIGTERM during 
 streams. If Cloudflare proxying is selected, test idle/total stream limits, buffering,
 cache bypass and disconnect behavior through it; normal HTTP success is insufficient.
 No HA or zero downtime is promised. Registry ownership, environment reviewers, backup
-storage/retention, operational SLOs and optional Coolify/Cloudflare remain owner decisions.
+storage/retention, operational SLOs and optional Cloudflare remain owner decisions. Coolify is selected; vps-ops must verify its prebuilt-image workflow.
 
-## Backend packaging request from local verification
+## Resolved indexing packaging handoff
 
-API `94408ab`'s production image cannot run `python -m app.knowledge_sync`: the command
-requires the Git executable but the image omits it. API owner should provide a reviewed
-indexing/operations image (or include Git deliberately), document non-root safe-directory
-handling for a read-only corpus mount, and pin its release digest. The frontend test-only
-`Dockerfile.indexer` adds Git to the pinned API image without changing its runtime or source.
-It runs with the read-only checkout owner's UID/GID because the indexer deliberately
-discards external Git safe-directory configuration. Its apt package resolution is not a reproducible production artifact and is not published.
-The API runtime itself still uses its committed, frozen build. This packaging gap remains
-a production indexing gate, not a reason to modify the API repository from this task.
+The previous `94408ab` image omitted Git and required a test-only indexing wrapper.
+The committed conversational pin `6b1e65f2406ba5ddf21d15c56c34ccf672d90bbb` includes a pinned
+Git package in the API image. Local verification now uses that exact API image for indexing;
+`Dockerfile.indexer` and its duplicate service/build have been retired. The public corpus
+remains read-only and the indexing command runs with its checkout owner's UID/GID because
+Git intentionally ignores external safe-directory configuration. No sibling checkout or
+production volume is used. See [contract provenance](api-contract.md).

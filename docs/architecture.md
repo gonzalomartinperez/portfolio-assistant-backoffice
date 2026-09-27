@@ -15,7 +15,7 @@ There is no backend-for-frontend, shared runtime package or new state library.
 - `shared`: bilingual dictionaries and preference handling; no general utility bucket.
 - `components/ui`: owned native control variants adapted from the portfolio primitives.
 
-`tests/unit/boundaries.test.mjs` traverses TypeScript imports and identifiers. Domain
+`tests/unit/boundaries.test.ts` traverses TypeScript imports and identifiers. Domain
 and application cannot reach presentation/infrastructure; presentation cannot import
 adapters/generated contracts/server-only modules. Only the public API origin is allowed
 as a `NEXT_PUBLIC_*` identifier. The composition root is the deliberate exception for
@@ -68,3 +68,11 @@ and restores focus. Inline rename/delete confirmation returns focus to the conve
 Native scrolling, dynamic viewport height, safe-area padding and horizontal code scrolling
 support mobile without intercepting touch events. Physical keyboard/phone checks remain
 separate from emulated browser verification.
+
+## Shared embedded shell
+
+The `/embed` Server Component supplies validated runtime origins and initial preferences to
+the same composition root. `features/embed` owns the independent presentation protocol; it
+never changes conversation transitions or parses API payloads. Hidden chat subscribers pause
+while the controller completes an authorized stream. Reopen reads the latest snapshot.
+The [embed handoff](embed-integration.md) is canonical for protocol and host responsibility.

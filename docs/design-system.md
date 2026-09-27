@@ -32,3 +32,45 @@ service-provided duration rather than hard-coding an assumption about local stor
 The English dictionary defines the complete key shape; the Spanish dictionary must
 satisfy the same mapped type. Use full translated sentences and typed interpolation.
 US English and neutral Latin American Spanish are required.
+
+## Conversation interactions
+
+The empty state uses three editorial prompts; completed answers offer two general follow-up
+questions. Both fill and focus the draft without sending, predicting relevance or claiming
+backend-provided actions. Copy uses the Clipboard API and reports success only after it
+resolves; unavailable/denied access gives a localized manual-selection fallback. No transcript
+is persisted locally. Existing source and feedback controls retain their real API behavior.
+
+`IdentityAvatar` owns one decorative depth/halo effect around the approved face. It is hidden
+from assistive technology and has no keyboard stop or conversation action. Fine mouse input
+updates bounded rotation through one pending animation frame, without React state per frame.
+Pointer exit/cancel, media changes, window blur and unmount reset/cancel resources. Coarse
+input has only a restrained pressed halo; native scrolling/zoom/selection are untouched.
+Reduced motion removes the halo and transform entirely. There is no WebGL or new dependency.
+The portfolio's 140ms/320ms durations and easing are semantic global tokens; only suggestion
+presses use small scale feedback. Reading surfaces and streaming tokens do not animate.
+
+See [interaction acceptance and evidence](verification/interaction-polish.md) for baseline,
+regressions, screenshots and performance measurements. Run the browser suite for clipboard
+failure/success, draft semantics, pointer capability, reduced motion and cleanup, in addition
+to the existing keyboard, scrolling, source-security and locale/theme matrix.
+
+Theme text and surface colors switch together without interpolation. Button feedback uses
+shadow/border/transform transitions; do not animate text/background across theme palettes,
+which can create unreadable intermediate contrast. Browser regression samples frame-level
+contrast instead of waiting for a transition to hide the issue.
+
+## Embedded-first composition
+
+`/embed` uses the same native control variants, semantic surfaces, fonts, source cards,
+Markdown and avatar as standalone. The compact shell removes page-level introduction and
+preference controls; the host owns explicit theme/locale. Its toolbar is 1rem typography,
+content/composer gutters are 0.75rem, and the message measure stays capped at 800px when
+expanded. The iframe viewport drives existing responsive rules; no mobile chat fork exists.
+The conversation drawer remains available at every embedded width. Shared 44px targets,
+focus rings, safe-area padding and reduced-motion tokens remain authoritative.
+
+Minimizing pauses decorative activity and token-driven rendering; it never adds an entrance
+animation to each token. Source/follow-up actions remain after completed content. The
+[embed acceptance matrix](embed-integration.md) covers the real cross-origin panel, not just
+a full-page screenshot. The neutral host harness chrome is a test fixture, not portfolio styling.

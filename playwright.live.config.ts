@@ -9,4 +9,10 @@ export default defineConfig({
 		screenshot: "only-on-failure",
 	},
 	reporter: "list",
+	webServer: {
+		command: "node scripts/embed-host.ts",
+		url: "http://localhost:3110",
+		reuseExistingServer: false,
+		env: { EMBED_FIXTURE_ASSISTANT_ORIGIN: "http://localhost:3001" },
+	},
 });

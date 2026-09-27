@@ -6,22 +6,23 @@
 		"dev": "next dev --port 3001",
 		"build": "next build --webpack",
 		"start": "next start --port 3001",
-		"lint": "biome lint src tests scripts",
+		"lint": "biome lint src tests scripts next.config.ts",
 		"typecheck": "next typegen && tsc --noEmit",
-		"test": "npm run contract:check && node --experimental-strip-types --test tests/*.test.mjs tests/unit/*.test.mjs tests/contract/*.test.mjs",
-		"contract:check": "node scripts/check-contract.mjs",
+		"test": "npm run contract:check && node --test tests/*.test.ts tests/unit/*.test.ts tests/contract/*.test.ts",
+		"contract:check": "node scripts/check-contract.ts",
 		"contract:generate": "openapi-typescript contracts/openapi.json -o contracts/types.d.ts",
 		"test:browser": "playwright test",
-		"format:check": "biome format src tests scripts docs package.json biome.json playwright.config.ts playwright.live.config.ts",
-		"security:check": "node scripts/check-public-files.mjs",
-		"docs:check": "node scripts/check-docs.mjs",
-		"preview:fixture": "node scripts/test-server.mjs"
+		"format:check": "biome format src tests scripts docs package.json biome.json playwright.config.ts playwright.live.config.ts next.config.ts tsconfig.json",
+		"security:check": "node scripts/check-public-files.ts",
+		"docs:check": "node scripts/check-docs.ts",
+		"preview:fixture": "node scripts/test-server.ts",
+		"skills:check": "node scripts/check-skills.ts"
 	},
 	"engines": {
 		"node": ">=24 <25"
 	},
 	"dependencies": {
-		"next": "16.3.5",
+		"next": "16.3.6",
 		"react": "19.3.0",
 		"react-dom": "19.3.0",
 		"react-markdown": "^10.1.0",
@@ -32,9 +33,11 @@
 		"@axe-core/playwright": "^4.13.0",
 		"@biomejs/biome": "2.5.14",
 		"@playwright/test": "1.63.0",
+		"@types/js-yaml": "4.0.9",
 		"@types/node": "24.13.5",
 		"@types/react": "19.3.0",
 		"@types/react-dom": "19.3.0",
+		"js-yaml": "4.3.2",
 		"openapi-typescript": "7.13.0",
 		"typescript": "5.9.3"
 	},
