@@ -845,3 +845,66 @@
 		transform: none;
 	}
 }
+
+.embedded {
+	display: block;
+	min-height: 100dvh;
+}
+.embedded .top {
+	padding: 0.5rem 0.75rem;
+}
+.embedded .top-title {
+	align-items: center;
+}
+.embedded .top h1 {
+	font-size: 1rem;
+}
+.embedded .context-notice {
+	display: none;
+}
+.embedded .messages {
+	padding: 1rem 0.75rem;
+}
+.embedded .empty {
+	padding-block: 0.5rem;
+}
+.embedded .composer {
+	padding: 0.65rem 0.75rem max(0.65rem, env(safe-area-inset-bottom));
+}
+.embedded .sidebar {
+	position: fixed;
+	z-index: 20;
+	inset: 0 auto 0 0;
+	width: min(85vw, 330px);
+	visibility: hidden;
+	transform: translateX(-100%);
+}
+.embedded .sidebar-open {
+	visibility: visible;
+	transform: translateX(0);
+}
+.embedded .menu-button,
+.embedded .sidebar-close {
+	display: inline-grid;
+	place-items: center;
+	min-width: 44px;
+	min-height: 44px;
+}
+.embedded .sidebar-backdrop {
+	display: block;
+	position: fixed;
+	z-index: 19;
+	inset: 0;
+	width: 100%;
+	border: 0;
+	background: rgb(0 0 0 / 64%);
+}
+.embedded[data-hidden] {
+	content-visibility: hidden;
+}
+.embedded[data-hidden] *,
+.embedded[data-hidden] *::before,
+.embedded[data-hidden] *::after {
+	animation-play-state: paused;
+	transition: none;
+}

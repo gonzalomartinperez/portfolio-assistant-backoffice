@@ -44,6 +44,8 @@ services:
     security_opt: [no-new-privileges:true]
     stop_grace_period: 25s
   web:
+    environment:
+      EMBED_ALLOWED_ORIGINS: http://localhost:3110
     image: portfolio-assistant-web:rc
     networks: [edge]
     read_only: true

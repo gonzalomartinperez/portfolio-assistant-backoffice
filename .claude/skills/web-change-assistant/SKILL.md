@@ -33,3 +33,8 @@ If Node/dependencies are absent, report prerequisites from the [README](../../..
 install only within task authority. Stop dependent work for an incompatible wire contract
 or a required API/portfolio edit; provide an exact handoff and continue independent fixture work.
 Never copy a sibling working tree, private career material or credentials into this repository.
+
+For embedded presentation changes, read the [v1 handoff](../../../docs/embed-integration.md).
+Keep one chat/controller and separate host protocol state. Verify exact origin/source checks,
+same-frame minimize/maximize, hidden streaming, cross-frame focus and standalone regressions
+with the cross-origin harness. Do not edit the portfolio or infer production deployment authority.

@@ -104,3 +104,16 @@ schedules reviewed migrations, backups and recovery. Do not infer database rever
 from application rollback. Pending owner/ops decisions: package visibility, registry access,
 Coolify digest workflow, production reviewers, TLS/origin verification, measured budgets,
 backup/recovery evidence and any Cloudflare configuration. No production test is claimed.
+
+## Embedded presentation
+
+`/embed` reuses the chat, with host-owned theme/locale via protocol v1. See the committed
+[portfolio handoff](embed-integration.md) for CSP, iframe lifecycle and failure behavior.
+`EMBED_ALLOWED_ORIGINS` is a non-secret server-runtime exact origin list, default
+`https://gonzalomartinperez.com`; restart to change it, no image rebuild needed.
+It controls both frame-ancestors and message validation. `/` emits frame denial; `/embed`
+allows only configured ancestors and emits no X-Frame-Options. Coolify/proxy headers must
+not add conflicting framing restrictions. The Next proxy hook sets page headers only;
+SSE still goes directly from the shared reverse proxy to FastAPI. No new volumes, secrets,
+ports, migrations or backend endpoints are required. Verify effective production headers
+and same-site cookie continuity before enabling the portfolio iframe.
