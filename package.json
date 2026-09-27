@@ -38,7 +38,7 @@
 		"@types/react-dom": "19.3.0",
 		"js-yaml": "4.3.2",
 		"openapi-typescript": "7.13.0",
-		"typescript": "5.9.3"
+		"typescript": "7.0.2"
 	},
 	"type": "module",
 	"license": "MIT"
