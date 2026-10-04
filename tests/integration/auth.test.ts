@@ -242,3 +242,237 @@ test("real PostgreSQL and Better Auth enforce invitation, role and revocation bo
 		await pool.end();
 	}
 });
+
+test("invitation landing cookie admits a verified OAuth viewer once and cannot restore revoked access", async () => {
+	const { pool, store, options } = createAuthRuntime(configuration);
+	const provider = createServer((request, response) => {
+		if (request.url === "/token") {
+			response.setHeader("content-type", "application/json");
+			response.end(
+				JSON.stringify({
+					access_token: "invited-fixture-token",
+					token_type: "Bearer",
+					expires_in: 3600,
+				}),
+			);
+		} else {
+			response.statusCode = 404;
+			response.end();
+		}
+	});
+	let listening = false;
+	try {
+		await (await getMigrations(options)).runMigrations();
+		await pool.query(
+			await readFile(
+				new URL("../../migrations/001-access.sql", import.meta.url),
+				"utf8",
+			),
+		);
+		await pool.query(
+			'TRUNCATE backoffice_access_audit,backoffice_invitation,backoffice_member,session,account,"user",verification CASCADE',
+		);
+		const auth = betterAuth({
+			...options,
+			plugins: [
+				genericOAuth({
+					config: [
+						{
+							providerId: "fixture",
+							clientId: "fixture",
+							clientSecret: "fixture",
+							authorizationUrl: "http://localhost:3972/authorize",
+							tokenUrl: "http://localhost:3972/token",
+							getUserInfo: async () => ({
+								id: "invited-viewer",
+								name: "Invited Viewer",
+								email: "invited@example.com",
+								emailVerified: true,
+							}),
+						},
+					],
+				}),
+			],
+		});
+		const context = await auth.$context;
+		const owner = await context.internalAdapter.createUser(
+			{ name: "Owner", email: configuration.ownerEmail, emailVerified: true },
+			{ method: "oauth", oauth: { providerId: "google" } },
+		);
+		await context.internalAdapter.createSession(owner.id);
+		const token = await store.invite(owner.id, "invited@example.com");
+		const { registerHooks } = await import("node:module");
+		// Next's extensionless public subpath is resolved by its bundler, not Node's ESM loader.
+		const hooks = registerHooks({
+			resolve(specifier, context, nextResolve) {
+				return nextResolve(
+					specifier === "next/server" ? "next/server.js" : specifier,
+					context,
+				);
+			},
+		});
+		let landing: Response;
+		try {
+			const { GET } = await import("../../src/app/access/invitation/route.ts");
+			const env = {
+				BACKOFFICE_ORIGIN: configuration.origin,
+				BACKOFFICE_DATABASE_URL: configuration.databaseUrl,
+				BETTER_AUTH_SECRET: configuration.secret,
+				BACKOFFICE_OWNER_EMAIL: configuration.ownerEmail,
+				GOOGLE_CLIENT_ID: "fixture",
+				GOOGLE_CLIENT_SECRET: "fixture",
+				GITHUB_CLIENT_ID: "fixture",
+				GITHUB_CLIENT_SECRET: "fixture",
+			};
+			const previous = new Map(
+				Object.keys(env).map((key) => [key, process.env[key]]),
+			);
+			try {
+				Object.assign(process.env, env);
+				landing = GET(
+					new Request(
+						`${configuration.origin}/access/invitation?token=${token}&locale=es`,
+					),
+				);
+			} finally {
+				for (const [key, value] of previous) {
+					if (value === undefined) delete process.env[key];
+					else process.env[key] = value;
+				}
+			}
+		} finally {
+			hooks.deregister();
+		}
+		assert.equal(landing.status, 307);
+		assert.equal(
+			landing.headers.get("location"),
+			`${configuration.origin}/sign-in?locale=es`,
+		);
+		assert.equal(landing.headers.get("referrer-policy"), "no-referrer");
+		assert.equal(landing.headers.get("cache-control"), "no-store");
+		const invitationSetCookie = landing.headers
+			.getSetCookie()
+			.find((value) => value.startsWith("backoffice-invitation="));
+		assert.ok(invitationSetCookie);
+		assert.ok(invitationSetCookie.includes("HttpOnly"));
+		assert.ok(/SameSite=lax/i.test(invitationSetCookie));
+		const invitationCookie = invitationSetCookie.split(";")[0] ?? "";
+		assert.ok(invitationCookie);
+		await new Promise<void>((resolve) =>
+			provider.listen(3972, "127.0.0.1", resolve),
+		);
+		listening = true;
+		async function oauthCallback() {
+			const start = await auth.handler(
+				new Request(`${configuration.origin}/api/auth/sign-in/social`, {
+					method: "POST",
+					headers: {
+						"content-type": "application/json",
+						origin: configuration.origin,
+						cookie: invitationCookie,
+					},
+					body: JSON.stringify({
+						provider: "fixture",
+						callbackURL: "/?locale=es",
+						errorCallbackURL: "/sign-in?locale=es&error=access",
+					}),
+				}),
+			);
+			assert.equal(start.status, 200);
+			const payload: unknown = await start.json();
+			assert.ok(
+				payload &&
+					typeof payload === "object" &&
+					"url" in payload &&
+					typeof payload.url === "string",
+			);
+			const state = new URL(payload.url).searchParams.get("state");
+			assert.ok(state);
+			const cookies = [
+				invitationCookie,
+				...start.headers.getSetCookie().map((value) => value.split(";")[0]),
+			].join("; ");
+			return auth.handler(
+				new Request(
+					`${configuration.origin}/api/auth/callback/fixture?code=invited&state=${encodeURIComponent(state)}`,
+					{ headers: { cookie: cookies } },
+				),
+			);
+		}
+		const callback = await oauthCallback();
+		assert.equal(callback.status, 302);
+		assert.equal(
+			new URL(callback.headers.get("location") ?? "", configuration.origin)
+				.href,
+			`${configuration.origin}/?locale=es`,
+		);
+		const sessionCookie = callback.headers
+			.getSetCookie()
+			.find((value) => value.startsWith("backoffice.session_token="))
+			?.split(";")[0];
+		assert.ok(sessionCookie);
+		const sessionResponse = await auth.handler(
+			new Request(`${configuration.origin}/api/auth/get-session`, {
+				headers: { cookie: sessionCookie },
+			}),
+		);
+		const session: unknown = await sessionResponse.json();
+		assert.ok(
+			session &&
+				typeof session === "object" &&
+				"user" in session &&
+				session.user &&
+				typeof session.user === "object" &&
+				"email" in session.user,
+		);
+		assert.equal(session.user.email, "invited@example.com");
+		const viewer = await context.internalAdapter.findUserByEmail(
+			"invited@example.com",
+		);
+		assert.ok(viewer);
+		assert.equal((await store.access(viewer.user))?.role, "viewer");
+		assert.equal(
+			await store.mayRegister("invited@example.com", true, token),
+			false,
+		);
+		const consumed = await pool.query<{ consumed_at: Date | null }>(
+			"SELECT consumed_at FROM backoffice_invitation WHERE email=$1",
+			["invited@example.com"],
+		);
+		assert.ok(consumed.rows[0]?.consumed_at);
+		await store.revoke(owner.id, viewer.user.id, "member");
+		const revokedSession = await auth.handler(
+			new Request(`${configuration.origin}/api/auth/get-session`, {
+				headers: { cookie: sessionCookie },
+			}),
+		);
+		assert.equal(await revokedSession.json(), null);
+		const retry = await oauthCallback();
+		assert.equal(retry.status, 403);
+		assert.equal(
+			retry.headers
+				.getSetCookie()
+				.some(
+					(value) =>
+						value.startsWith("backoffice.session_token=") &&
+						!value.includes("Max-Age=0"),
+				),
+			false,
+		);
+		assert.equal(
+			(
+				await pool.query('SELECT id FROM session WHERE "userId"=$1', [
+					viewer.user.id,
+				])
+			).rowCount,
+			0,
+		);
+		assert.equal(await store.access(viewer.user), null);
+	} finally {
+		if (listening)
+			await new Promise<void>((resolve, reject) =>
+				provider.close((error) => (error ? reject(error) : resolve())),
+			);
+		await pool.end();
+	}
+});
