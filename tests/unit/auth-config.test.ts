@@ -57,3 +57,19 @@ test("invitation boundary accepts only bounded opaque tokens", () => {
 	assert.equal(validEmail("hello@example.com"), true);
 	assert.equal(validEmail("hello\n@example.com"), false);
 });
+
+test("auth dictionaries are complete and locale parsing remains narrow", async () => {
+	const { authCopy, authLocale } = await import(
+		"../../src/features/auth/copy.ts"
+	);
+	assert.deepEqual(
+		Object.keys(authCopy.en).sort(),
+		Object.keys(authCopy.es).sort(),
+	);
+	assert.equal(authLocale("es"), "es");
+	assert.equal(authLocale("en"), "en");
+	assert.equal(authLocale("es-MX"), "en");
+	assert.equal(authLocale(["es"]), "en");
+	for (const values of Object.values(authCopy))
+		for (const text of Object.values(values)) assert.ok(text.trim());
+});

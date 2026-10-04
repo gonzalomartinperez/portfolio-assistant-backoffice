@@ -23,7 +23,7 @@ the UI. Existing owners must be reviewed separately before rotating ownership.
 
 OAuth tokens are encrypted using `BETTER_AUTH_SECRET`. Keep that secret stable and
 back it up securely; rotation can invalidate sessions and stored provider tokens.
-Cookies are HttpOnly, host scoped and Secure on HTTPS. Sessions expire in 24 hours,
+Cookies are HttpOnly, host scoped and Secure on HTTPS. Sessions expire in 8 hours,
 with cookie caching disabled. Revocation deletes sessions and every subsequent
 request rechecks membership. Implicit provider linking is disabled; linking must
 be initiated from an authenticated account through Better Auth's supported flow.
@@ -85,3 +85,18 @@ Official references: [Next.js integration](https://better-auth.com/docs/integrat
 [database and migrations](https://better-auth.com/docs/concepts/database),
 [account linking](https://better-auth.com/docs/concepts/users-accounts),
 [hooks](https://better-auth.com/docs/concepts/hooks).
+
+## Presentation and availability
+
+Authentication surfaces support typed US English and neutral Latin American
+Spanish copy. Supported `?locale=en|es` parameters take priority over the
+`backoffice-locale` cookie; English is the safe default. Callback, invitation and
+back links retain that preference. Locale never changes authorization policy.
+Protected routes redirect infrastructure failures to a safe unavailable sign-in
+surface; provider controls are disabled until configuration and database schema
+are ready. No raw database or OAuth errors are rendered.
+
+Revocation requires a native modal confirmation, supports Escape, and restores
+focus to its trigger. Invitation copy feedback is bound to the current link and
+resets for a newly created invitation. Styles reuse semantic tokens and the owned
+button component; no independent theme or reset is introduced.

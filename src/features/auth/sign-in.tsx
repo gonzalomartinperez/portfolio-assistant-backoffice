@@ -1,18 +1,28 @@
 "use client";
 import { useState } from "react";
+import { Button } from "../../components/ui/button.tsx";
 import { authClient } from "./client.ts";
-export function SignIn() {
+import { authCopy, type AuthLocale } from "./copy.ts";
+import styles from "./auth.module.css";
+export function SignIn({
+	locale = "en",
+	unavailable = false,
+}: {
+	locale?: AuthLocale;
+	unavailable?: boolean;
+}) {
+	const copy = authCopy[locale];
 	const [pending, setPending] = useState(false);
 	const [error, setError] = useState(false);
 	async function signIn(provider: "google" | "github") {
-		if (pending) return;
+		if (pending || unavailable) return;
 		setPending(true);
 		setError(false);
 		try {
 			const result = await authClient.signIn.social({
 				provider,
-				callbackURL: "/",
-				errorCallbackURL: "/sign-in?error=access",
+				callbackURL: `/?locale=${locale}`,
+				errorCallbackURL: `/sign-in?locale=${locale}&error=access`,
 			});
 			if (result.error) {
 				setError(true);
@@ -24,27 +34,51 @@ export function SignIn() {
 		}
 	}
 	return (
-		<section aria-labelledby="sign-in-title">
-			<h1 id="sign-in-title">Assistant backoffice</h1>
-			<p>Private operational access. Sign in with your invited account.</p>
-			<div>
-				<button
-					type="button"
-					disabled={pending}
+		<section
+			className={`${styles.card} ${styles.stack}`}
+			aria-labelledby="sign-in-title"
+		>
+			<h1 id="sign-in-title">{copy.title}</h1>
+			<p>{copy.intro}</p>
+			<nav className={styles.actions} aria-label={copy.language}>
+				<a
+					className={styles.link}
+					href="/sign-in?locale=en"
+					hrefLang="en"
+					aria-current={locale === "en" ? "page" : undefined}
+				>
+					English
+				</a>
+				<a
+					className={styles.link}
+					href="/sign-in?locale=es"
+					hrefLang="es"
+					aria-current={locale === "es" ? "page" : undefined}
+				>
+					Español
+				</a>
+			</nav>
+			<div className={styles.actions}>
+				<Button
+					variant="default"
+					disabled={pending || unavailable}
 					onClick={() => void signIn("google")}
 				>
-					Continue with Google
-				</button>
-				<button
-					type="button"
-					disabled={pending}
+					{copy.google}
+				</Button>
+				<Button
+					disabled={pending || unavailable}
 					onClick={() => void signIn("github")}
 				>
-					Continue with GitHub
-				</button>
+					{copy.github}
+				</Button>
 			</div>
-			{pending && <p role="status">Connecting to your sign-in provider…</p>}
-			{error && <p role="alert">Sign-in could not start. Please try again.</p>}
+			{pending && <p role="status">{copy.connecting}</p>}
+			{error && (
+				<p className={styles.error} role="alert">
+					{copy.signInError}
+				</p>
+			)}
 		</section>
 	);
 }

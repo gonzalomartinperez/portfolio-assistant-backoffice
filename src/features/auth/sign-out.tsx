@@ -1,10 +1,20 @@
 "use client";
 import { useState } from "react";
+import { Button } from "../../components/ui/button.tsx";
 import { authClient } from "./client.ts";
-export function SignOut({ label = "Sign out" }: { label?: string }) {
+import { authCopy, type AuthLocale } from "./copy.ts";
+export function SignOut({
+	label,
+	locale = "en",
+}: {
+	label?: string;
+	locale?: AuthLocale;
+}) {
+	const copy = authCopy[locale];
 	const [pending, setPending] = useState(false);
 	const [error, setError] = useState(false);
 	async function signOut() {
+		if (pending) return;
 		setPending(true);
 		setError(false);
 		try {
@@ -12,7 +22,7 @@ export function SignOut({ label = "Sign out" }: { label?: string }) {
 			if (result.error) {
 				setPending(false);
 				setError(true);
-			} else window.location.assign("/sign-in");
+			} else window.location.assign(`/sign-in?locale=${locale}`);
 		} catch {
 			setPending(false);
 			setError(true);
@@ -20,10 +30,10 @@ export function SignOut({ label = "Sign out" }: { label?: string }) {
 	}
 	return (
 		<>
-			<button type="button" disabled={pending} onClick={() => void signOut()}>
-				{label}
-			</button>
-			{error && <p role="alert">Could not sign out. Try again.</p>}
+			<Button disabled={pending} onClick={() => void signOut()}>
+				{label ?? copy.signOut}
+			</Button>
+			{error && <p role="alert">{copy.signOutError}</p>}
 		</>
 	);
 }

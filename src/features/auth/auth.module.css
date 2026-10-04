@@ -1,0 +1,84 @@
+.main {
+	width: min(100% - 2rem, 68rem);
+	margin: clamp(1rem, 5vh, 4rem) auto;
+	padding-bottom: env(safe-area-inset-bottom);
+}
+.card {
+	max-width: 38rem;
+	padding: clamp(1.25rem, 4vw, 2rem);
+	border: 1px solid var(--line-strong);
+	border-radius: var(--radius-lg);
+	background: var(--surface-raised);
+}
+.stack {
+	display: grid;
+	gap: 1rem;
+}
+.actions {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.form {
+	display: grid;
+	gap: 0.75rem;
+	max-width: 38rem;
+}
+.input {
+	width: 100%;
+	min-height: 44px;
+	border: 1px solid var(--line-control);
+	border-radius: var(--radius-sm);
+	background: var(--surface-base);
+	color: var(--text-primary);
+	padding: 0.65rem 0.85rem;
+	font: inherit;
+}
+.input:focus-visible,
+.link:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 3px;
+}
+.notice {
+	padding: 0.85rem 1rem;
+	border: 1px solid var(--line-strong);
+	border-radius: var(--radius-sm);
+	background: var(--surface-base);
+	overflow-wrap: anywhere;
+}
+.error {
+	color: var(--danger);
+}
+.list {
+	list-style: none;
+	padding: 0;
+	display: grid;
+	gap: 0.75rem;
+}
+.row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+	padding: 1rem;
+	border: 1px solid var(--line-strong);
+	border-radius: var(--radius-md);
+	overflow-wrap: anywhere;
+}
+.dialog {
+	max-width: min(32rem, calc(100vw - 2rem));
+	border: 1px solid var(--line-strong);
+	border-radius: var(--radius-lg);
+	padding: 1.5rem;
+	background: var(--surface-raised);
+	color: var(--text-primary);
+}
+.dialog::backdrop {
+	background: rgb(0 0 0 / 60%);
+}
+.link {
+	color: var(--accent);
+	text-underline-offset: 0.2em;
+}

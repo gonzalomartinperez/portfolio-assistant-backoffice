@@ -1,10 +1,25 @@
+import { authLocale } from "../../../features/auth/copy.ts";
 import { NextResponse } from "next/server";
 import { readAuthConfiguration } from "../../../features/auth/config.ts";
 export function GET(request: Request) {
 	const token = new URL(request.url).searchParams.get("token");
-	const configuration = readAuthConfiguration(process.env);
+	let configuration: ReturnType<typeof readAuthConfiguration>;
+	try {
+		configuration = readAuthConfiguration(process.env);
+	} catch {
+		return new Response("Authentication is temporarily unavailable.", {
+			status: 503,
+			headers: {
+				"Cache-Control": "no-store",
+				"Referrer-Policy": "no-referrer",
+			},
+		});
+	}
 	const response = NextResponse.redirect(
-		new URL("/sign-in", configuration.origin),
+		new URL(
+			`/sign-in?locale=${authLocale(new URL(request.url).searchParams.get("locale"))}`,
+			configuration.origin,
+		),
 	);
 	response.headers.set("Cache-Control", "no-store");
 	response.headers.set("Referrer-Policy", "no-referrer");

@@ -1,10 +1,11 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { authLocale } from "./copy.ts";
 import { validEmail } from "./config.ts";
 import { requireOwner, getAuthRuntime } from "./server.ts";
 export interface InviteResult {
 	link: string | null;
-	error: string | null;
+	error: "invalid-email" | "unavailable" | null;
 }
 export async function inviteUser(
 	_previous: InviteResult,
@@ -13,7 +14,7 @@ export async function inviteUser(
 	const actor = await requireOwner();
 	const email = data.get("email");
 	if (typeof email !== "string" || !validEmail(email.trim()))
-		return { link: null, error: "Enter a valid email address." };
+		return { link: null, error: "invalid-email" };
 	try {
 		const token = await getAuthRuntime().store.invite(
 			actor.user.id,
@@ -21,11 +22,14 @@ export async function inviteUser(
 		);
 		const origin = getAuthRuntime().options.baseURL;
 		revalidatePath("/access");
-		return { link: `${origin}/access/invitation?token=${token}`, error: null };
+		return {
+			link: `${origin}/access/invitation?token=${token}&locale=${authLocale(data.get("locale"))}`,
+			error: null,
+		};
 	} catch {
 		return {
 			link: null,
-			error: "The invitation could not be created. Try again.",
+			error: "unavailable",
 		};
 	}
 }

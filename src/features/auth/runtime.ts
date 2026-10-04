@@ -34,7 +34,7 @@ export function createAuthRuntime(
 			accountLinking: { enabled: true, disableImplicitLinking: true },
 		},
 		session: {
-			expiresIn: 86400,
+			expiresIn: 28800,
 			updateAge: 3600,
 			cookieCache: { enabled: false },
 		},

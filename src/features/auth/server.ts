@@ -1,8 +1,9 @@
 import "server-only";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { readAuthConfiguration } from "./config.ts";
 import { createAuthRuntime } from "./runtime.ts";
+import { authLocale } from "./copy.ts";
 import type { Access } from "./store.ts";
 let runtime: ReturnType<typeof createAuthRuntime> | undefined;
 export function getAuthRuntime() {
@@ -23,7 +24,12 @@ export async function getAccess(): Promise<Access | null> {
 	});
 }
 export async function requireAccess(): Promise<Access> {
-	const access = await getAccess();
+	let access: Access | null;
+	try {
+		access = await getAccess();
+	} catch {
+		redirect("/sign-in?error=unavailable");
+	}
 	if (!access) redirect("/sign-in");
 	return access;
 }
@@ -45,4 +51,8 @@ export async function readiness(): Promise<boolean> {
 	} catch {
 		return false;
 	}
+}
+
+export async function getAuthLocale() {
+	return authLocale((await cookies()).get("backoffice-locale")?.value);
 }
