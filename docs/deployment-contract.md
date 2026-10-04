@@ -74,9 +74,10 @@ by Next assets, `/app/.next/cache` owned by UID1000. Drop capabilities and enabl
 no-new-privileges; resource limits, restart/log policies belong to vps-ops.
 
 The backoffice owns `/api/auth/*`, `/api/operations`, `/api/health` and `/api/ready`.
-**Do not route all `/api/*` to FastAPI on the backoffice origin.** The public assistant API
-retains `/api/v1/*` on its own reviewed origin; portfolio requests cross-origin with the
-API's credentialed CORS/CSRF policy. No iframe is required. Backoffice responses deny
+**Do not route all `/api/*` to FastAPI on the backoffice origin.** At the proposed `https://assistant.gonzalomartinperez.com` origin, route only
+`/api/v1/*` to FastAPI, preserving its prefix; all other application paths belong to
+Next. Never publish `/internal/ops/*`. Portfolio requests remain cross-origin and need
+the API's exact credentialed CORS/CSRF policy. vps-ops verifies this route selection. No iframe is required. Backoffice responses deny
 framing and exclude shared caches. Effective Coolify/proxy headers must preserve these
 policies without exposing private operational routes.
 

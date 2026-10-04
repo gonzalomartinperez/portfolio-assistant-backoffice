@@ -46,7 +46,7 @@ Current installed clients are Codex CLI 0.160.0 and Claude Code 2.1.289; Codex 0
 Claude 2.1.289 discovered all four through its stream-JSON initialization response
 with project settings enabled. Neither probe submitted a model turn; Claude used an
 unreachable local model endpoint. A probe with all settings sources disabled did not
-load project discovery, as expected. Current clean-checkout discovery remains to be repeated.
+load project discovery, as expected. Both clients also discovered all four renamed skills in an independent clean Linux Git clone.
 For the former chat catalog, both clients actually discovered all four names in the working tree and a clean Linux Git clone: Codex through local app-server
 `skills/list`; Claude through its stream-JSON initialization control response's command
 list. No model turn was submitted. Temporary client configuration directories isolated

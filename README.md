@@ -18,6 +18,7 @@ Use Linux/WSL, Node from `.nvmrc`, npm and a dedicated PostgreSQL database:
 ```sh
 nvm use
 npm ci
+npm run contract:install
 cp .env.example .env.local
 npm run dev
 ```
@@ -42,7 +43,7 @@ npm run skills:check
 npm run build
 npm run test:auth
 npx playwright install --with-deps chromium firefox webkit
-npm run test:browser
+npm run test:browser -- backoffice.spec.ts
 ```
 
 Authentication integration requires a dedicated database whose name includes `test` or
@@ -53,8 +54,10 @@ Private session artifacts must never be committed or uploaded. Commands that req
 unavailable service are unexecuted checks, not successes. [Delivery checklist](docs/work-checklist.md)
 tracks current acceptance and blockers.
 
-The checker is currently TypeScript 5.9.3 with strict indexed/optional checks;
-[ADR 003](docs/adrs/003-typescript7-compatibility.md) records the compiler migration gate.
+The primary checker is stable TypeScript 7.0.2 with strict indexed/optional checks.
+The official TypeScript 6 compatibility API supports architecture tooling; a separate
+frozen generator uses TypeScript 5.9.3 for its required compiler API.
+[ADR 003](docs/adrs/003-typescript7-compatibility.md) records exact commands and evidence.
 Node 24 executes erasable TypeScript but does not type-check it. The Google TypeScript
 readability adaptations and verification conventions are in [CONTRIBUTING](CONTRIBUTING.md).
 

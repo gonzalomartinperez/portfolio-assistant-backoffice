@@ -11,7 +11,7 @@ One checklist; evidence must describe actual behavior, not intentions.
 | 2 | Safe operational dashboard | Implemented and cross-browser verified with labeled fixtures; eight transport/validation tests; real API blocked |
 | 3 | Native UX | Compact/maximized/mobile/page, continuity, sources, themes/locales, focus and keyboard |
 | 3 | CI and image | Managed real-DB browser fixtures pass all three engines; exact hardened image migration and GitHub release PR checks in progress |
-| 4 | Skills and docs | Four focused workflows updated; validator and actual Codex/Claude discovery pass without model calls; clean-checkout probe pending |
+| 4 | Skills and docs | Four focused workflows updated; validator and actual Codex/Claude discovery pass without model calls; clean-checkout discovery passes in both clients |
 | 4 | Rename and PR integration | Public GitHub repo renamed portfolio-assistant-backoffice; Dependabot26 merged;27 revalidation and product PRs pending |
 | blocked | Real operational telemetry | API owner must publish additive contract and instrumentation |
 | deferred | Production | Coolify/vps-ops, real OAuth registrations, DNS, effective proxy/security headers and phone tests |

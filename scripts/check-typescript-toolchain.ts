@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import ts from "@typescript/typescript6";
-const primary = JSON.parse(
-	readFileSync(
-		new URL("../node_modules/typescript/package.json", import.meta.url),
-		"utf8",
+import { record } from "./json.ts";
+const primary = record(
+	JSON.parse(
+		readFileSync(
+			new URL("../node_modules/typescript/package.json", import.meta.url),
+			"utf8",
+		),
 	),
 );
 assert.equal(primary.version, "7.0.2");

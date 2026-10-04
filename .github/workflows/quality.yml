@@ -25,11 +25,15 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            tooling/api-contract/package-lock.json
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
+      - name: Install isolated locked contract generator
+        run: npm run contract:install
       - name: Audit all locked dependencies
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=moderate && npm audit --prefix tooling/api-contract --audit-level=moderate
       - name: Check formatting, lint and strict types
         run: npm run format:check && npm run lint && npm run typecheck
       - name: Test authorization, operations, contracts and architecture
