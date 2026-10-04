@@ -69,7 +69,8 @@ no frontend analytics or session replay is included.
   actual PostgreSQL schema, supported OAuth plugin authorization/callback/token
   exchange with a loopback provider, state rejection, owner admission, verified
   email, one-use invitation, roles, expiry, revocation and CSRF protection.
-  **This test truncates its configured database. Never use production or a shared database.**
+  **This test truncates its configured database. It requires a loopback host and test/fixture
+  database name. Never use production or a shared database.**
 - `scripts/auth-fixture-session.ts` creates sessions through Better Auth's actual
   adapter for browser tests. It requires loopback origin and a database name
   containing `test` or `fixture`; there is no application authentication bypass.

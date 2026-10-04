@@ -68,7 +68,7 @@ npx playwright install --with-deps chromium firefox webkit
 npm run test:browser -- backoffice.spec.ts
 ```
 
-Authentication integration requires a dedicated database whose name includes `test` or
+Authentication integration requires a loopback, dedicated database whose name includes `test` or
 `fixture`; it resets only that isolated database and exercises real PostgreSQL with a
 local OAuth provider. Browser verification uses signed fixture sessions and synthetic
 operational data. Neither proves live Google/GitHub, production telemetry or model quality.

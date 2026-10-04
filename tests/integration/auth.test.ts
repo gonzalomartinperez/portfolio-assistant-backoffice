@@ -11,9 +11,18 @@ if (!databaseUrl)
 	throw new Error(
 		"BACKOFFICE_DATABASE_URL must identify an isolated test database",
 	);
-if (!/(test|fixture)/.test(new URL(databaseUrl).pathname))
+let database: URL;
+try {
+	database = new URL(databaseUrl);
+} catch {
+	throw new Error("Invalid isolated authentication test database URL");
+}
+if (
+	!["localhost", "127.0.0.1", "[::1]"].includes(database.hostname) ||
+	!/(test|fixture)/.test(database.pathname)
+)
 	throw new Error(
-		"Authentication integration requires an isolated test/fixture database",
+		"Authentication integration requires a loopback test/fixture database",
 	);
 const configuration = {
 	origin: "http://localhost:3971",
