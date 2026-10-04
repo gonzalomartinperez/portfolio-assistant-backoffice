@@ -2,7 +2,7 @@ import { getAccess } from "../../../features/auth/server";
 import { loadOperations } from "../../../features/operations/entry";
 export const dynamic = "force-dynamic";
 export async function GET() {
-	let access;
+	let access: Awaited<ReturnType<typeof getAccess>>;
 	try {
 		access = await getAccess();
 	} catch {

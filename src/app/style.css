@@ -188,7 +188,7 @@ h1 {
 	cursor: pointer;
 	padding: 0.6rem 0.4rem;
 }
-.operations-shell details[open] > summary {
+:where(.operations-shell details[open] > summary) {
 	color: var(--accent);
 }
 .settings-fields {
@@ -315,8 +315,11 @@ h1 {
 	*,
 	*::before,
 	*::after {
+		/* biome-ignore lint/complexity/noImportantStyles: reduced motion must override component interaction states. */
 		animation: none !important;
+		/* biome-ignore lint/complexity/noImportantStyles: reduced motion must override component interaction states. */
 		transition: none !important;
+		/* biome-ignore lint/complexity/noImportantStyles: reduced motion also disables smooth scrolling. */
 		scroll-behavior: auto !important;
 	}
 }

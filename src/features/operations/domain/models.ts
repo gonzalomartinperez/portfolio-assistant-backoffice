@@ -10,7 +10,7 @@ export type ExecutionTrace = {
 	startedAt: string;
 	outcome: RunOutcome;
 	durationMs: number;
-	stages: ReadonlyArray<{ name: StageName; durationMs: number }>;
+	stages: ReadonlyArray<{ id: string; name: StageName; durationMs: number }>;
 };
 export type OperationalSnapshot = {
 	observedAt: string;

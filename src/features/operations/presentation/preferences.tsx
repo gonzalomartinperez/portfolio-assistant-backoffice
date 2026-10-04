@@ -22,6 +22,7 @@ export function Preferences({ locale }: { locale: OperationsLocale }) {
 							const target = new URL(window.location.href);
 							const nextLocale = event.target.value === "es" ? "es" : "en";
 							target.searchParams.set("locale", nextLocale);
+							// biome-ignore lint/suspicious/noDocumentCookie: cross-browser locale preference only; session credentials remain HttpOnly.
 							document.cookie = `backoffice-locale=${nextLocale}; Path=/; SameSite=Lax${window.location.protocol === "https:" ? "; Secure" : ""}`;
 							window.location.assign(target);
 						}}

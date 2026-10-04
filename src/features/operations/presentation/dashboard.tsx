@@ -164,8 +164,8 @@ export function Dashboard({
 										<Timestamp value={trace.startedAt} />
 									</p>
 									<ol>
-										{trace.stages.map((stage, index) => (
-											<li key={`${stage.name}-${index}`}>
+										{trace.stages.map((stage) => (
+											<li key={stage.id}>
 												<span>
 													{stage.name === "language"
 														? t.languageStage

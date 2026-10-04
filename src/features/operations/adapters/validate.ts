@@ -86,9 +86,13 @@ function trace(value: unknown): ExecutionTrace {
 		startedAt: date(item.started_at),
 		outcome: outcome(item.outcome),
 		durationMs: number(item.duration_ms),
-		stages: item.stages.map((value: unknown) => {
+		stages: item.stages.map((value: unknown, position: number) => {
 			const item = object(value, ["name", "duration_ms"]);
-			return { name: stage(item.name), durationMs: number(item.duration_ms) };
+			return {
+				id: String(position),
+				name: stage(item.name),
+				durationMs: number(item.duration_ms),
+			};
 		}),
 	};
 }
