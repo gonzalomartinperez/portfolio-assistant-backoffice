@@ -126,6 +126,8 @@ jobs:
             --env-file /tmp/backoffice-fixture.env \
             --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
             portfolio-assistant-backoffice:rc node scripts/auth-migrate.ts
+      - name: Exercise OAuth exchange, invitation and revocation against PostgreSQL
+        run: node --test tests/integration/auth.test.ts
       - name: Start the exact image with isolated fixture configuration
         run: |
           docker run -d --name assistant-browser --add-host host.docker.internal:host-gateway \

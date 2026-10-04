@@ -29,7 +29,7 @@ cancelling an in-progress release. Timeouts bound every job.
 ## Reproducibility and permissions
 
 `npm ci` is mandatory. Setup-node caches downloads with an explicit lockfile path and its
-OS/architecture/version-aware cache key; a cache never substitutes for installation. One
+OS/architecture/lockfile-aware cache key; a cache never substitutes for installation. One
 required `npm audit --audit-level=moderate` covers production and development dependencies.
 BuildKit uses a separate `backoffice-node24-amd64` scope and content-addressed build inputs.
 No broad node_modules restore key is used. Browser binaries remain uncached, following
@@ -46,7 +46,9 @@ PR jobs receive no repository secrets. The dependency policy workflow remains a 
 trusted metadata controller; see [dependency maintenance](dependency-updates.md).
 
 The browser job uses only public synthetic fixture credentials, a private job database and
-isolated container. It migrates before startup using `node scripts/auth-migrate.ts`, verifies
+isolated container. It migrates before startup using `node scripts/auth-migrate.ts`, runs the separate
+`node --test tests/integration/auth.test.ts` OAuth/code-exchange suite against that test
+database, then verifies
 the production image, and removes only its own application container. GitHub cleans up its
 service container. No paid model/provider call is part of this pipeline. OAuth fixtures and
 seeded database sessions do not establish Google/GitHub production-provider compatibility.
