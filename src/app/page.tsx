@@ -1,6 +1,7 @@
-import { requireAccess } from "../features/auth/server";
+import { getAuthLocale, requireAccess } from "../features/auth/server";
 import { loadOperations } from "../features/operations/entry";
 import { Dashboard } from "../features/operations/presentation/dashboard";
+export const dynamic = "force-dynamic";
 export default async function Page({
 	searchParams,
 }: {
@@ -12,7 +13,13 @@ export default async function Page({
 		<Dashboard
 			result={await loadOperations()}
 			role={access.role}
-			locale={params.locale === "es" ? "es" : "en"}
+			locale={
+				params.locale === "es"
+					? "es"
+					: params.locale === "en"
+						? "en"
+						: await getAuthLocale()
+			}
 			fixture={process.env.OPERATIONS_SOURCE_MODE === "fixture"}
 		/>
 	);

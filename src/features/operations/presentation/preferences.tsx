@@ -20,10 +20,9 @@ export function Preferences({ locale }: { locale: OperationsLocale }) {
 						value={locale}
 						onChange={(event) => {
 							const target = new URL(window.location.href);
-							target.searchParams.set(
-								"locale",
-								event.target.value === "es" ? "es" : "en",
-							);
+							const nextLocale = event.target.value === "es" ? "es" : "en";
+							target.searchParams.set("locale", nextLocale);
+							document.cookie = `backoffice-locale=${nextLocale}; Path=/; SameSite=Lax${window.location.protocol === "https:" ? "; Secure" : ""}`;
 							window.location.assign(target);
 						}}
 					>

@@ -42,7 +42,8 @@ export function createOperationsHttp({
 					redirect: "error",
 					signal: AbortSignal.timeout(5000),
 				});
-				if (!response.ok)
+				if (!response.ok) {
+					await response.body?.cancel();
 					return {
 						kind: "unavailable",
 						reason:
@@ -53,6 +54,17 @@ export function createOperationsHttp({
 									: "transport",
 						checkedAt,
 					};
+				}
+				if (
+					response.headers
+						.get("content-type")
+						?.split(";")[0]
+						?.trim()
+						.toLowerCase() !== "application/json"
+				) {
+					await response.body?.cancel();
+					return { kind: "unavailable", reason: "contract", checkedAt };
+				}
 				const declaredSize = Number(
 					response.headers.get("content-length") ?? 0,
 				);

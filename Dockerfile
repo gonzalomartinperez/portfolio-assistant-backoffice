@@ -11,6 +11,10 @@ COPY scripts/auth-migrate.ts scripts/release-compatibility.ts ./scripts/
 COPY contracts/source.json ./contracts/source.json
 RUN npm run build
 
+FROM build AS production-dependencies
+# The explicit migration entry point is outside Next's route tracing graph.
+RUN npm prune --omit=dev --ignore-scripts --no-audit --no-fund
+
 FROM node:24.21.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS runtime
 LABEL org.opencontainers.image.source="https://github.com/gonzalomartinperez/portfolio-assistant-backoffice"
 LABEL org.opencontainers.image.licenses="MIT"
@@ -18,6 +22,7 @@ WORKDIR /app
 COPY LICENSE ./LICENSE
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000
 COPY --from=build --chown=node:node /app/.next/standalone ./
+COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
 COPY --from=build --chown=node:node /app/public ./public
 COPY --from=build --chown=node:node /app/scripts ./scripts

@@ -41,7 +41,7 @@ export function Dashboard({
 						<a href={`/access?locale=${locale}`}>{t.access}</a>
 					)}
 					<Preferences locale={locale} />
-					<SignOut label={t.signOut} />
+					<SignOut label={t.signOut} locale={locale} />
 				</nav>
 			</header>
 			<div className="operations-toolbar">

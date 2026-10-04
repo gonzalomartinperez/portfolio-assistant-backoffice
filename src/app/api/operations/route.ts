@@ -1,7 +1,19 @@
 import { getAccess } from "../../../features/auth/server";
 import { loadOperations } from "../../../features/operations/entry";
+export const dynamic = "force-dynamic";
 export async function GET() {
-	const access = await getAccess();
+	let access;
+	try {
+		access = await getAccess();
+	} catch {
+		return Response.json(
+			{ code: "unavailable" },
+			{
+				status: 503,
+				headers: { "Cache-Control": "private, no-store", Vary: "Cookie" },
+			},
+		);
+	}
 	if (!access)
 		return Response.json(
 			{ code: "unauthorized" },

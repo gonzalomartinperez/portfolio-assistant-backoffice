@@ -41,7 +41,9 @@ export async function requireOwner(): Promise<Access> {
 
 export async function readiness(): Promise<boolean> {
 	try {
-		const { pool } = getAuthRuntime();
+		const { auth, pool } = getAuthRuntime();
+		const context = await auth.$context;
+		await context.checkSchema?.();
 		const result = await pool.query('SELECT id FROM "user" LIMIT 0');
 		await pool.query(
 			"SELECT user_id,role,revoked_at FROM backoffice_member LIMIT 0",

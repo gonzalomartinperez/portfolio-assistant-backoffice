@@ -2,8 +2,10 @@ import { readFile } from "node:fs/promises";
 import { getMigrations } from "better-auth/db/migration";
 import { readAuthConfiguration } from "../src/features/auth/config.ts";
 import { createAuthRuntime } from "../src/features/auth/runtime.ts";
-const { pool, options } = createAuthRuntime(readAuthConfiguration(process.env));
+let runtime: ReturnType<typeof createAuthRuntime> | undefined;
 try {
+	runtime = createAuthRuntime(readAuthConfiguration(process.env));
+	const { pool, options } = runtime;
 	const migrations = await getMigrations(options);
 	await migrations.runMigrations();
 	const client = await pool.connect();
@@ -30,5 +32,5 @@ try {
 	);
 	process.exitCode = 1;
 } finally {
-	await pool.end();
+	await runtime?.pool.end();
 }

@@ -16,7 +16,14 @@ export function readAuthConfiguration(
 			throw new Error(`Missing authentication configuration: ${name}`);
 		return value;
 	};
-	const origin = new URL(required("BACKOFFICE_ORIGIN"));
+	const parseUrl = (value: string, name: string): URL => {
+		try {
+			return new URL(value);
+		} catch {
+			throw new Error(`Invalid ${name}`);
+		}
+	};
+	const origin = parseUrl(required("BACKOFFICE_ORIGIN"), "BACKOFFICE_ORIGIN");
 	if (
 		origin.pathname !== "/" ||
 		origin.search ||
@@ -32,7 +39,7 @@ export function readAuthConfiguration(
 		throw new Error("Invalid BACKOFFICE_ORIGIN");
 	}
 	const databaseUrl = required("BACKOFFICE_DATABASE_URL");
-	const database = new URL(databaseUrl);
+	const database = parseUrl(databaseUrl, "BACKOFFICE_DATABASE_URL");
 	if (!["postgres:", "postgresql:"].includes(database.protocol))
 		throw new Error("Invalid BACKOFFICE_DATABASE_URL");
 	const secret = required("BETTER_AUTH_SECRET");

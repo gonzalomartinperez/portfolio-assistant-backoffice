@@ -114,6 +114,7 @@ test("bounds undeclared chunked response bodies and cancels their readers", asyn
 						cancelled = true;
 					},
 				}),
+				{ headers: { "Content-Type": "application/json" } },
 			),
 	}).read();
 	assert.equal(result.kind, "unavailable");
@@ -136,4 +137,23 @@ test("refuses credential URLs, prefixes and redirects rather than leaking the to
 		assert.equal(result.kind, "unavailable");
 		if (result.kind === "unavailable") assert.equal(result.reason, "contract");
 	}
+});
+
+test("rejects a non-JSON successful response without consuming untrusted content", async () => {
+	let cancelled = false;
+	const result = await createOperationsHttp({
+		origin: "https://private.example",
+		token: "fixture-only",
+		request: async () =>
+			new Response(
+				new ReadableStream({
+					cancel() {
+						cancelled = true;
+					},
+				}),
+				{ headers: { "Content-Type": "text/html" } },
+			),
+	}).read();
+	assert.equal(result.kind, "unavailable");
+	assert.equal(cancelled, true);
 });

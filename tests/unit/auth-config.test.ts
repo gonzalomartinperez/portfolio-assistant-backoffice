@@ -73,3 +73,18 @@ test("auth dictionaries are complete and locale parsing remains narrow", async (
 	for (const values of Object.values(authCopy))
 		for (const text of Object.values(values)) assert.ok(text.trim());
 });
+
+test("malformed credentialed URLs never attach the secret input to public errors", () => {
+	const sentinel = "private-credential-sentinel";
+	for (const name of ["BACKOFFICE_ORIGIN", "BACKOFFICE_DATABASE_URL"]) {
+		try {
+			readAuthConfiguration({ ...env, [name]: `not a url:${sentinel}` });
+			assert.fail("Expected invalid URL");
+		} catch (error) {
+			assert.ok(error instanceof Error);
+			assert.equal(JSON.stringify(error).includes(sentinel), false);
+			assert.equal(String(error).includes(sentinel), false);
+			assert.equal("input" in error, false);
+		}
+	}
+});
