@@ -49,6 +49,14 @@ export async function readiness(): Promise<boolean> {
 			"SELECT user_id,role,revoked_at FROM backoffice_member LIMIT 0",
 		);
 		await pool.query("SELECT id,token FROM session LIMIT 0");
+		await pool.query('SELECT id,"userId","providerId" FROM account LIMIT 0');
+		await pool.query(
+			'SELECT id,identifier,value,"expiresAt" FROM verification LIMIT 0',
+		);
+		await pool.query('SELECT key,count,"lastRequest" FROM "rateLimit" LIMIT 0');
+		await pool.query(
+			"SELECT id,token_hash,expires_at,consumed_at,revoked_at FROM backoffice_invitation LIMIT 0",
+		);
 		return result.rowCount === 0;
 	} catch {
 		return false;
