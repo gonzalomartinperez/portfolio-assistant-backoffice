@@ -1,5 +1,15 @@
 # Design system and provenance
 
+The current root surface is the authenticated backoffice. Its operations cards, native
+disclosures, preferences and account controls reuse semantic tokens and owned button
+variants. Metrics use tabular numbers; long identifiers wrap without widening the page.
+Unknown data remains an explicit notice. Auth CSS Modules own account composition;
+operations classes own responsive dashboard composition. No graph library or decorative
+architecture diagram is required to inspect execution stages.
+
+Public chat/avatar details below are historical migration context; current native chat
+is maintained in the portfolio.
+
 Read-only portfolio reference: `45d8a42faa78bfb94952639ed462832c3b4ad109`.
 Reviewed `docs/design.md`, `components.json`, `src/app/globals.css`, owned button/input
 primitives, fonts/layout and theme behavior. No runtime import crosses repositories.

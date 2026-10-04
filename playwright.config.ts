@@ -19,6 +19,7 @@ export default defineConfig({
 	],
 	webServer: {
 		command: "node scripts/test-server.ts",
+		gracefulShutdown: { signal: "SIGTERM", timeout: 5000 },
 		url: "http://localhost:3107",
 		reuseExistingServer: false,
 		timeout: 60_000,

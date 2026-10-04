@@ -1,4 +1,29 @@
-# Architecture and streaming
+# Backoffice architecture
+
+The root page is a protected Server Component. `features/operations/entry.ts` is the
+server-only composition root: it constructs a bounded HTTP adapter and invokes the
+application read operation. The browser receives validated, allowlisted view data, not
+private service URLs, credentials or raw diagnostics.
+
+- `operations/domain`: platform-independent operational models and explicit available,
+  unavailable/unconfigured results.
+- `operations/application`: a small read port; no React, Next or network dependencies.
+- `operations/adapters`: private HTTP policy, bounded UTF-8 JSON and wire-to-model validation.
+- `operations/presentation`: server rendering and intentional client preference controls.
+- `auth`: Better Auth configuration, PostgreSQL membership policy, guarded server actions
+  and accessible account presentation. A hidden control is never an authorization check.
+
+Dependency tests enforce pure layers and reject server-only imports at client boundaries.
+Authentication is rechecked per request, not persisted as a browser role. Operational
+reads use no-store, bounded request time/body and safe explicit failures. No generation
+retry or model call occurs in this application. IAM is separate from conversation storage.
+[ADR 004](adrs/004-native-chat-and-private-operations.md) describes ownership and migration.
+
+## Historical public-chat implementation
+
+The following documents the preserved former chat feature. It is migrated to the portfolio
+and retired here only after equivalent behavior is verified there. It does not describe
+the current root route or establish current backoffice acceptance.
 
 The root page/layout are Server Components. `features/assistant/entry.tsx` is the
 composition root and intentional client boundary for locale, theme, conversation

@@ -1,29 +1,19 @@
-# Portfolio assistant web
+# Portfolio assistant backoffice
 
-A bilingual Next.js assistant about Gonzalo's public professional work. It calls a pinned
-API directly and contains no provider credentials. AI output is untrusted and may be
-incomplete even when sources are included.
+Authenticated operations for Gonzalo's portfolio assistant. The public conversation UI
+now belongs to the portfolio; this application monitors availability, public-knowledge
+freshness, execution stages and estimated usage. Public source code does not imply public
+access to operational data.
 
-## Actual interface
+Google/GitHub authentication, verified-owner admission, invited viewers, live revocation
+and the bilingual dashboard are implemented. The operational backend contract is still
+[requested](docs/backend-operations-request.md), not consumed: real metrics remain unavailable
+until that handoff exists. Synthetic test data is labeled. Historical [chat screenshots](docs/verification/interaction-polish.md)
+describe the former application, not the current backoffice.
 
-These screenshots show the implemented interface using deterministic fixture answers,
-not live model output or personal conversations.
+## Local setup
 
-![English desktop conversation in the dark theme, with sources, copy, feedback and follow-up questions](docs/verification/interaction-polish/after-conversation-desktop.png)
-
-![Spanish mobile conversation with sources, copy, follow-up choices and the composer visible](docs/verification/interaction-polish/after-conversation-mobile.png)
-
-[Light desktop](docs/verification/final-desktop-light.png) ·
-[Light mobile](docs/verification/final-mobile-light.png) ·
-[Landscape conversation](docs/verification/final-landscape.png)
-
-[Before/after evidence](docs/verification/interaction-polish.md) ·
-[Avatar and conversation interaction demo](docs/verification/interaction-polish/signature-demo.webm) ·
-[Full-stack fixture follow-up](docs/verification/interaction-polish/live-context-desktop.png)
-
-## Local development
-
-Use Node 24 from `.nvmrc`, npm and the WSL Linux filesystem:
+Use Linux/WSL, Node from `.nvmrc`, npm and a dedicated PostgreSQL database:
 
 ```sh
 nvm use
@@ -32,102 +22,56 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The UI runs at `http://localhost:3001`; the local example API origin is `http://localhost:8000`.
-Run the API separately in fixture mode according to its own instructions. This repository
-never starts a paid model. Set `NEXT_PUBLIC_ASSISTANT_API_URL` in gitignored `.env.local`
-only to a public API origin (omit it for same-origin production). It is compiled into the browser at build time; rebuild when
-changing it. The standalone image ignores runtime changes to this public build-time variable. Never expose provider/admin
-keys or private content via `NEXT_PUBLIC_*`.
+The web runs on `http://localhost:3001`. Configure the server-only variables in `.env.local`
+and register exact Google/GitHub callbacks before testing real login. There is no password
+login or open registration. See [authentication](docs/authentication.md) for migrations,
+provider setup and invitation behavior. Do not point integration or fixture tools at a
+shared database. Node commands do not automatically load `.env.local`; pass configuration
+explicitly through the process environment when running migrations/tests.
 
-## Deterministic preview
-
-```sh
-NEXT_PUBLIC_ASSISTANT_API_URL= npm run build
-npm run preview:fixture
-```
-
-Open `http://localhost:3107`. The fixture service on 8107 uses memory-only anonymous
-sessions and deterministic public example answers, not a model. Stop with Ctrl+C.
-The empty build-time origin overrides `.env.local` for same-origin requests. A test-only
-proxy preserves `/api/` and routes to the fixture.
-This is the same real HTTP/SSE fixture used by browser tests. It supports normal questions
-and the test prompts `slow`, `interrupt`, `failed`, `reject` and `expired`.
-
-## Verification without a live backend
+## Verification
 
 ```sh
 npm run format:check
 npm run lint
 npm run typecheck
 npm test
-npm run contract:generate
-git diff --exit-code contracts/types.d.ts
-NEXT_PUBLIC_ASSISTANT_API_URL= npm run build
+npm run security:check
+npm run docs:check
+npm run skills:check
+npm run build
+npm run test:auth
 npx playwright install --with-deps chromium firefox webkit
 npm run test:browser
 ```
 
-Playwright manages a single production web/fixture-server pair on isolated ports 3107/8107.
-It refuses to reuse an existing process. These are mocked contract/interaction tests,
-not proof of live API integration or model quality. Browser artifacts go to `test-results/`
-and `playwright-report/`. `node scripts/measure-bundle.ts` measures all built JS chunks.
+Authentication integration requires a dedicated database whose name includes `test` or
+`fixture`; it resets only that isolated database and exercises real PostgreSQL with a
+local OAuth provider. Browser verification uses signed fixture sessions and synthetic
+operational data. Neither proves live Google/GitHub, production telemetry or model quality.
+Private session artifacts must never be committed or uploaded. Commands that require an
+unavailable service are unexecuted checks, not successes. [Delivery checklist](docs/work-checklist.md)
+tracks current acceptance and blockers.
 
-To run the separate live-fixture suite, build with the actual API origin, run the API in
-fixture mode and the web on 3001, then run
-`npx playwright test --config playwright.live.config.ts`. CI retains this gate against
-committed API/portfolio references in addition to deterministic cross-browser checks.
+The checker is currently TypeScript 5.9.3 with strict indexed/optional checks;
+[ADR 003](docs/adrs/003-typescript7-compatibility.md) records the compiler migration gate.
+Node 24 executes erasable TypeScript but does not type-check it. The Google TypeScript
+readability adaptations and verification conventions are in [CONTRIBUTING](CONTRIBUTING.md).
 
-## Behavior and deployment
+## Architecture and delivery
 
-Enter sends, Shift+Enter adds a line, and composition input does not submit. Stop retains
-partial text. “Check saved conversation” recovers history without generating again; a new
-conversation leaves unresolved local partial text. History is stored by the API under its
-anonymous session/retention policy. Only theme and language preferences use localStorage.
+[ADR 004](docs/adrs/004-native-chat-and-private-operations.md) defines the public-chat/private-operations
+split. Pure operational models, small application ports, HTTP validation adapters and
+presentation remain separate; server composition keeps secrets out of client bundles.
+[Design system](docs/design-system.md), [agent skills](docs/agent-skills.md) and
+[dependency maintenance](docs/dependency-updates.md) provide maintained procedures.
 
-The future shared Hostinger KVM 4 runs the standalone frontend and FastAPI behind one
-reverse proxy; the portfolio stays on Hostinger Business. Browser calls use relative
-`/api/v1/...`, routed directly to FastAPI. See the [deployment ADR](docs/adrs/002-shared-vps.md),
-[Coolify/vps-ops runtime contract](docs/deployment-contract.md) and [local image verification](docs/deployment.md) and [CI job design](docs/ci.md).
-Private vps-ops owns production composition and Coolify execution. Production CD is disabled. No DNS, remote deployment or paid-model call is authorized.
+This repository owns its Dockerfile, IAM migrations and [runtime contract](docs/deployment-contract.md).
+Private vps-ops owns Coolify and deployment on the future Hostinger KVM 4; the portfolio
+stays on Business. CI verifies an immutable image before browser tests. Publication is
+manual and separately approved; no production deployment controller is included.
+Work enters `develop` through PRs. Main promotion, production OAuth, effective proxy
+headers, physical-device testing and backup/recovery remain separate release gates.
 
-See [architecture](docs/architecture.md), [design system](docs/design-system.md),
-[contract refresh and integration handoffs](docs/api-contract.md),
-[verification](docs/verification/quality-chat.md) and [implementation status](IMPLEMENTATION_STATUS.md).
-Canonical agent instructions live in [AGENTS.md](AGENTS.md).
-
-## Project status and contributing
-
-Implemented: bilingual/theme-aware chat, anonymous history, incremental responses, sources,
-feedback, rename/delete, cancellation, safe recovery, responsive controls and enforced
-feature boundaries. Physical-device/screen-reader validation, production integration remain separate release gates; see the verification report.
-
-[Contributing and TypeScript style adaptations](CONTRIBUTING.md),
-[security reporting](SECURITY.md), and [third-party/asset notices](THIRD_PARTY_NOTICES.md)
-explain the public project conventions. Application code is [MIT licensed](LICENSE);
-Gonzalo’s identity assets and third-party materials retain separate terms.
-
-GitHub discovers some community files and Dependabot configuration from the default
-branch. Feature work enters `develop`; owner-authorized promotions to `main` use a separate
-PR with full CI validation. Image publishing is manual, and production deployment remains
-disabled until separately authorized.
-
-Repository-local Codex and Claude Code workflows are documented in [Agent skills](docs/agent-skills.md).
-
-## Portfolio embedding
-
-`/embed` shares the standalone conversation implementation and accepts validated host
-theme/language preferences. The portfolio owns the floating panel and keeps one iframe
-instance across minimize/maximize. The [versioned integration handoff](docs/embed-integration.md)
-defines origins, headers, session limitations, accessibility and the local cross-origin harness.
-Production portfolio integration remains a separate owner task.
-
-Compiler status: [TypeScript 7 compatibility gate](docs/adrs/003-typescript7-compatibility.md).
-The working checker is explicitly TypeScript 5.9.3 with additional strict indexed/optional
-checks; the stable contract generator currently blocks the official 7/6 arrangement.
-
-Dependency updates follow the [conservative maintenance policy](docs/dependency-updates.md).
-Automatic merging is staged; default-branch activation and its required protection gate
-remain separate from application releases and production deployment.
-
-Application code, tooling and fixtures use TypeScript. Node 24 runs the scripts directly;
-`npm run typecheck` also checks tests and tooling. See the [execution conventions](CONTRIBUTING.md#typescript-source-and-execution).
+Application code retains the [MIT license](LICENSE). Identity assets/fonts retain their
+[attribution and terms](THIRD_PARTY_NOTICES.md). See [SECURITY](SECURITY.md) for reporting.

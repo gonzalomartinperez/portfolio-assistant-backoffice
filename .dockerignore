@@ -15,6 +15,7 @@ docs/verification/*.png
 
 coverage
 .auth-fixture
+.artifacts
 ops-data
 backups
 **/*.pem

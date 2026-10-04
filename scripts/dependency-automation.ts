@@ -17,7 +17,7 @@ export type GitHubApi = (
 
 export async function readProtection(api: GitHubApi) {
 	const response = await api("/graphql", {
-		query: `query { repository(owner:"gonzalomartinperez", name:"portfolio-assistant-web") {
+		query: `query { repository(owner:"gonzalomartinperez", name:"portfolio-assistant-backoffice") {
 			ref(qualifiedName:"refs/heads/develop") { branchProtectionRule {
 				requiresStatusChecks requiresStrictStatusChecks isAdminEnforced allowsForcePushes allowsDeletions
 				requiredStatusChecks { context app { databaseId } }
@@ -244,7 +244,7 @@ export async function reconcile({
 
 async function main() {
 	const repository = process.env.GITHUB_REPOSITORY;
-	if (repository !== "gonzalomartinperez/portfolio-assistant-web")
+	if (repository !== "gonzalomartinperez/portfolio-assistant-backoffice")
 		throw new Error("Unexpected repository");
 	const token = process.env.GH_TOKEN;
 	if (!token) throw new Error("Missing API token");

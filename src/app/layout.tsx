@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { fontClassName } from "./fonts";
+import { SkipLink } from "../shared/accessibility/skip-link";
 import "./style.css";
 export const viewport: Viewport = {
 	width: "device-width",
@@ -26,9 +27,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 				/>
 			</head>
 			<body>
-				<a className="skip-link" href="#main">
-					Skip to content
-				</a>
+				<SkipLink />
 				{children}
 			</body>
 		</html>

@@ -42,18 +42,18 @@ test("catalog rejects drift, escapes, malformed metadata and stale commands", ()
 		assert.deepEqual(validateSkills(root).errors, []);
 		const entry = path.join(
 			root,
-			".claude/skills/web-change-assistant/SKILL.md",
+			".claude/skills/web-change-backoffice/SKILL.md",
 		);
 		const original = readFileSync(entry, "utf8");
 		for (const [change, expected] of [
 			[
-				original.replace("name: web-change-assistant", "name: [broken]"),
+				original.replace("name: web-change-backoffice", "name: [broken]"),
 				/Invalid namespaced/,
 			],
 			[
 				original.replace(
-					"name: web-change-assistant",
-					"name: web-change-assistant\nname: duplicate",
+					"name: web-change-backoffice",
+					"name: web-change-backoffice\nname: duplicate",
 				),
 				/duplicated mapping key/,
 			],
@@ -68,13 +68,13 @@ test("catalog rejects drift, escapes, malformed metadata and stale commands", ()
 		}
 		writeFileSync(entry, original);
 		mkdirSync(
-			path.join(root, ".claude/skills/web-change-assistant/references"),
+			path.join(root, ".claude/skills/web-change-backoffice/references"),
 		);
 		assert.match(validateSkills(root).errors.join("\n"), /Empty scaffold/);
-		rmSync(path.join(root, ".claude/skills/web-change-assistant/references"), {
+		rmSync(path.join(root, ".claude/skills/web-change-backoffice/references"), {
 			recursive: true,
 		});
-		const link = path.join(root, ".agents/skills/web-change-assistant");
+		const link = path.join(root, ".agents/skills/web-change-backoffice");
 		unlinkSync(link);
 		symlinkSync("../../.claude/skills/web-refresh-contract", link);
 		assert.match(
