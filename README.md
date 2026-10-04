@@ -8,8 +8,9 @@ access to operational data.
 Google/GitHub authentication, verified-owner admission, invited viewers, live revocation
 and the bilingual dashboard are implemented. The operational backend contract is still
 [requested](docs/backend-operations-request.md), not consumed: real metrics remain unavailable
-until that handoff exists. Synthetic test data is labeled. Historical [chat screenshots](docs/verification/interaction-polish.md)
-describe the former application, not the current backoffice.
+until that handoff exists. Synthetic test data is labeled. Current [screenshots and verification](docs/verification/backoffice.md)
+describe the backoffice; historical [chat screenshots](docs/verification/interaction-polish.md)
+describe the former application.
 
 ## Local setup
 
