@@ -32,7 +32,7 @@ jobs:
         run: npm audit --audit-level=moderate
       - name: Check formatting, lint and strict types
         run: npm run format:check && npm run lint && npm run typecheck
-      - name: Test state, transport, contract and architecture
+      - name: Test authorization, operations, contracts and architecture
         run: npm test
       - name: Scan public files and documentation links
         run: npm run security:check && npm run docs:check && npm run skills:check
@@ -57,12 +57,12 @@ jobs:
         with:
           context: .
           load: true
-          tags: portfolio-assistant-web:rc
-          cache-from: type=gha,scope=web-node24-amd64
-          cache-to: type=gha,mode=max,scope=web-node24-amd64
+          tags: portfolio-assistant-backoffice:rc
+          cache-from: type=gha,scope=backoffice-node24-amd64
+          cache-to: type=gha,mode=max,scope=backoffice-node24-amd64
       - name: Export the verified production image
-        run: docker save portfolio-assistant-web:rc | gzip -1 > /tmp/image.tar.gz
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        run: docker save portfolio-assistant-backoffice:rc | gzip -1 > /tmp/image.tar.gz
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: production-image
           path: /tmp/image.tar.gz
@@ -70,6 +70,27 @@ jobs:
           compression-level: 0
   browser:
     needs: image
+    services:
+      postgres:
+        image: postgres:17-bookworm@sha256:91eb910c44c7ed13f7f1a4ccadaa9ca72ef14cddc04cacb6e070e48eb44731a3
+        env:
+          POSTGRES_DB: backoffice_test
+          POSTGRES_USER: backoffice_fixture
+          POSTGRES_PASSWORD: public-fixture-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U backoffice_fixture -d backoffice_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      BACKOFFICE_ORIGIN: http://localhost:3107
+      BACKOFFICE_DATABASE_URL: postgres://backoffice_fixture:public-fixture-only@127.0.0.1:5432/backoffice_test
+      BETTER_AUTH_SECRET: public-fixture-only-at-least-32-characters
+      BACKOFFICE_OWNER_EMAIL: owner@example.test
+      GOOGLE_CLIENT_ID: public-fixture-client
+      GOOGLE_CLIENT_SECRET: public-fixture-secret
+      GITHUB_CLIENT_ID: public-fixture-client
+      GITHUB_CLIENT_SECRET: public-fixture-secret
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -83,20 +104,42 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: production-image
           path: /tmp/image
       - name: Load the exact production image
         run: gunzip -c /tmp/image/image.tar.gz | docker load
-      - run: docker run -d --name assistant-browser -e EMBED_ALLOWED_ORIGINS=http://localhost:3110 --read-only --tmpfs /tmp --tmpfs /app/.next/cache:uid=1000,gid=1000,mode=0700,size=32m --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:3108:3000 portfolio-assistant-web:rc
+      - name: Write synthetic container configuration
+        run: |
+          node --input-type=module <<'NODE'
+          import { writeFileSync } from 'node:fs';
+          const names = ['BACKOFFICE_ORIGIN', 'BETTER_AUTH_SECRET', 'BACKOFFICE_OWNER_EMAIL',
+            'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET'];
+          const values = names.map(name => `${name}=${process.env[name]}`);
+          values.push('BACKOFFICE_DATABASE_URL=postgres://backoffice_fixture:public-fixture-only@host.docker.internal:5432/backoffice_test');
+          writeFileSync('/tmp/backoffice-fixture.env', values.join('\n') + '\n', { mode: 0o600 });
+          NODE
+      - name: Migrate the isolated authentication database
+        run: |
+          docker run --rm --add-host host.docker.internal:host-gateway \
+            --env-file /tmp/backoffice-fixture.env \
+            --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
+            portfolio-assistant-backoffice:rc node scripts/auth-migrate.ts
+      - name: Start the exact image with isolated fixture configuration
+        run: |
+          docker run -d --name assistant-browser --add-host host.docker.internal:host-gateway \
+            --env-file /tmp/backoffice-fixture.env \
+            --read-only --tmpfs /tmp --tmpfs /app/.next/cache:uid=1000,gid=1000,mode=0700,size=32m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            -p 127.0.0.1:3108:3000 portfolio-assistant-backoffice:rc
       - name: Install all browser engines and OS dependencies
         run: npx playwright install --with-deps chromium firefox webkit
-      - name: Verify browser interactions and accessibility
+      - name: Verify real-database authorization, operations and accessibility
         run: npm run test:browser
         env:
           WEB_UPSTREAM: http://127.0.0.1:3108
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: browser-verification
@@ -104,16 +147,26 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 14
-      - name: Collect container logs
+      - name: Collect synthetic container logs
         if: always()
-        run: docker logs assistant-browser
+        run: docker logs assistant-browser > /tmp/backoffice-container.log 2>&1
+      - name: Retain failure logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: backoffice-container-failure
+          path: /tmp/backoffice-container.log
+          retention-days: 14
       - name: Remove only this job's container
         if: always()
-        run: docker rm -f assistant-browser
-  live-fixture:
-    needs: image
+        run: |
+          docker rm -f assistant-browser
+          rm -f /tmp/backoffice-fixture.env
+  checks:
+    if: always()
+    needs: [static, image, browser]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 2
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -121,48 +174,8 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - name: Install locked dependencies
-        run: npm ci --no-audit --no-fund
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: production-image
-          path: /tmp/image
-      - name: Load the exact production image
-        run: gunzip -c /tmp/image/image.tar.gz | docker load
-      - name: Install live-integration browser
-        run: npx playwright install --with-deps chromium
-      - name: Initialize isolated pinned backend and databases
-        run: bash scripts/integration-up.sh
-      - name: Verify actual API browser flows
-        run: npx playwright test --config playwright.live.config.ts
-      - name: Verify proxy security, streaming and graceful shutdown
-        run: node scripts/proxy-smoke.ts
-      - if: always()
-        run: docker compose -p assistant-web-verification -f tests/integration/compose.yaml logs --no-color > /tmp/integration.log
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: failure()
-        with:
-          name: live-fixture-failures
-          path: |
-            test-results/
-            /tmp/integration.log
-          retention-days: 14
-      - if: always()
-        run: docker compose -p assistant-web-verification -f tests/integration/compose.yaml down
-  checks:
-    if: always()
-    needs: [static, image, browser, live-fixture]
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
+          package-manager-cache: false
       - name: Require every validation job
         env:
-          RESULTS: ${{ toJSON(needs) }}
-        run: |
-          python3 - <<'PYCODE'
-          import json, os
-          jobs = json.loads(os.environ['RESULTS'])
-          assert all(job['result'] == 'success' for job in jobs.values()), jobs
-          PYCODE
+          CI_RESULTS: ${{ toJSON(needs) }}
+        run: node scripts/check-ci-results.ts

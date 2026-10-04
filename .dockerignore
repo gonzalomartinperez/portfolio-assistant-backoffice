@@ -12,3 +12,12 @@ public-portfolio
 .env.*
 .integration
 docs/verification/*.png
+
+coverage
+.auth-fixture
+ops-data
+backups
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
