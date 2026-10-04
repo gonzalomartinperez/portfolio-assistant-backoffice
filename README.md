@@ -29,6 +29,27 @@ login or open registration. See [authentication](docs/authentication.md) for mig
 provider setup and invitation behavior. Do not point integration or fixture tools at a
 shared database. Node commands do not automatically load `.env.local`; pass configuration
 explicitly through the process environment when running migrations/tests.
+Run `npm run auth:migrate` with that environment before admitting users. The application
+does not migrate a database on startup.
+
+For deterministic browser verification, build once and start a disposable PostgreSQL
+instance on an available loopback port (the managed fixture defaults to 15432):
+
+```sh
+docker run -d --name backoffice-fixture-postgres \
+  -e POSTGRES_USER=backoffice_fixture -e POSTGRES_PASSWORD=public-fixture-only \
+  -e POSTGRES_DB=backoffice_test --tmpfs /var/lib/postgresql/data \
+  -p 127.0.0.1:15432:5432 \
+  postgres:17-bookworm@sha256:91eb910c44c7ed13f7f1a4ccadaa9ca72ef14cddc04cacb6e070e48eb44731a3
+```
+
+Wait for `docker exec backoffice-fixture-postgres pg_isready -U backoffice_fixture`.
+Then run `npm run build` and `npm run test:browser -- backoffice.spec.ts`; the single
+managed lifecycle provisions real signed sessions, starts the synthetic operational
+service and closes its owned servers. No live OAuth or paid model calls occur. These
+credentials are public test values. Remove only this disposable container afterward
+with `docker rm -f backoffice-fixture-postgres`. Choose another port and set
+`BACKOFFICE_DATABASE_URL` explicitly if 15432 is already occupied.
 
 ## Verification
 
