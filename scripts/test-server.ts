@@ -32,8 +32,11 @@ const env = {
 	OPERATIONS_SOURCE_MODE: "fixture",
 };
 const database = new URL(env.BACKOFFICE_DATABASE_URL);
-if (!["localhost", "127.0.0.1", "[::1]"].includes(database.hostname))
-	throw new Error("Managed fixture database must be loopback");
+if (
+	!["localhost", "127.0.0.1", "[::1]"].includes(database.hostname) ||
+	!/(test|fixture)/.test(database.pathname)
+)
+	throw new Error("Managed fixture database must be loopback and isolated");
 if (process.env.WEB_UPSTREAM) {
 	const upstream = new URL(process.env.WEB_UPSTREAM);
 	if (!["localhost", "127.0.0.1", "[::1]"].includes(upstream.hostname))
@@ -55,6 +58,20 @@ const directory = resolve(".artifacts");
 const sessionsFile = resolve(directory, "fixture-sessions.json");
 await mkdir(directory, { recursive: true, mode: 0o700 });
 const configuration = readAuthConfiguration(env);
+if (!process.env.WEB_UPSTREAM) {
+	await new Promise<void>((resolveMigration, rejectMigration) => {
+		const migration = spawn(process.execPath, ["scripts/auth-migrate.ts"], {
+			stdio: "inherit",
+			env,
+		});
+		migration.once("error", rejectMigration);
+		migration.once("exit", (code) =>
+			code === 0
+				? resolveMigration()
+				: rejectMigration(new Error("Isolated fixture migration failed")),
+		);
+	});
+}
 await writeFile(
 	sessionsFile,
 	JSON.stringify({

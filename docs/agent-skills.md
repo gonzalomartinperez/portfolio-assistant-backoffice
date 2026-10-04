@@ -65,7 +65,7 @@ Behavioral review during implementation used these scenarios:
 
 | Request/scenario | Required behavior and evidence |
 | --- | --- |
-| Explicit `$web-change-backoffice` / `/web-change-backoffice` | Updated metadata and instructions structurally validated; current discovery probe pending |
+| Explicit `$web-change-backoffice` / `/web-change-backoffice` | Updated metadata and instructions structurally validated; both clients discover the command; model invocation unverified |
 | “Check narrow-screen keyboard behavior” | Select `web-verify-backoffice`; reviewed trigger and procedure, automatic model routing unverified |
 | “Explain what an SSE event is” | Answer the question; do not import a contract or run the full browser suite |
 | Import an API change without a committed SHA | Stop import, retain pinned contract, request a concrete handoff |
