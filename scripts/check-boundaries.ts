@@ -1,5 +1,5 @@
 import path from "node:path";
-import ts from "typescript";
+import ts from "@typescript/typescript6";
 const within = (file: string, directory: string) =>
 	file === directory || file.startsWith(directory + path.sep);
 export function boundaryErrors(file: string, source: string) {

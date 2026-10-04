@@ -1,4 +1,4 @@
-import ts from "typescript";
+import ts from "@typescript/typescript6";
 import { createServer, type Server } from "node:http";
 import { readFileSync } from "node:fs";
 export function startEmbedHost(assistantOrigin = "http://localhost:3107") {
