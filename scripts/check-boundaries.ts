@@ -31,7 +31,7 @@ export function boundaryErrors(file: string, source: string) {
 				specifier.startsWith("node:") ||
 				specifier === "next/headers" ||
 				(destination &&
-					/features[/\\]auth[/\\](server|config|database)(?:\.|$)/.test(
+					/features[/\\]auth[/\\](server|config|database|runtime|store)(?:\.|$)/.test(
 						destination,
 					)))
 		)

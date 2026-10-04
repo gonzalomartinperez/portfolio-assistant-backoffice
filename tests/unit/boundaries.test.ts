@@ -51,3 +51,16 @@ test("owned application, fixtures and tooling remain type-checked TypeScript", (
 		);
 	}
 });
+
+test("client boundaries reject authentication infrastructure imports", () => {
+	for (const module of ["server", "config", "database", "runtime", "store"]) {
+		assert.notEqual(
+			boundaryErrors(
+				"src/components/example.tsx",
+				`"use client"; import x from "../features/auth/${module}"`,
+			).length,
+			0,
+			module,
+		);
+	}
+});
