@@ -14,6 +14,16 @@ fixtures; PostgreSQL and signed session admission are real.
 - 21 browser checks passed across Chromium, Firefox and WebKit in 1.2 minutes.
 - Three operational-unavailability checks passed across those engines in 11.7 seconds.
 - Later readiness-table and fixture-startup changes require final image revalidation.
+- The managed local lifecycle was exercised against a newly created isolated database:
+  migration, signed-session provisioning and readiness passed; SIGINT removed the private
+  session artifact. Only that disposable database was dropped afterward.
+
+The backoffice pipeline passed for revision `6874d1e88fc00008ee2d2a0828d1fdaae456fba0`
+in [Actions run 37244209786](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/actions/runs/37244209786).
+Measured job durations: static 25s, immutable image 53s, browser/authentication 129s,
+required aggregator 4s. Static and image run independently; browser tests reuse that
+image without rebuilding. This verifies the current job graph, not field performance.
+Subsequent product changes require checks on their own head revision before merging.
 
 ![English operational dashboard in the dark theme, with explicitly synthetic metrics](backoffice/desktop-dark-en.png)
 
