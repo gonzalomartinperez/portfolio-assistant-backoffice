@@ -11,10 +11,11 @@ export async function fixtureSession(
 	const database = new URL(configuration.databaseUrl);
 	if (
 		!["localhost", "127.0.0.1", "[::1]"].includes(origin.hostname) ||
+		!["localhost", "127.0.0.1", "[::1]"].includes(database.hostname) ||
 		!/(test|fixture)/.test(database.pathname)
 	)
 		throw new Error(
-			"Fixture sessions require loopback origin and a test/fixture database",
+			"Fixture sessions require loopback origin/database and a test/fixture name",
 		);
 	const { auth, pool, store } = createAuthRuntime(configuration);
 	try {
