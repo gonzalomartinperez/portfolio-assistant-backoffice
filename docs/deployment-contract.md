@@ -94,7 +94,8 @@ future private operations API. No model-provider key or direct model call belong
 OpenTelemetry collectors/storage and shared monitoring are vps-ops/API responsibilities.
 Operational payloads must exclude prompts, answers, credentials and arbitrary attributes.
 Next/pg errors use generic safe messages; no request-body/session logging is added.
-Proxy logs must redact invitation query tokens and never capture cookies or authorization.
+Proxy logs must redact invitation tokens and OAuth callback query strings, and never
+capture cookies, authorization headers or provider callback bodies.
 
 Smoke the exact digest: apply migrations to an isolated test database; verify health and
 readiness, anonymous redirects and 401s; establish a signed fixture session; check owner

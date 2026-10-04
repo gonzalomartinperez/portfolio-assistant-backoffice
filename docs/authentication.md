@@ -59,7 +59,7 @@ provider tokens or transcripts. Viewer accounts cannot invite or revoke anyone.
 
 The invitation landing response clears the token from the visible URL, uses
 `no-store` and `no-referrer`, and stores it in an HttpOnly cookie for the OAuth
-round trip. Effective proxy access logs must redact invitation query parameters;
+round trip. Effective proxy access logs must redact invitation and OAuth callback query parameters;
 no frontend analytics or session replay is included.
 
 ## Verification
