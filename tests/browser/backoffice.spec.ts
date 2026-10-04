@@ -100,9 +100,13 @@ test("preferences synchronize language and the single theme authority", async ({
 	await authenticate(context, "owner");
 	await page.goto("/");
 	await page.getByText("Preferences", { exact: true }).click();
-	await page.getByLabel("Theme", { exact: true }).selectOption("light");
+	await page
+		.getByRole("combobox", { name: "Theme", exact: true })
+		.selectOption("light");
 	await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-	await page.getByLabel("Language", { exact: true }).selectOption("es");
+	await page
+		.getByRole("combobox", { name: "Language", exact: true })
+		.selectOption("es");
 	await expect(
 		page.getByRole("heading", { name: "Operaciones del asistente" }),
 	).toBeVisible();
@@ -157,7 +161,7 @@ test("operational failure presents safe no-data state without fabricated metrics
 		page.getByRole("button", { name: "Refresh data" }),
 	).toBeVisible();
 	const response = await page.request.get("/api/operations");
-	expect(response.ok()).toBe(true);
+	expect(response.status()).toBe(503);
 	expect(await response.text()).not.toContain(
 		"public-loopback-operations-fixture",
 	);
