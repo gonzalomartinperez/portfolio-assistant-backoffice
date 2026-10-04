@@ -7,6 +7,12 @@ branch protection via GraphQL. Both activation switches must remain off until a 
 least-privilege inspection mechanism is verified. This is a blocker, not permission to use
 a broad PAT or bypass branch protection.
 
+Repository inspection after the rename found vulnerability alerts and automated security
+PR creation disabled. Both were enabled through the authorized repository settings API;
+the subsequent alert query returned zero open alerts and security-fix creation reported
+`enabled: true`. This enables visibility and proposed fixes, not automatic merging.
+Security PRs may target the default branch and require its normal manual review path.
+
 ## Eligibility
 
 [Policy implementation](../scripts/dependency-policy.ts) is deliberately small:
