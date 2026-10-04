@@ -64,6 +64,14 @@ test("owner receives validated fixture metrics and restricted access navigation"
 	expect(data.ok()).toBe(true);
 	expect(data.headers()["cache-control"]).toContain("no-store");
 	expect(await data.text()).not.toContain("public-loopback-operations-fixture");
+	await page.locator("summary").filter({ hasText: "cccccccccccc" }).click();
+	await expect(
+		page.getByText("Vector retrieval", { exact: true }),
+	).toBeVisible();
+	await expect(page.getByText("Generation", { exact: true })).toBeVisible();
+	await expect(page.getByText("Graph retrieval", { exact: true })).toHaveCount(
+		0,
+	);
 	await page.screenshot({
 		path: `test-results/backoffice-${test.info().project.name}-desktop-en.png`,
 		fullPage: true,
