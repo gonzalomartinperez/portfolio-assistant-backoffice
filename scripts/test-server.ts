@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
-import { mkdir, writeFile, rm, cp, access } from "node:fs/promises";
+import { rmSync } from "node:fs";
+import { mkdir, writeFile, cp, access } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fixtureSession } from "./auth-fixture-session.ts";
 import { readAuthConfiguration } from "../src/features/auth/config.ts";
@@ -80,7 +81,7 @@ const proxy = await startTestProxy(
 	web?.kill("SIGTERM");
 	operations.closeAllConnections();
 	operations.close();
-	await rm(sessionsFile, { force: true });
+	rmSync(sessionsFile, { force: true });
 	throw error;
 });
 let stopped = false;
@@ -92,7 +93,7 @@ async function stop() {
 		server.closeAllConnections();
 		server.close();
 	}
-	await rm(sessionsFile, { force: true });
+	rmSync(sessionsFile, { force: true });
 }
 process.on("SIGINT", () => void stop());
 process.on("SIGTERM", () => void stop());
