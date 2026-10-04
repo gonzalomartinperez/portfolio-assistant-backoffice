@@ -117,6 +117,9 @@ jobs:
           const names = ['BACKOFFICE_ORIGIN', 'BETTER_AUTH_SECRET', 'BACKOFFICE_OWNER_EMAIL',
             'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET'];
           const values = names.map(name => `${name}=${process.env[name]}`);
+          values.push('OPERATIONS_API_ORIGIN=http://host.docker.internal:8117');
+          values.push('OPERATIONS_READ_TOKEN=public-loopback-operations-fixture');
+          values.push('OPERATIONS_SOURCE_MODE=fixture');
           values.push('BACKOFFICE_DATABASE_URL=postgres://backoffice_fixture:public-fixture-only@host.docker.internal:5432/backoffice_test');
           writeFileSync('/tmp/backoffice-fixture.env', values.join('\n') + '\n', { mode: 0o600 });
           NODE
@@ -138,9 +141,16 @@ jobs:
       - name: Install all browser engines and OS dependencies
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Verify real-database authorization, operations and accessibility
-        run: npm run test:browser
+        run: npm run test:browser -- backoffice.spec.ts --grep-invert "operational failure" --output test-results/available
         env:
           WEB_UPSTREAM: http://127.0.0.1:3108
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/available
+      - name: Verify operational failure without shared mutable fixtures
+        run: npm run test:browser -- backoffice.spec.ts --grep "operational failure" --output test-results/unavailable
+        env:
+          WEB_UPSTREAM: http://127.0.0.1:3108
+          OPERATIONS_FIXTURE_MODE: unavailable
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/unavailable
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

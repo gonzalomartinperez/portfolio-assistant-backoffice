@@ -84,3 +84,27 @@ Preserve coverage, security and reproducibility when tuning workers or adding sh
 
 GitHub reference: [required checks](https://docs.github.com/en/pull-requests/how-tos/merge-pull-request/troubleshooting-required-status-checks)
 and [workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax).
+
+## Backoffice fixture lifecycle
+
+`node scripts/test-server.ts` owns the loopback proxy on 3107, standalone runtime on 3108
+and synthetic operational source on 8117. Supply an isolated, migrated PostgreSQL URL
+through `BACKOFFICE_DATABASE_URL`; it must use a loopback host and a test/fixture database.
+The local default uses port 15432. A local production build is required; static/public assets
+are copied into the standalone build before startup. `WEB_UPSTREAM` reuses the verified
+container and must also be loopback. CI exposes the fixture source to that job's container
+through its host gateway; it contains synthetic data only and requires its fixture token.
+
+Signed owner/viewer sessions are created through Better Auth's internal adapter, written
+with restrictive permissions under gitignored `.artifacts`, and removed on shutdown. There
+is no application authentication bypass endpoint. Fixture secrets and session files are
+never uploaded. Browser traces may contain synthetic test-session cookies; they have no
+access outside the isolated test database and must never use production credentials.
+
+Operational modes are immutable per server lifecycle: `available`, `unavailable`, or
+`malformed`, selected by `OPERATIONS_FIXTURE_MODE`. The CI browser job first runs
+`backoffice.spec.ts --grep-invert "operational failure"`, then starts a fresh fixture lifecycle
+in unavailable mode for `--grep "operational failure"`. Both reuse the same application
+image; no global mutation races between browser engines. Their result and HTML directories
+are separate so failure evidence cannot overwrite the successful suite's report. Malformed
+payload validation is also covered at the adapter boundary.

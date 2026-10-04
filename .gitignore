@@ -7,3 +7,9 @@ test-results/
 playwright-report/
 
 .integration/
+
+.artifacts/
+
+.auth-fixture/
+.env.*
+!.env.example
