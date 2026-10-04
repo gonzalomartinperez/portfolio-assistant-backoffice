@@ -9,9 +9,9 @@ export const viewport: Viewport = {
 	interactiveWidget: "resizes-content",
 };
 export const metadata: Metadata = {
-	title: "Gonzalo · Portfolio assistant / Asistente",
-	description:
-		"Ask about Gonzalo’s public work. Pregunta sobre el trabajo público de Gonzalo.",
+	title: "GMP · Assistant backoffice",
+	description: "Authenticated operations for Gonzalo’s portfolio assistant.",
+	robots: { index: false, follow: false },
 };
 export default function Layout({ children }: { children: ReactNode }) {
 	return (
@@ -25,7 +25,12 @@ export default function Layout({ children }: { children: ReactNode }) {
 					}}
 				/>
 			</head>
-			<body>{children}</body>
+			<body>
+				<a className="skip-link" href="#main">
+					Skip to content
+				</a>
+				{children}
+			</body>
 		</html>
 	);
 }

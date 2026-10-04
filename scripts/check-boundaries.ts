@@ -1,14 +1,20 @@
 import path from "node:path";
 import ts from "typescript";
-const feature = path.resolve("src/features/assistant");
 const within = (file: string, directory: string) =>
 	file === directory || file.startsWith(directory + path.sep);
 export function boundaryErrors(file: string, source: string) {
 	const filename = path.resolve(file);
+	const relative = path.relative(path.resolve("src/features"), filename);
+	const name = relative.split(path.sep)[0];
+	const feature = path.resolve(
+		"src/features",
+		name && name !== ".." ? name : "assistant",
+	);
 	const domain = within(filename, path.join(feature, "domain"));
 	const application = within(filename, path.join(feature, "application"));
 	const presentation = within(filename, path.join(feature, "presentation"));
 	const adapter = within(filename, path.join(feature, "adapters"));
+	const client = /^\s*["']use client["']/.test(source);
 	const errors: string[] = [];
 	function dependency(specifier: unknown) {
 		if (typeof specifier !== "string") {
@@ -19,6 +25,17 @@ export function boundaryErrors(file: string, source: string) {
 		const destination = specifier.startsWith(".")
 			? path.resolve(path.dirname(filename), specifier)
 			: null;
+		if (
+			client &&
+			(specifier === "server-only" ||
+				specifier.startsWith("node:") ||
+				specifier === "next/headers" ||
+				(destination &&
+					/features[/\\]auth[/\\](server|config|database)(?:\.|$)/.test(
+						destination,
+					)))
+		)
+			errors.push("client server dependency");
 		if (
 			domain &&
 			(!destination || !within(destination, path.join(feature, "domain")))
