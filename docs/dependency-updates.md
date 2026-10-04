@@ -27,6 +27,8 @@ The current exact manifest pins make lockfile-only changes ambiguous: those rema
 Everything else requires review: majors, prereleases, 0.x, downgrades, frameworks/compiler,
 Markdown/security/session/persistence packages, test engines, Actions, Docker/OS, mixed-risk
 groups and unrecognized metadata. Development dependencies are not automatically harmless.
+The independently locked `/tooling/api-contract` npm workspace is monitored separately;
+its compiler and generator updates require manual review and regeneration checks.
 Groups qualify only if every update passes. Authenticated GitHub author ID/login/type,
 same-repository source, develop base and one verified GitHub-signed Dependabot commit are
 required. Human additions or rebases are manual; titles and labels never grant eligibility.
