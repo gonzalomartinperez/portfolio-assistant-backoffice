@@ -57,6 +57,9 @@ export async function readiness(): Promise<boolean> {
 		await pool.query(
 			"SELECT id,token_hash,expires_at,consumed_at,revoked_at FROM backoffice_invitation LIMIT 0",
 		);
+		await pool.query(
+			"SELECT id,actor_id,action,subject_id FROM backoffice_access_audit LIMIT 0",
+		);
 		return result.rowCount === 0;
 	} catch {
 		return false;
