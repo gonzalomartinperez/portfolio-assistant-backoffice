@@ -1,7 +1,10 @@
 # Embedded assistant protocol v1
 
-Status: implemented and verified in the cross-origin fixture; production portfolio integration
-is deferred. One conversation implementation serves both routes.
+Historical contract for the former public frontend. [ADR 004](adrs/004-native-chat-and-private-operations.md)
+supersedes iframe delivery with the portfolio's native conversation feature and an
+authenticated backoffice here. The evidence below belongs to the identified historical
+revision; it is not the current product's integration contract. Preserve it for migration
+comparison. Do not integrate a new portfolio iframe from these instructions.
 
 ## Acceptance results
 
