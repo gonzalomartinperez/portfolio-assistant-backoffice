@@ -13,7 +13,7 @@ fixtures; PostgreSQL and signed session admission are real.
 - The image executed IAM migration successfully with a read-only filesystem and dropped capabilities.
 - 21 browser checks passed across Chromium, Firefox and WebKit in 1.2 minutes.
 - Three operational-unavailability checks passed across those engines in 11.7 seconds.
-- Later readiness-table and fixture-startup changes require final image revalidation.
+- The image above is historical local evidence; the final source/image was revalidated in Actions as recorded below.
 - The managed local lifecycle was exercised against a newly created isolated database:
   migration, signed-session provisioning and readiness passed; SIGINT removed the private
   session artifact. Only that disposable database was dropped afterward.
@@ -54,3 +54,20 @@ no overflow. The images above were refreshed from this run and inspected. npm au
 reported zero findings. An initial selector-label failure was corrected and reverified.
 These are synthetic operations and real local PostgreSQL/session checks, not live
 provider/telemetry verification. Final immutable-image checks run on the PR's current head.
+
+## Final integration evidence
+
+Backoffice source `8e1fc8f52474b05bf7abb011d519399020bfb615` passed
+[Actions run37247552502](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/actions/runs/37247552502)
+and merged through PR28 into develop as `51f638487cbcb3cedc0bff1678a25892f9099063`.
+Jobs: static26s, image174s, browser/auth148s, required gate4s. The browser job loaded the
+exact exported non-root image, migrated its isolated PostgreSQL schema and verified OAuth
+fixture/invitation/revocation plus available/unavailable states in all three engines.
+No registry publication or production deployment was performed.
+
+The public replacement merged through portfolio PR94 as
+`83a4ecde0591da9c35c939a8c6b82dc9b010fdc6`, after
+[Actions run37248316043](https://github.com/gonzalomartinperez/portfolio/actions/runs/37248316043)
+passed 388 browser checks with eight explicit capability skips, without failures/flaky
+results. All eight shards reused one verified build; job durations ranged318–710s.
+These recorded timings are local/CI evidence, not field performance or promised speedups.
