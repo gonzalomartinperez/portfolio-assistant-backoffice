@@ -35,6 +35,14 @@ Markdown/security/session/persistence packages, test engines, Actions, Docker/OS
 groups and unrecognized metadata. Development dependencies are not automatically harmless.
 The independently locked `/tooling/api-contract` npm workspace is monitored separately;
 its compiler and generator updates require manual review and regeneration checks.
+Routine compiler-major proposals in that workspace are ignored because the generator's
+current peer contract requires TypeScript 5.x; the application continues using TypeScript 7.
+Reevaluate that narrow ignore rule when a generator release supports the replacement API.
+This is not an instruction to suppress security alerts or override incompatible peers.
+Actual PR #33 failed frozen installation with ERESOLVE (`openapi-typescript@7.13.0`
+requires `typescript@^5.x`). It is superseded by this compatibility policy, not merged.
+Dependabot reads configuration from the default branch: this develop change needs a
+separately authorized promotion before its routine-update filter becomes active.
 Groups qualify only if every update passes. Authenticated GitHub author ID/login/type,
 same-repository source, develop base and one verified GitHub-signed Dependabot commit are
 required. Human additions or rebases are manual; titles and labels never grant eligibility.
