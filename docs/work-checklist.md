@@ -1,22 +1,25 @@
 # Native assistant and backoffice delivery
 
-One checklist; evidence must describe actual behavior, not intentions.
+One checklist; evidence describes actual behavior, not intentions. Source changes are
+integrated into develop through backoffice PR28 (`51f638487cbcb3cedc0bff1678a25892f9099063`)
+and portfolio PR94 (`83a4ecde0591da9c35c939a8c6b82dc9b010fdc6`). Main and production remain separate.
 
 | Priority | Deliverable | Status / acceptance |
 | --- | --- | --- |
-| 1 | Preserve work, coordinate writers | Isolated portfolio/auth/CI worktrees; no API/vps-ops changes |
-| 1 | Native portfolio chat | Implemented in7753d39/522e865; 31 unit/network and68 browser checks passed before old web chat was retired; PR integration pending |
-| 1 | API synchronization | Public native API c6012067 verified without interception in Chromium/Firefox/WebKit; operational contract remains proposed |
-| 2 | OAuth and invited access | Implemented; real PostgreSQL/fake-provider tests cover owner and invitation callback, consumption and revocation; live providers pending |
-| 2 | Safe operational dashboard | Implemented and cross-browser verified with labeled fixtures; eight transport/validation tests; real API blocked |
-| 3 | Native UX | Verified compact/maximized/mobile/page, continuity, sources, themes/locales, focus, keyboard and200% text; physical devices/assistive technology pending |
-| 3 | CI and image | Managed real-DB browser fixtures pass all three engines; exact hardened image migration and GitHub release PR checks in progress |
-| 4 | Skills and docs | Four focused workflows updated; validator and actual Codex/Claude discovery pass without model calls; clean-checkout discovery passes in both clients |
-| 4 | Rename and PR integration | Public GitHub repo renamed portfolio-assistant-backoffice; Dependabot26 and27 merged after passing current-head CI; product PR28 and portfolio PR94 awaiting current-head checks |
-| blocked | Real operational telemetry | API owner must publish additive contract and instrumentation |
-| deferred | Production | Coolify/vps-ops, real OAuth registrations, DNS, effective proxy/security headers and phone tests |
+| 1 | Preserve work and ownership | Completed: isolated worktrees and merged target-branch changes; no API/vps-ops edits |
+| 1 | Native portfolio chat | Completed: persistent compact/maximized/mobile/page presentations; 31 unit/network, 68 targeted browser checks and final 388 full-matrix checks pass |
+| 1 | API synchronization | Public API c6012067 verified without interception in three engines using fixture generation; operational contract remains proposed |
+| 2 | OAuth and invited access | Implemented and PostgreSQL fixture integration verified: owner admission, invitation callback/consumption and revocation; live providers pending |
+| 2 | Operational dashboard | Completed against labeled fixtures: bounded validation, honest unavailable states, interactive Recharts aggregates and semantic tables; real API blocked |
+| 3 | UX and accessibility | Verified EN/ES, dark/light, compact/maximized/mobile/page, continuity, sources, keyboard, reduced motion and 200% text; physical devices/assistive technology pending |
+| 3 | CI and production image | Completed: current-head backoffice run37247552502 passes exact-image migration/auth/browser checks; native run37248316043 passes all required gates and Hostinger compatibility |
+| 4 | Skills | Four canonical workflows; structural/negative tests and actual Codex/Claude discovery pass in working tree and clean Linux clone; model-driven routing/invocation unverified |
+| 4 | Rename and dependencies | Public repo renamed portfolio-assistant-backoffice; Dependabot26/27 merged with required checks; security-alert/fix proposals enabled; conservative automatic arming stays disabled pending safe activation |
+| 4 | Deployment handoff | Committed application image/runtime/Coolify contract and private monitoring request; vps-ops owns shared production execution |
+| blocked | Real operational telemetry | API owner must publish additive contract/instrumentation; no live metrics or trends are claimed |
+| deferred | Production acceptance | Real OAuth registrations, OpenAI evaluation, image-publication approval, Coolify/DNS/effective headers, backups and device testing |
 
-Standalone assistant baseline: frontend `aed8ea710c8b847ddc9066aaef5ce48d3793b494`.
-Production build passed locally. Chromium/Firefox/WebKit fixture probes preserved one frame across
-minimize/maximize, synced preferences and handled Escape. A hidden stream completed once; no paid
-API was exercised. Current native and backoffice evidence will replace these historical claims.
+[Backoffice evidence](verification/backoffice.md) includes inspected fixture screenshots.
+[Native evidence](https://github.com/gonzalomartinperez/portfolio/blob/develop/docs/verification/native-assistant.md)
+records actual compact/mobile/page and API integration verification. Historical iframe
+baseline is preserved in Git, not presented as the current implementation.
