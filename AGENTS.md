@@ -12,28 +12,32 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-## Assistant implementation conventions
+## Backoffice implementation conventions
 
-Canonical architecture, design and API procedures are in `docs/architecture.md`,
-`docs/design-system.md` and `docs/api-contract.md`; do not fork them into another agent file.
-Compose transport and controller only at `src/features/assistant/entry.tsx`. Domain and
-application imports are enforced by `tests/unit/boundaries.test.ts`. Preserve the pinned
-contract and validate untrusted payloads independently of generated types. Never retry a
-generation automatically. Keep anonymous credentials/conversation text out of browser
-storage, logs and public configuration. The sole public variable is the API origin.
+The public conversation UI belongs to the portfolio. This repository owns authenticated
+operations, IAM migrations and its runtime image. Read docs/adrs/004-native-chat-and-private-operations.md,
+docs/authentication.md and docs/deployment-contract.md as relevant. Do not modify other
+repositories merely because a handoff is needed. Domain/application stay framework-free;
+server-only composition and runtime-validated adapters keep service tokens out of browsers.
+Missing metrics are unavailable, never zero or unlabeled fixture data. No prompts, answers,
+credentials or private career material in operational payloads, logs or public artifacts.
 
-Before PRs run formatting, lint, strict typing, contract/type drift, unit checks, production
-build and Playwright. The deterministic suite owns ports 3107/8107 and the production web
-server lifecycle; live API fixture checks are separate. Inspect rendered screenshots in
-both themes/locales and record gaps honestly. Preserve existing uncommitted work and use
-PRs into develop; do not modify the API or portfolio as part of a frontend task.
+Google/GitHub only; verified owner and invited viewers; no password login/open signup.
+Every protected page, action and API checks live membership. Preserve explicit linking,
+atomic invitations, revocation and CSRF/origin checks. Use isolated fixture databases;
+never run integration reset or fixture-session tools against shared/production data.
+Private signed session artifacts are secrets and must not be uploaded.
 
-Use CONTRIBUTING.md for the Google TypeScript readability adaptations; Biome and strict
-TypeScript are the mechanical authority. Run security:check and docs:check before PRs.
+Read CONTRIBUTING.md for TypeScript/Google readability adaptations. Before PRs run frozen
+install, format/lint/strict typing, meaningful unit/auth/browser checks, production build,
+security/docs/skills checks. Read installed Next docs before framework-sensitive changes.
+Inspect actual EN/ES dark/light screenshots and keyboard behavior; distinguish synthetic,
+real PostgreSQL, live OAuth and production evidence. Preserve existing dirty work.
 
-Deployment authority: docs/adrs/002-shared-vps.md and docs/deployment-contract.md. Private vps-ops owns
-production composition and Coolify execution; this repository owns its image/runtime contract. Keep production CD disabled. CI builds one same-origin
-image reused by browser/live jobs; required checks aggregates every validation result.
+Private vps-ops owns Coolify and shared production resources. This repository prepares
+its tested immutable image/runtime contract; no independent deployment controller.
+Production publication/deployment require separate authority. Required CI gate fails
+closed for missing jobs; preserve coverage, least privilege and SHA-pinned actions.
 
 ## Scope and reusable workflows
 

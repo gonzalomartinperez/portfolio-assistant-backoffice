@@ -3,7 +3,7 @@
 Report vulnerabilities privately to [gonzalomartinperez2002@gmail.com](mailto:gonzalomartinperez2002@gmail.com),
 the owner's public contact address verified in the portfolio's `src/content/site-config.ts`
 at `45d8a42faa78bfb94952639ed462832c3b4ad109`. Use the subject
-“portfolio-assistant-web security report”. GitHub private vulnerability reporting was
+“portfolio-assistant-backoffice security report”. GitHub private vulnerability reporting was
 not enabled when this policy was written; this policy does not imply that it is available.
 
 Include affected commit/browser, impact and minimal reproduction using fixture data.

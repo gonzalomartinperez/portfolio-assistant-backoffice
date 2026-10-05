@@ -59,15 +59,16 @@ Pinned Node 24.21.0 executes erasable TypeScript directly: `node scripts/check-d
 `node --test tests/unit/*.test.ts`. This removes types at runtime; **it does not type-check**.
 `npm run typecheck` remains the required check. Use explicit relative `.ts` imports and
 `import type`; no enum/parameter-property transform, ts-node or additional execution runner.
-The cross-origin fixture is authored in TypeScript and compiled once at server startup with
-the installed compiler API; browsers receive `/host.js`, never raw TypeScript. This compiler
-is test tooling and does not enter the application image/browser bundle. The YAML validator
+The former cross-origin fixture uses the official TypeScript 6 compatibility API;
+its migration context is historical, not current backoffice behavior. Compiler APIs
+do not enter the browser bundle. The YAML validator
 includes its own TypeScript declarations; no separate declaration package is needed.
 
 Generated Next server/browser JavaScript, synchronous inline browser bootstrap code, YAML,
 CSS and shell/container glue keep their native formats. Do not rewrite working operations
-just to make file extensions uniform. TypeScript 5.9.3 still performs project checking and
-fixture transpilation; the verified TypeScript 7 compatibility blocker remains in
+just to make file extensions uniform. Stable TypeScript 7.0.2 performs project checking and Next builds. The official TypeScript
+6 API supports architecture tools; isolated OpenAPI generation requires its locked TypeScript
+5.9.3 peer. Exact commands and compatibility evidence are in
 [ADR 003](docs/adrs/003-typescript7-compatibility.md). More TypeScript source does not imply
 a compiler upgrade or a browser-performance gain.
 
@@ -92,8 +93,9 @@ Never commit credentials, private documents, `.env.local`, build output or brows
 containing personal sessions. `npm run security:check` reports only rule names and file
 paths, never matched values; it complements review and does not prove absence of secrets.
 
-TypeScript currently remains 5.9.3 because the stable contract generator rejects the
-official TypeScript 7/6 compatibility arrangement. See [ADR 003](docs/adrs/003-typescript7-compatibility.md)
-for the reproducible blocker, exact compiler used by each command and migration gate.
-`noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` are enforced; model missing
-values explicitly and guard indexed access instead of suppressing errors.
+`npm ci` installs the main toolchain; `npm run contract:install` performs the frozen
+independent generator install. `npm run typecheck` verifies and explicitly invokes the
+native 7.0.2 checker, including generated Next route types. Do not invoke bare `tsc`: the
+compatibility package can own npm's `.bin/tsc` link. `npm run toolchain:check` detects
+accidental fallback. Keep strictness and full application coverage. See
+[ADR 003](docs/adrs/003-typescript7-compatibility.md) for compiler API and generator details.

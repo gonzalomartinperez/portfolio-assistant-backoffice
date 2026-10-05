@@ -1,16 +1,9 @@
 import { createServer, request, type Server } from "node:http";
 // Test-only reverse proxy. Production routing belongs to vps-ops and its Coolify configuration.
-export function startTestProxy(
-	port: number,
-	webOrigin: string,
-	apiOrigin: string,
-) {
+export function startTestProxy(port: number, webOrigin: string) {
 	const server = createServer((incoming, outgoing) => {
-		const origin = (incoming.url ?? "/").startsWith("/api/")
-			? apiOrigin
-			: webOrigin;
 		const upstream = request(
-			new URL(incoming.url ?? "/", origin),
+			new URL(incoming.url ?? "/", webOrigin),
 			{
 				method: incoming.method,
 				headers: incoming.headers,
@@ -33,11 +26,7 @@ export function startTestProxy(
 	});
 }
 if (process.argv[1]?.endsWith("test-proxy.ts")) {
-	const server = await startTestProxy(
-		3001,
-		"http://127.0.0.1:3002",
-		"http://127.0.0.1:8000",
-	);
+	const server = await startTestProxy(3107, "http://127.0.0.1:3108");
 	const stop = () => {
 		server.closeAllConnections();
 		server.close();

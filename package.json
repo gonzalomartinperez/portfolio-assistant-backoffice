@@ -1,5 +1,5 @@
 {
-	"name": "portfolio-assistant-web",
+	"name": "portfolio-assistant-backoffice",
 	"version": "0.1.0",
 	"private": false,
 	"scripts": {
@@ -7,38 +7,45 @@
 		"build": "next build --webpack",
 		"start": "next start --port 3001",
 		"lint": "biome lint src tests scripts next.config.ts",
-		"typecheck": "next typegen && tsc --noEmit",
-		"test": "npm run contract:check && node --test tests/*.test.ts tests/unit/*.test.ts tests/contract/*.test.ts",
+		"typecheck": "node scripts/check-typescript-toolchain.ts && next typegen && node node_modules/typescript/lib/tsc.js --noEmit",
+		"test": "npm run contract:check && node --test tests/unit/*.test.ts",
 		"contract:check": "node scripts/check-contract.ts",
-		"contract:generate": "openapi-typescript contracts/openapi.json -o contracts/types.d.ts",
+		"contract:generate": "npm run generate --prefix tooling/api-contract",
 		"test:browser": "playwright test",
-		"format:check": "biome format src tests scripts docs package.json biome.json playwright.config.ts playwright.live.config.ts next.config.ts tsconfig.json",
+		"format:check": "biome format src tests scripts docs package.json biome.json playwright.config.ts next.config.ts tsconfig.json tooling/api-contract/package.json",
 		"security:check": "node scripts/check-public-files.ts",
 		"docs:check": "node scripts/check-docs.ts",
 		"preview:fixture": "node scripts/test-server.ts",
-		"skills:check": "node scripts/check-skills.ts"
+		"skills:check": "node scripts/check-skills.ts",
+		"auth:migrate": "node scripts/auth-migrate.ts",
+		"test:auth": "node --test tests/integration/auth.test.ts",
+		"contract:install": "npm ci --prefix tooling/api-contract --no-audit --no-fund",
+		"toolchain:check": "node scripts/check-typescript-toolchain.ts"
 	},
 	"engines": {
 		"node": ">=24 <25"
 	},
 	"dependencies": {
+		"better-auth": "1.7.7",
 		"next": "16.3.6",
+		"pg": "8.23.1",
 		"react": "19.3.0",
 		"react-dom": "19.3.0",
-		"react-markdown": "^10.1.0",
-		"rehype-sanitize": "^6.0.0",
-		"remark-gfm": "^4.0.1"
+		"react-is": "19.3.0",
+		"recharts": "3.10.1",
+		"server-only": "0.0.1"
 	},
 	"devDependencies": {
 		"@axe-core/playwright": "^4.13.0",
 		"@biomejs/biome": "2.5.14",
 		"@playwright/test": "1.63.0",
 		"@types/node": "24.13.6",
+		"@types/pg": "8.23.1",
 		"@types/react": "19.3.0",
 		"@types/react-dom": "19.3.0",
+		"@typescript/typescript6": "6.0.2",
 		"js-yaml": "5.4.2",
-		"openapi-typescript": "7.13.0",
-		"typescript": "5.9.3"
+		"typescript": "7.0.2"
 	},
 	"type": "module",
 	"license": "MIT"

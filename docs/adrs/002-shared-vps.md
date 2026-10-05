@@ -2,6 +2,9 @@
 
 Accepted 2026-09-27 by owner instruction; supersedes managed Node hosting proposals.
 
+The public frontend and iframe assumptions below are superseded by [ADR 004](004-native-chat-and-private-operations.md).
+Shared hosting and vps-ops authority remain valid.
+
 The future Hostinger KVM 4 hosts both assistant containers. The portfolio stays on
 Hostinger Business; its managed Node slots remain reserved. Proposed public origin:
 `https://assistant.gonzalomartinperez.com`. This decision authorizes preparation, not

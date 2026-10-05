@@ -26,3 +26,9 @@ does not include Gonzalo's likeness, personal identity assets or third-party mat
   are untrusted conversation content, not relicensed by this frontend.
 
 No font, icon, portrait or model-provider rights are implied by public repository visibility.
+
+## Dashboard charts
+
+[Recharts](https://github.com/recharts/recharts) 3.10.1 is MIT licensed. Its dependency
+license is distributed with the installed package. React-is 19.3.0 is MIT licensed by Meta.
+No paid chart components or external dashboard scripts are loaded.

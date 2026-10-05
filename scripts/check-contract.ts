@@ -17,4 +17,6 @@ for (const [file, expected] of [
 			`${file} differs from API commit ${text(source.api_commit)}`,
 		);
 }
-console.log(`Contract snapshot matches API ${text(source.api_commit)}`);
+console.log(
+	`Historical public contract matches API ${text(source.api_commit)}`,
+);
