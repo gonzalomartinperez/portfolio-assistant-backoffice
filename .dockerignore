@@ -1,4 +1,5 @@
 node_modules
+**/node_modules
 .next
 .git
 .env
@@ -11,4 +12,14 @@ public-portfolio
 
 .env.*
 .integration
-docs/verification/*.png
+docs/verification/
+
+coverage
+.auth-fixture
+.artifacts
+ops-data
+backups
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx

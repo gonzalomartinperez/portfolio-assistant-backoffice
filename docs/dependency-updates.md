@@ -7,6 +7,12 @@ branch protection via GraphQL. Both activation switches must remain off until a 
 least-privilege inspection mechanism is verified. This is a blocker, not permission to use
 a broad PAT or bypass branch protection.
 
+Repository inspection after the rename found vulnerability alerts and automated security
+PR creation disabled. Both were enabled through the authorized repository settings API;
+the subsequent alert query returned zero open alerts and security-fix creation reported
+`enabled: true`. This enables visibility and proposed fixes, not automatic merging.
+Security PRs may target the default branch and require its normal manual review path.
+
 ## Eligibility
 
 [Policy implementation](../scripts/dependency-policy.ts) is deliberately small:
@@ -27,6 +33,8 @@ The current exact manifest pins make lockfile-only changes ambiguous: those rema
 Everything else requires review: majors, prereleases, 0.x, downgrades, frameworks/compiler,
 Markdown/security/session/persistence packages, test engines, Actions, Docker/OS, mixed-risk
 groups and unrecognized metadata. Development dependencies are not automatically harmless.
+The independently locked `/tooling/api-contract` npm workspace is monitored separately;
+its compiler and generator updates require manual review and regeneration checks.
 Groups qualify only if every update passes. Authenticated GitHub author ID/login/type,
 same-repository source, develop base and one verified GitHub-signed Dependabot commit are
 required. Human additions or rebases are manual; titles and labels never grant eligibility.

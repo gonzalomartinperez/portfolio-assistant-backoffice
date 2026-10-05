@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { fontClassName } from "./fonts";
+import { SkipLink } from "../shared/accessibility/skip-link";
 import "./style.css";
 export const viewport: Viewport = {
 	width: "device-width",
@@ -9,9 +10,9 @@ export const viewport: Viewport = {
 	interactiveWidget: "resizes-content",
 };
 export const metadata: Metadata = {
-	title: "Gonzalo · Portfolio assistant / Asistente",
-	description:
-		"Ask about Gonzalo’s public work. Pregunta sobre el trabajo público de Gonzalo.",
+	title: "GMP · Assistant backoffice",
+	description: "Authenticated operations for Gonzalo’s portfolio assistant.",
+	robots: { index: false, follow: false },
 };
 export default function Layout({ children }: { children: ReactNode }) {
 	return (
@@ -21,11 +22,14 @@ export default function Layout({ children }: { children: ReactNode }) {
 					// biome-ignore lint/security/noDangerouslySetInnerHtml: fixed pre-paint theme replay, no user HTML.
 					dangerouslySetInnerHTML={{
 						__html:
-							'if(location.pathname==="/embed"){var q=new URLSearchParams(location.search);document.documentElement.dataset.theme=q.get("theme")==="light"?"light":"dark"}else try{var t=localStorage.getItem("assistant-theme");document.documentElement.dataset.theme=t==="light"||t==="system"||t==="dark"?t:"dark"}catch(e){document.documentElement.dataset.theme="dark"}',
+							'try{var t=localStorage.getItem("assistant-theme");document.documentElement.dataset.theme=t==="system"?(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"):t==="light"?"light":"dark"}catch(e){document.documentElement.dataset.theme="dark"}',
 					}}
 				/>
 			</head>
-			<body>{children}</body>
+			<body>
+				<SkipLink />
+				{children}
+			</body>
 		</html>
 	);
 }

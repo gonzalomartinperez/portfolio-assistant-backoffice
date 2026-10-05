@@ -16,7 +16,7 @@ test("source dependency boundaries and public environment allowlist", () => {
 	}
 });
 test("boundaries resolve traversal and inspect dynamic and type-only imports", () => {
-	const domain = "src/features/assistant/domain/example.ts";
+	const domain = "src/features/operations/domain/example.ts";
 	for (const source of [
 		'import x from "./../adapters/api"',
 		'const x=import("../adapters/api")',
@@ -31,7 +31,7 @@ test("boundaries resolve traversal and inspect dynamic and type-only imports", (
 	);
 	assert.notEqual(
 		boundaryErrors(
-			"src/features/assistant/application/example.ts",
+			"src/features/operations/application/example.ts",
 			'import x from "./../presentation/chat"',
 		).length,
 		0,
@@ -48,6 +48,19 @@ test("owned application, fixtures and tooling remain type-checked TypeScript", (
 			javascript,
 			[],
 			`${directory}: authored JavaScript needs an explicit compatibility decision`,
+		);
+	}
+});
+
+test("client boundaries reject authentication infrastructure imports", () => {
+	for (const module of ["server", "config", "database", "runtime", "store"]) {
+		assert.notEqual(
+			boundaryErrors(
+				"src/components/example.tsx",
+				`"use client"; import x from "../features/auth/${module}"`,
+			).length,
+			0,
+			module,
 		);
 	}
 });

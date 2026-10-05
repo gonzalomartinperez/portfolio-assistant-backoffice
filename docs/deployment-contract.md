@@ -1,119 +1,122 @@
-# Frontend runtime contract for vps-ops / Coolify
+# Backoffice runtime contract for vps-ops / Coolify
 
-Production authority is the private **vps-ops** repository. Coolify is selected; its exact
-supported prebuilt-image workflow remains for that agent to verify. This public application
-repository does not install/manage Coolify, compose production services, provision secrets,
-publish without approval, or execute production deployments.
+This application supplies a tested image and runtime contract. Private **vps-ops** owns
+Coolify, production composition, proxy/TLS, networks, secret provisioning, monitoring,
+release selection, backups and deployment. Production deployment and image publication
+are not authorized by a source merge. The portfolio remains on Hostinger Business.
 
-## Artifact and process
+## Artifact and startup
 
-- Build: `docker build --platform linux/amd64 -t portfolio-assistant-web:rc .`.
-  Linux amd64 is verified in CI; arm64 is not verified. Frozen npm dependencies and the
-  digest-pinned Node 24 Debian slim base are in the Dockerfile. Build requires npm/font access.
-- Intended artifact: `ghcr.io/gonzalomartinperez/portfolio-assistant-web@sha256:…`.
-  Package visibility/access must be approved separately from this public repository.
-  No registry credentials or publication are provisioned by this change. vps-ops selects
-  compatible immutable digests; do not rebuild source on the VPS.
-- Next standalone output, `.next/static` and `public` are copied into the non-root image.
-  Startup is exec-form `node server.js`, UID/GID 1000, `/app`, listening on `0.0.0.0:3000`.
-  There are no migrations, model clients, persistent frontend data or startup database calls.
-- Internal `GET /` returning 2xx checks the frontend shell only, not API availability or a
-  working conversation. Docker health: interval 30s, timeout 5s, start period 20s, retries 3.
-  Configure the equivalent Coolify readiness check against port 3000. Keep that port private.
-- Use at least the tested 20s termination grace baseline; SIGTERM reaches Node directly.
-  Chat SSE goes directly to FastAPI, not through this process. Proxy/backend shutdown must
-  be coordinated by vps-ops; no zero-downtime or active-generation survival guarantee exists.
+Build `docker build --platform linux/amd64 -t portfolio-assistant-backoffice:rc .`.
+The Dockerfile pins Node 24.21.0 by digest and uses `npm ci`, Next standalone output,
+`.next/static`, public assets and a non-root runtime (UID/GID 1000). Linux amd64 is the
+verification target; arm64 is unverified. Build needs dependency and build-time font
+network access. Authentication and operational secrets are runtime-only, never build args.
 
-## Configuration and storage
+Intended image name: `ghcr.io/gonzalomartinperez/portfolio-assistant-backoffice`.
+Visibility/access require separate approval; public source does not determine package
+visibility. vps-ops must select a verified immutable digest, not rebuild source on the VPS.
+Its agent verifies the exact supported Coolify prebuilt-image workflow.
 
-| Variable | Phase / type | Contract |
+Startup: exec-form `node server.js`, `/app`, `0.0.0.0:3000`. Keep port 3000 private.
+Migrations are explicit, not run automatically at startup. Required configuration is
+validated before authentication initialization. Missing configuration or database access
+makes readiness fail; no secrets or SQL errors are returned to the browser.
+
+- `GET /api/health`: process liveness only; no database, OAuth or operational guarantees.
+- `GET /api/ready`: configuration and authentication schema/database readiness; 200 or 503
+  with a minimal status. It does not certify OAuth providers or the private operational API.
+- Docker health checks liveness every 30s, timeout 5s, start period 20s, retries 3. Coolify
+  should use readiness for traffic admission and retain a separate liveness policy.
+- SIGTERM reaches Node directly. Use a measured termination grace period, starting with
+  20s for local verification; active requests may be interrupted. No zero-downtime guarantee.
+
+## Runtime configuration
+
+| Variable | Type / requirement | Handling |
 | --- | --- | --- |
-| `NEXT_PUBLIC_ASSISTANT_API_URL` | Build-time optional URL string | Empty in the production image; browser uses relative `/api/v1/...`. Local development can point at a reviewed HTTP(S) API origin. Never a secret or internal service URL. Changes require rebuild. |
-| `PORT` | Runtime integer string | Image default `3000`; retain it because the built-in health check targets 3000. |
-| `HOSTNAME` | Runtime bind address | Image default `0.0.0.0` inside private container networking. |
-| `NODE_ENV` | Runtime enum | Image fixes `production`. |
-| `NEXT_TELEMETRY_DISABLED` | Build/runtime flag | Image fixes `1`. |
+| `BACKOFFICE_ORIGIN` | Required exact HTTPS origin; HTTP only for loopback fixtures | OAuth callbacks and trusted origin. No paths, credentials, queries or wildcard origins. |
+| `BACKOFFICE_DATABASE_URL` | Required PostgreSQL connection URI | Secret; dedicated IAM database/user, bounded pool, separate from API data. |
+| `BETTER_AUTH_SECRET` | Required secret, at least 32 characters | Session/OAuth protection; rotation can invalidate sessions and requires reviewed recovery. |
+| `BACKOFFICE_OWNER_EMAIL` | Required verified email | Owner admission; not an unrestricted first-user bootstrap. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Required provider configuration | Secret value stays server-side; register the exact callback origin. |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Required provider configuration | Secret value stays server-side; no email/password fallback. |
+| `OPERATIONS_API_ORIGIN` | Optional exact private HTTP(S) origin | Server-only endpoint location; absent means unconfigured. Never a browser/public variable. |
+| `OPERATIONS_READ_TOKEN` | Optional secret paired with operational origin | Read-only private service credential; never forwarded to browser. |
+| `OPERATIONS_SOURCE_MODE` | Omit in production | `fixture` labels synthetic local evidence; production must never substitute fixtures. |
+| `PORT`, `HOSTNAME` | Image defaults 3000 and 0.0.0.0 | Retain defaults; health check targets 3000. |
+| `NODE_ENV`, `NEXT_TELEMETRY_DISABLED` | Image sets production and 1 | Next/Better Auth product telemetry disabled. |
 
-The frontend needs **no secrets** and no private server-side API URL. Do not deliver model,
-DB, admin, session or registry secrets to its browser environment/build. Existing URL
-validation rejects unsupported configured origins; Next validates its listening configuration.
-Keep image defaults rather than treating arbitrary runtime public-variable overrides as routing.
+Configuration is read server-side at runtime; changes require a process restart, not an
+image rebuild. No `NEXT_PUBLIC_*` configuration is needed for the backoffice. `.env.example`
+is a schema of safe placeholders. Environment injection is supported; file-based secrets
+must be injected as environment values by the platform, not custom application tooling.
+Do not bake environment files into images or print values in logs/artifacts.
 
-Read-only root is tested with writable `/tmp` and `/app/.next/cache` (32 MiB ephemeral tmpfs,
-UID/GID 1000, mode 0700). The latter supports Next Image optimization of the approved local
-avatar. No persistent volume is required. Drop capabilities and use no-new-privileges;
-restart policy, log rotation and resource ceilings belong to vps-ops.
+Host-scoped HttpOnly session cookies, Secure on HTTPS and SameSite=Lax, use no parent-domain
+cookie sharing. Exact trusted-origin and provider state checks remain required. Explicit
+account linking is available; implicit linking and open registration are disabled.
+See [authentication](authentication.md) for admission, invitations and revocation.
 
-## Routing and compatibility
+## Migration, storage and compatibility
 
-Proposed origin: `https://assistant.gonzalomartinperez.com`; portfolio remains on Hostinger
-Business. Coolify's shared proxy sends `/` to web:3000 and preserves `/api/*` directly to
-FastAPI:8000. Browser calls already include `/api/v1`; **do not strip or duplicate `/api`**.
-No Next proxy/BFF is needed. Pinned API contract:
-`6b1e65f2406ba5ddf21d15c56c34ccf672d90bbb`, with hashes in `contracts/source.json`.
-FastAPI root_path is empty; `/docs`, `/openapi.json` and `/health/ready` remain internal to
-the API under this routing. An image upgrade must retain contract compatibility or import
-a committed, tested handoff before publication.
+Run the tested image with `node scripts/auth-migrate.ts` before admitting traffic.
+It applies the official Better Auth migrations and repository IAM SQL. Use a dedicated
+PostgreSQL connection, backup first and serialize migration execution in vps-ops. The
+current migration is initial schema creation; multi-version migration/rollback compatibility
+has not been validated. Image rollback does not reverse database migrations. Do not run
+fixture-session or integration reset tools against production.
 
-Frontend startup needs no external service; browser chat requires the API. Only the API
-reaches private databases/providers. No public database ports. Public source links open
-external HTTPS destinations; fonts and avatar are served locally at runtime.
+No persistent container data is required. PostgreSQL stores IAM records, sessions,
+encrypted OAuth credentials and audit records; vps-ops owns encrypted off-server backup,
+retention and restoration testing. Read-only root uses ephemeral `/tmp` and, when required
+by Next assets, `/app/.next/cache` owned by UID1000. Drop capabilities and enable
+no-new-privileges; resource limits, restart/log policies belong to vps-ops.
 
-The portfolio at committed integration revision `e411c0a775b16fd7de962774d875e47191f96b09`
-has a direct API panel and standalone link, not an iframe. Required allowed origins are
-exactly the assistant origin and `https://gonzalomartinperez.com`. Preserve credentialed
-CORS, bootstrap, Origin validation and CSRF; a shared parent domain does not remove these
-obligations. Secure host-only `__Host-assistant_session`, HttpOnly, SameSite=Lax, Path=/ and
-no Domain are the pinned production cookie expectations. Verify both HTTPS origins before
-release. No portfolio change is made here; framing is not required.
+The backoffice owns `/api/auth/*`, `/api/operations`, `/api/health` and `/api/ready`.
+**Do not route all `/api/*` to FastAPI on the backoffice origin.** At the proposed `https://assistant.gonzalomartinperez.com` origin, route only
+`/api/v1/*` to FastAPI, preserving its prefix; all other application paths belong to
+Next. Never publish `/internal/ops/*`. Portfolio requests remain cross-origin and need
+the API's exact credentialed CORS/CSRF policy. vps-ops verifies this route selection. No iframe is required. Backoffice responses deny
+framing and exclude shared caches. Effective Coolify/proxy headers must preserve these
+policies without exposing private operational routes.
 
-The pinned API emits heartbeat comments after 15 seconds of silence; clients ignore them.
-The proxy reference body limit is 32 KiB with 135s read/send timeouts.
-Proxy requirements and reproducible local commands are in [verification](deployment.md).
-The fixture Nginx disables buffering/cache, preserves paths and tests SSE flushing, request
-limits, disconnect/cancellation and graceful proxy shutdown. Those results do not certify
-Coolify's actual proxy, TLS, trusted forwarded peers or any Cloudflare layer. vps-ops must
-repeat the acceptance checks through its selected deployment path.
+The inspected API revision is `c6012067c4a99db477bb6ddcf1f26dae095641ca`.
+No operational contract has been consumed yet: `/internal/ops/v1/status` is a
+[proposed backend handoff](backend-operations-request.md), not a production guarantee.
+The adapter uses no-store, a five-second timeout, no redirects, bounded UTF-8 JSON and
+strict field validation. Browser responses never include raw backend errors.
 
-## Operational acceptance and transition inventory
+## Network, logging and acceptance
 
-| Assets | Ownership / disposition |
-| --- | --- |
-| Dockerfile, .dockerignore, lockfile, .env.example, application/contract/browser checks | Retain here |
-| tests/integration Compose, Nginx, fixture scripts | Retain, explicitly local verification only |
-| quality.yml and manually gated release.yml | Retain: application validation and authorized image publication only |
-| Prior disabled production workflow placeholder | Retired after explicit vps-ops ownership confirmation; no deployment implementation existed |
-| Production stack, TLS, budgets, backups, migration scheduling and recovery | vps-ops authority; no canonical production stack existed here to transfer |
+Required outbound access: private IAM PostgreSQL, Google/GitHub OAuth endpoints and the
+future private operations API. No model-provider key or direct model call belongs here.
+OpenTelemetry collectors/storage and shared monitoring are vps-ops/API responsibilities.
+Operational payloads must exclude prompts, answers, credentials and arbitrary attributes.
+Next/pg errors use generic safe messages; no request-body/session logging is added.
+Proxy logs must redact invitation tokens and OAuth callback query strings, and never
+capture cookies, authorization headers or provider callback bodies.
 
-Local resource observations remain in [verification evidence](verification/quality-chat.md).
-The proposed 512 MiB/1 CPU frontend ceiling is not a VPS measurement or guarantee. vps-ops
-must budget other projects, OS, proxy and backups, measure representative load, and set SLOs.
-Standard Next process logs go to stdout/stderr; the frontend adds no transcript/request-body
-logging. Do not configure proxy logs to capture bodies, cookies or CSRF values. Failure
-artifacts must use synthetic fixtures only.
+Smoke the exact digest: apply migrations to an isolated test database; verify health and
+readiness, anonymous redirects and 401s; establish a signed fixture session; check owner
+and viewer permissions, static assets, unavailable operational state and safe refresh.
+Then verify real Google/GitHub callbacks over HTTPS, exact origins, session expiry,
+revocation, effective cache/framing headers and graceful restart through Coolify.
+Fixture sessions are credentials: private ignored files only, never uploaded as artifacts.
 
-Smoke: run the read-only image command in the verification document, confirm `/` and a
-`/_next/static/` asset, load the optimized avatar, then use the isolated integration suite
-to establish a session, stream incrementally, open a source, stop and delete. Actual release
-acceptance additionally requires HTTPS cookies/CORS/CSRF, both origins, readiness, real
-streaming and shutdown through Coolify. Never use a paid provider without separate authority.
+No VPS resource guarantee, live OAuth result or successful production deployment is
+claimed. Remaining owner/ops decisions: approved origin, OAuth registrations, package
+visibility, registry access, compatible digests, secret delivery, measured limits,
+backup/restore evidence, migration recovery and proxy validation. Shared production
+configuration is not maintained here. Historical chat proxy fixtures were retired after
+verified native migration to the portfolio; immutable baseline evidence remains in Git.
 
-Frontend rollback selects the previous compatible digest; it does not migrate or restore
-backend data. API migration implementations/transaction limits belong to the API; vps-ops
-schedules reviewed migrations, backups and recovery. Do not infer database reversibility
-from application rollback. Pending owner/ops decisions: package visibility, registry access,
-Coolify digest workflow, production reviewers, TLS/origin verification, measured budgets,
-backup/recovery evidence and any Cloudflare configuration. No production test is claimed.
+## Monitoring integration ownership
 
-## Embedded presentation
-
-`/embed` reuses the chat, with host-owned theme/locale via protocol v1. See the committed
-[portfolio handoff](embed-integration.md) for CSP, iframe lifecycle and failure behavior.
-`EMBED_ALLOWED_ORIGINS` is a non-secret server-runtime exact origin list, default
-`https://gonzalomartinperez.com`; restart to change it, no image rebuild needed.
-It controls both frame-ancestors and message validation. `/` emits frame denial; `/embed`
-allows only configured ancestors and emits no X-Frame-Options. Coolify/proxy headers must
-not add conflicting framing restrictions. The Next proxy hook sets page headers only;
-SSE still goes directly from the shared reverse proxy to FastAPI. No new volumes, secrets,
-ports, migrations or backend endpoints are required. Verify effective production headers
-and same-site cookie continuity before enabling the portfolio iframe.
+Prometheus/Grafana are approved design choices for private technical monitoring;
+installation and effective access controls belong to vps-ops. The application neither
+embeds Grafana nor connects browsers directly to a metrics datasource. No new monitoring
+environment variables or outbound destinations are needed for this image. The API's
+committed private summary remains a prerequisite for real dashboard data; the durable
+backend accounting ledger, not Prometheus counters, determines estimated spend/budget.
+See [monitoring contract request](backend-operations-request.md#prometheus-and-grafana-handoff).
