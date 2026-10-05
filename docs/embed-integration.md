@@ -75,7 +75,7 @@ the latest controller snapshot. Never treat minimize as clear, delete, retry or 
 ## Wire messages
 
 [JSON Schema v1](../contracts/embed.v1.schema.json) and [handshake examples](../contracts/embed.v1.examples.json).
-Canonical types and runtime validator: [protocol.ts](../src/features/embed/protocol.ts).
+Historical types and runtime validator: [protocol.ts at the preserved baseline](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/blob/aed8ea710c8b847ddc9066aaef5ce48d3793b494/src/features/embed/protocol.ts).
 Every object has numeric `version: 1`. Extra keys, unsupported enums/types/versions and
 arbitrary navigation/actions are rejected. No dynamic HTML, URLs or model output crosses
 this protocol. Host validates the iframe's exact `event.origin` AND `event.source ===

@@ -7,10 +7,12 @@ const commit = "a".repeat(40);
 const source = { api_commit: "b".repeat(40), openapi_sha256: "c".repeat(64) };
 const image = `ghcr.io/owner/portfolio-assistant-backoffice@sha256:${"d".repeat(64)}`;
 
-test("records exact source, API and immutable image without authorizing deployment", () => {
+test("records immutable image and historical provenance without claiming operational compatibility", () => {
 	const release = releaseCompatibility(commit, image, source);
 	assert.equal(release.backoffice_commit, commit);
-	assert.equal(release.api_commit, source.api_commit);
+	assert.equal(release.historical_public_api_commit, source.api_commit);
+	assert.equal(release.operational_api_commit, null);
+	assert.equal(release.schema_version, 2);
 	assert.equal(release.backoffice_image, image);
 	assert.equal(release.production_deployment, "disabled");
 });

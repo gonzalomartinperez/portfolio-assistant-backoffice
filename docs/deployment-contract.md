@@ -108,5 +108,5 @@ No VPS resource guarantee, live OAuth result or successful production deployment
 claimed. Remaining owner/ops decisions: approved origin, OAuth registrations, package
 visibility, registry access, compatible digests, secret delivery, measured limits,
 backup/restore evidence, migration recovery and proxy validation. Shared production
-configuration is not maintained here. Historical chat proxy fixtures are local evidence
-only and are retired after verified migration to the portfolio.
+configuration is not maintained here. Historical chat proxy fixtures were retired after
+verified native migration to the portfolio; immutable baseline evidence remains in Git.

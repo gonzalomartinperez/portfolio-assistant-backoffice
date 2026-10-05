@@ -8,11 +8,11 @@
 		"start": "next start --port 3001",
 		"lint": "biome lint src tests scripts next.config.ts",
 		"typecheck": "node scripts/check-typescript-toolchain.ts && next typegen && node node_modules/typescript/lib/tsc.js --noEmit",
-		"test": "npm run contract:check && node --test tests/*.test.ts tests/unit/*.test.ts tests/contract/*.test.ts",
+		"test": "npm run contract:check && node --test tests/unit/*.test.ts",
 		"contract:check": "node scripts/check-contract.ts",
 		"contract:generate": "npm run generate --prefix tooling/api-contract",
 		"test:browser": "playwright test",
-		"format:check": "biome format src tests scripts docs package.json biome.json playwright.config.ts playwright.live.config.ts next.config.ts tsconfig.json tooling/api-contract/package.json",
+		"format:check": "biome format src tests scripts docs package.json biome.json playwright.config.ts next.config.ts tsconfig.json tooling/api-contract/package.json",
 		"security:check": "node scripts/check-public-files.ts",
 		"docs:check": "node scripts/check-docs.ts",
 		"preview:fixture": "node scripts/test-server.ts",
@@ -31,9 +31,6 @@
 		"pg": "8.23.1",
 		"react": "19.3.0",
 		"react-dom": "19.3.0",
-		"react-markdown": "^10.1.0",
-		"rehype-sanitize": "^6.0.0",
-		"remark-gfm": "^4.0.1",
 		"server-only": "0.0.1"
 	},
 	"devDependencies": {
@@ -44,9 +41,9 @@
 		"@types/pg": "8.23.1",
 		"@types/react": "19.3.0",
 		"@types/react-dom": "19.3.0",
+		"@typescript/typescript6": "6.0.2",
 		"js-yaml": "5.4.2",
-		"typescript": "7.0.2",
-		"@typescript/typescript6": "6.0.2"
+		"typescript": "7.0.2"
 	},
 	"type": "module",
 	"license": "MIT"

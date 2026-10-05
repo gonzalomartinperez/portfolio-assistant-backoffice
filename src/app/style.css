@@ -36,24 +36,6 @@
 	--accent-ink: #fff;
 	--danger: #9b2020;
 }
-@media (prefers-color-scheme: light) {
-	:root[data-theme="system"] {
-		color-scheme: light;
-		--surface-void: #fafafb;
-		--surface-base: #f1f4f8;
-		--surface-raised: #fff;
-		--line-subtle: #e6e9ee;
-		--line-strong: #d5dae2;
-		--line-control: #7f8a99;
-		--text-primary: #0f141b;
-		--text-secondary: #48546a;
-		--text-muted: #5c687b;
-		--accent: #0a6e9b;
-		--accent-wash: rgb(10 110 155 / 10%);
-		--accent-ink: #fff;
-		--danger: #9b2020;
-	}
-}
 *,
 *::before,
 *::after {

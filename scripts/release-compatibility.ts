@@ -32,10 +32,11 @@ export function releaseCompatibility(
 		openapi_sha256: source.openapi_sha256,
 	};
 	return {
-		schema_version: 1,
+		schema_version: 2,
 		backoffice_commit: commit,
-		api_commit: provenance.api_commit,
-		public_api_contract_sha256: provenance.openapi_sha256,
+		historical_public_api_commit: provenance.api_commit,
+		historical_public_api_contract_sha256: provenance.openapi_sha256,
+		operational_api_commit: null,
 		backoffice_image: image,
 		production_deployment: "disabled",
 		operational_api_compatibility:

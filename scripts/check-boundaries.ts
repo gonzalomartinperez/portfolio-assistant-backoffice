@@ -8,7 +8,7 @@ export function boundaryErrors(file: string, source: string) {
 	const name = relative.split(path.sep)[0];
 	const feature = path.resolve(
 		"src/features",
-		name && name !== ".." ? name : "assistant",
+		name && name !== ".." ? name : "operations",
 	);
 	const domain = within(filename, path.join(feature, "domain"));
 	const application = within(filename, path.join(feature, "application"));
@@ -121,7 +121,6 @@ export function boundaryErrors(file: string, source: string) {
 	}
 	inspect(tree);
 	for (const name of source.match(/NEXT_PUBLIC_[A-Z_]+/g) ?? [])
-		if (name !== "NEXT_PUBLIC_ASSISTANT_API_URL")
-			errors.push("public environment variable");
+		errors.push(`public environment variable: ${name}`);
 	return errors;
 }

@@ -1,86 +1,43 @@
 # Design system and provenance
 
-The current root surface is the authenticated backoffice. Its operations cards, native
-disclosures, preferences and account controls reuse semantic tokens and owned button
-variants. Metrics use tabular numbers; long identifiers wrap without widening the page.
-Unknown data remains an explicit notice. Auth CSS Modules own account composition;
-operations classes own responsive dashboard composition. No graph library or decorative
-architecture diagram is required to inspect execution stages.
-
-Public chat/avatar details below are historical migration context; current native chat
-is maintained in the portfolio.
-
 Read-only portfolio reference: `45d8a42faa78bfb94952639ed462832c3b4ad109`.
-Reviewed `docs/design.md`, `components.json`, `src/app/globals.css`, owned button/input
-primitives, fonts/layout and theme behavior. No runtime import crosses repositories.
-The existing assistant work's approved avatar is retained without distortion.
+Reviewed design documentation, semantic tokens, owned primitives, typography and theme
+behavior. No runtime import crosses repositories. The backoffice deliberately emphasizes
+technical status and account controls; the portfolio owns conversational identity/motion.
 
-Token authority is `src/app/style.css`: portfolio surface, text, control-border and cyan
-accent values in both themes, plus assistant-specific danger and accent-ink colors.
-Inter is body text, Inter Tight is display type, JetBrains Mono is limited to short labels.
-Next/font self-hosts the fonts. `data-theme` remains the only theme authority.
+## Tokens and composition
 
-`components/ui/button` adapts the portfolio's owned shadcn button responsibilities:
-native semantics, default/outline/ghost variants, 44 px targets, focus ring and disabled
-states. These few controls use CSS Modules instead of adding Tailwind, CVA and Radix Slot
-to an app that had none. This is a deliberate dependency-saving adaptation, not a second
-preset. Native select/textarea retain labels and platform interaction. There is no new
-icon library, theme provider, reset, animation library, image generation or Three.js scene.
+`src/app/style.css` owns semantic dark/light surfaces, text, borders, cyan accent,
+danger, radii, focus and 140ms/320ms motion durations. Inter is body text, Inter Tight is
+display type and JetBrains Mono is limited to short labels. Next/font self-hosts approved
+fonts; attribution remains in [third-party notices](../THIRD_PARTY_NOTICES.md).
 
-Feature CSS Modules own sidebar, transcript, message, citation and composer geometry.
-Global CSS is limited to tokens, reset, type and screen-reader utility. Source links use
-understandable paths and optional line ranges; unsafe protocols and unsupported citations
-are removed at the adapter. Raw HTML and remote images are disabled in model Markdown.
-External HTTPS links use noopener/noreferrer and never execute returned code.
+`data-theme` is the only theme authority. The pre-paint script replays a non-sensitive
+preference and safely handles blocked storage. Legacy system preference resolves once to
+an explicit light/dark value. Account and operational dictionaries contain complete
+US English and neutral Latin American Spanish sentences with typed keys/interpolation.
+No credentials or transcripts are stored in browser preferences.
 
-Dark/light controls have explicit default, hover, focus, pressed, loading, disabled and
-error states. Motion respects reduced-motion. Empty states are real suggestions, not
-fabricated answers; waiting labels reflect actual requests. Copy identifies this as an AI
-assistant and does not call generated text verified. Retention copy interpolates the
-service-provided duration rather than hard-coding an assumption about local storage.
+Owned `components/ui/button` uses native semantics, default/outline/ghost variants,
+44px targets, visible focus and truthful disabled/loading states. CSS Modules adapt the
+portfolio's shadcn responsibilities without adding Tailwind, CVA, Radix or a competing
+preset to this small application. Auth CSS Modules own account/forms/dialog geometry;
+operations classes own dashboard cards, toolbar, notices and native trace disclosures.
 
-The English dictionary defines the complete key shape; the Spanish dictionary must
-satisfy the same mapped type. Use full translated sentences and typed interpolation.
-US English and neutral Latin American Spanish are required.
+Cards use semantic surfaces, consistent borders/radii and bounded content widths. Long
+identifiers wrap; metrics use readable number formatting. Missing data gets an explicit
+notice, never fabricated zeroes. Synthetic evidence is visibly labeled. Trace disclosure
+renders only validated stages, not arbitrary span attributes, prompts or answers.
 
-## Conversation interactions
+Use native labeled selects, forms and details before adding libraries or ARIA. Account
+revocation has a native confirmation dialog, Escape dismissal and focus restoration.
+Copy-invitation feedback reports actual clipboard success/failure; invite links are secrets.
+Theme colors switch coherently. Reduced motion removes transition/animation effects;
+reading surfaces and controls remain stable. No avatar animation or graph engine is needed
+for this private operational application.
 
-The empty state uses three editorial prompts; completed answers offer two general follow-up
-questions. Both fill and focus the draft without sending, predicting relevance or claiming
-backend-provided actions. Copy uses the Clipboard API and reports success only after it
-resolves; unavailable/denied access gives a localized manual-selection fallback. No transcript
-is persisted locally. Existing source and feedback controls retain their real API behavior.
-
-`IdentityAvatar` owns one decorative depth/halo effect around the approved face. It is hidden
-from assistive technology and has no keyboard stop or conversation action. Fine mouse input
-updates bounded rotation through one pending animation frame, without React state per frame.
-Pointer exit/cancel, media changes, window blur and unmount reset/cancel resources. Coarse
-input has only a restrained pressed halo; native scrolling/zoom/selection are untouched.
-Reduced motion removes the halo and transform entirely. There is no WebGL or new dependency.
-The portfolio's 140ms/320ms durations and easing are semantic global tokens; only suggestion
-presses use small scale feedback. Reading surfaces and streaming tokens do not animate.
-
-See [interaction acceptance and evidence](verification/interaction-polish.md) for baseline,
-regressions, screenshots and performance measurements. Run the browser suite for clipboard
-failure/success, draft semantics, pointer capability, reduced motion and cleanup, in addition
-to the existing keyboard, scrolling, source-security and locale/theme matrix.
-
-Theme text and surface colors switch together without interpolation. Button feedback uses
-shadow/border/transform transitions; do not animate text/background across theme palettes,
-which can create unreadable intermediate contrast. Browser regression samples frame-level
-contrast instead of waiting for a transition to hide the issue.
-
-## Embedded-first composition
-
-`/embed` uses the same native control variants, semantic surfaces, fonts, source cards,
-Markdown and avatar as standalone. The compact shell removes page-level introduction and
-preference controls; the host owns explicit theme/locale. Its toolbar is 1rem typography,
-content/composer gutters are 0.75rem, and the message measure stays capped at 800px when
-expanded. The iframe viewport drives existing responsive rules; no mobile chat fork exists.
-The conversation drawer remains available at every embedded width. Shared 44px targets,
-focus rings, safe-area padding and reduced-motion tokens remain authoritative.
-
-Minimizing pauses decorative activity and token-driven rendering; it never adds an entrance
-animation to each token. Source/follow-up actions remain after completed content. The
-[embed acceptance matrix](embed-integration.md) covers the real cross-origin panel, not just
-a full-page screenshot. The neutral host harness chrome is a test fixture, not portfolio styling.
+Inspect both themes/locales at narrow and desktop widths, keyboard focus and 200% text.
+[Current browser evidence](verification/backoffice.md) distinguishes real PostgreSQL,
+labeled fixtures, automated accessibility and unverified live providers/physical devices.
+The [historical public-chat guide](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/blob/aed8ea710c8b847ddc9066aaef5ce48d3793b494/docs/design-system.md)
+explains the former avatar/iframe; it is not current backoffice guidance.

@@ -93,7 +93,6 @@ const web = process.env.WEB_UPSTREAM
 const proxy = await startTestProxy(
 	3107,
 	process.env.WEB_UPSTREAM ?? "http://127.0.0.1:3108",
-	process.env.WEB_UPSTREAM ?? "http://127.0.0.1:3108",
 ).catch((error: unknown) => {
 	web?.kill("SIGTERM");
 	operations.closeAllConnections();

@@ -1,103 +1,35 @@
 # Backoffice architecture
 
-The root page is a protected Server Component. `features/operations/entry.ts` is the
-server-only composition root: it constructs a bounded HTTP adapter and invokes the
-application read operation. The browser receives validated, allowlisted view data, not
-private service URLs, credentials or raw diagnostics.
+The root page is a protected, dynamic Server Component. Server-only
+`features/operations/entry.ts` composes a bounded HTTP adapter and the application read.
+Presentation receives allowlisted view data, never private URLs, tokens or diagnostics.
 
-- `operations/domain`: platform-independent operational models and explicit available,
-  unavailable/unconfigured results.
-- `operations/application`: a small read port; no React, Next or network dependencies.
-- `operations/adapters`: private HTTP policy, bounded UTF-8 JSON and wire-to-model validation.
-- `operations/presentation`: server rendering and intentional client preference controls.
-- `auth`: Better Auth configuration, PostgreSQL membership policy, guarded server actions
-  and accessible account presentation. A hidden control is never an authorization check.
+- `operations/domain`: pure operational models and available, unconfigured or unavailable results.
+- `operations/application`: a small read port; no React, Next or concrete networking.
+- `operations/adapters`: private HTTP policy, bounded UTF-8 JSON and explicit wire mapping.
+- `operations/presentation`: server dashboard and intentional client preference controls.
+- `auth`: OAuth configuration, PostgreSQL membership, guarded server actions and account UI.
 
-Dependency tests enforce pure layers and reject server-only imports at client boundaries.
-Authentication is rechecked per request, not persisted as a browser role. Operational
-reads use no-store, bounded request time/body and safe explicit failures. No generation
-retry or model call occurs in this application. IAM is separate from conversation storage.
-[ADR 004](adrs/004-native-chat-and-private-operations.md) describes ownership and migration.
+Dependency tests inspect static, dynamic and type-only imports. Pure layers cannot depend
+on frameworks/platform globals, and client components cannot import authentication
+infrastructure. The native checker covers application, tooling, tests and generated routes.
 
-## Historical public-chat implementation
+Google/GitHub admission requires verified configured-owner or invited-viewer identity.
+Every protected page, API and action checks live database membership; hiding a control
+never authorizes an operation. IAM storage is separate from conversation data. Explicit
+linking, atomic invitations and revocation are documented in [authentication](authentication.md).
 
-The following documents the preserved former chat feature. It is migrated to the portfolio
-and retired here only after equivalent behavior is verified there. It does not describe
-the current root route or establish current backoffice acceptance.
+Operational reads use no-store, bounded time/body, no redirects and safe failures. Missing
+or rejected data stays unavailable. No model call, generation retry, transcript storage
+or browser service token exists here. The [backend request](backend-operations-request.md)
+is proposed; an operational API contract has not yet been consumed.
 
-The root page/layout are Server Components. `features/assistant/entry.tsx` is the
-composition root and intentional client boundary for locale, theme, conversation
-navigation and chat. It constructs one controller and one HTTP transport per mount.
-There is no backend-for-frontend, shared runtime package or new state library.
+[ADR 004](adrs/004-native-chat-and-private-operations.md) defines ownership. The portfolio
+owns one native conversation feature for compact, maximized, mobile and page presentations.
+Its verified implementation is committed at `7753d39`; 31 assistant unit/network checks
+and 68 browser scenarios passed before the old chat and iframe were retired here.
 
-- `domain`: independent conversation/message types, lifecycle union and pure transition
-  rules. No React, Next, generated schemas, browser globals or network imports.
-- `application`: a subscribable controller and narrow transport/runtime ports. It owns
-  request lifetimes, single-flight generation, selection versions and operations.
-- `adapters`: credentialed HTTP, runtime validation, generated-type compatibility,
-  bounded SSE framing and wire-to-application progress mapping.
-- `presentation`: React subscription, interaction state, safe Markdown and scoped CSS.
-- `shared`: bilingual dictionaries and preference handling; no general utility bucket.
-- `components/ui`: owned native control variants adapted from the portfolio primitives.
-
-`tests/unit/boundaries.test.ts` traverses TypeScript imports and identifiers. Domain
-and application cannot reach presentation/infrastructure; presentation cannot import
-adapters/generated contracts/server-only modules. Only the public API origin is allowed
-as a `NEXT_PUBLIC_*` identifier. The composition root is the deliberate exception for
-wiring concrete adapters to application ports.
-
-## Lifecycle and ownership
-
-`initializing → ready → submitting → streaming → completed | cancelled | failure`.
-Initialization may instead become `unavailable`; an authenticated operation returning
-401 becomes `expired`. Reconnection is explicit. `canSubmit` also requires loaded history,
-no pending mutation and no unresolved local partial response. Conversation mutations and
-selection controls are disabled during generation; this keeps one clearly owned stream.
-Transport events never appear in React state.
-
-Submit takes the lock before its first await, creates a conversation if necessary and
-sends one request with a fresh idempotency key. No automatic generation retry exists.
-Stop immediately aborts the reader; when a run ID is known it also attempts the pinned
-cancel endpoint with a five-second bound. Closing/navigating away aborts all owned
-requests; the pinned API marks disconnected runs interrupted. Selection versions prevent
-late history from overwriting another conversation. Unmount suppresses notifications.
-
-A terminal `run.completed` requires a validated `message.completed`. EOF without a
-terminal event, malformed frames, identity/order changes and provider failures cannot
-become successful answers. Partial text remains in memory with an incomplete label.
-“Check saved conversation” fetches the session/list/history; it never resends a prompt.
-If no saved answer exists, start a new conversation to leave an unresolved partial.
-Partial text is not persisted in browser storage. Successful history is authoritative.
-Pagination is followed with bounded page count and repeated-cursor detection.
-
-The SSE reader incrementally decodes fatal UTF-8, handles CRLF/LF, split code points,
-comments and multiline data, bounds frames to 64,000 characters and streams to 1 MB,
-and rejects duplicate/decreasing sequences or identity changes. Completion, errors and
-abort cancel and release the reader. Complete messages use sanitized Markdown; streaming
-text is plain text, so no Markdown parser runs on every token. Completed message components
-are memoized and their feedback callback stays stable.
-
-## Preferences and accessibility
-
-Only theme and locale are stored locally; all storage access is optional and guarded.
-The pre-paint script sets `data-theme`, and hydration does not replay a dark default over
-a saved choice. System mode uses CSS media queries under the same attribute authority.
-Document language, title and description follow the selected language. The default server
-metadata is bilingual; this single-route application does not publish locale-specific URLs.
-
-Enter submits, Shift+Enter inserts a newline, and IME composition never submits. One
-polite status announces connection/generation/completion/cancellation, not every token.
-New content follows only within 120 px of the bottom; a latest-message button resumes
-following. Mobile navigation traps focus, makes the conversation inert, supports Escape
-and restores focus. Inline rename/delete confirmation returns focus to the conversation.
-Native scrolling, dynamic viewport height, safe-area padding and horizontal code scrolling
-support mobile without intercepting touch events. Physical keyboard/phone checks remain
-separate from emulated browser verification.
-
-## Shared embedded shell
-
-The `/embed` Server Component supplies validated runtime origins and initial preferences to
-the same composition root. `features/embed` owns the independent presentation protocol; it
-never changes conversation transitions or parses API payloads. Hidden chat subscribers pause
-while the controller completes an authorized stream. Reopen reads the latest snapshot.
-The [embed handoff](embed-integration.md) is canonical for protocol and host responsibility.
+Former implementation source and detailed streaming architecture remain available at
+[frontend baseline aed8ea7](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/tree/aed8ea710c8b847ddc9066aaef5ce48d3793b494).
+Historical screenshots remain labeled. Retired chat coverage now belongs to the portfolio;
+backoffice authentication, operations, dependency policy and boundary checks remain here.
