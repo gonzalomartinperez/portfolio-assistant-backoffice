@@ -33,6 +33,11 @@ test("unauthenticated visitors cannot read operational data", async ({
 	const response = await request.get("/api/operations");
 	expect(response.status()).toBe(401);
 	expect(await response.text()).not.toContain("fixture-1");
+	expect(response.headers()["x-frame-options"]).toBe("DENY");
+	expect(response.headers()["content-security-policy"]).toContain(
+		"frame-ancestors 'none'",
+	);
+	expect((await request.get("/embed")).status()).toBe(404);
 });
 
 test("health and database readiness have distinct public semantics", async ({
