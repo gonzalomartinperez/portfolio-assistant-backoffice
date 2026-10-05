@@ -42,6 +42,15 @@ test("required quality gate covers the full graph and publication stays explicit
 		load(readFileSync(".github/workflows/quality.yml", "utf8")),
 	);
 	const jobs = record(quality.jobs);
+	const browserSteps = field(jobs, "browser", "steps");
+	assert.ok(Array.isArray(browserSteps));
+	assert.ok(
+		browserSteps.some(
+			(step: unknown) =>
+				field(step, "run") ===
+				"npx --no-install playwright install --with-deps --only-shell chromium firefox webkit",
+		),
+	);
 	assert.deepEqual(Object.keys(jobs).sort(), [
 		"browser",
 		"checks",
