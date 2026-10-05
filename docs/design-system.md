@@ -41,3 +41,17 @@ Inspect both themes/locales at narrow and desktop widths, keyboard focus and 200
 labeled fixtures, automated accessibility and unverified live providers/physical devices.
 The [historical public-chat guide](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/blob/aed8ea710c8b847ddc9066aaef5ce48d3793b494/docs/design-system.md)
 explains the former avatar/iframe; it is not current backoffice guidance.
+
+## Interactive snapshot charts
+
+Recharts 3.10.1 (MIT) renders responsive SVG bars inside a small client boundary;
+React-is 19.3.0 matches React. React/React DOM 19 are supported by the published peer
+requirements. The rest of the dashboard remains server-rendered. A native labeled select
+switches execution outcomes/token counts, with keyboard-accessible tooltips and an always
+visible semantic data table. The chart uses existing surface/accent tokens and disables
+bar animation for all users. Missing snapshots render no chart. Only validated aggregates
+cross the client boundary; sampled trace IDs and credentials are not chart props.
+
+This snapshot is not a time series. Trend controls require an actual committed history
+contract. Do not add another chart library or dashboard platform for the same task.
+Reference: [Recharts accessibility](https://github.com/recharts/recharts/blob/main/storybook/stories/API/Accessibility.mdx).

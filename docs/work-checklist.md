@@ -12,7 +12,7 @@ One checklist; evidence must describe actual behavior, not intentions.
 | 3 | Native UX | Verified compact/maximized/mobile/page, continuity, sources, themes/locales, focus, keyboard and200% text; physical devices/assistive technology pending |
 | 3 | CI and image | Managed real-DB browser fixtures pass all three engines; exact hardened image migration and GitHub release PR checks in progress |
 | 4 | Skills and docs | Four focused workflows updated; validator and actual Codex/Claude discovery pass without model calls; clean-checkout discovery passes in both clients |
-| 4 | Rename and PR integration | Public GitHub repo renamed portfolio-assistant-backoffice; Dependabot26 and27 merged after passing current-head CI; product PR28 draft and portfolio PR pending |
+| 4 | Rename and PR integration | Public GitHub repo renamed portfolio-assistant-backoffice; Dependabot26 and27 merged after passing current-head CI; product PR28 and portfolio PR94 awaiting current-head checks |
 | blocked | Real operational telemetry | API owner must publish additive contract and instrumentation |
 | deferred | Production | Coolify/vps-ops, real OAuth registrations, DNS, effective proxy/security headers and phone tests |
 

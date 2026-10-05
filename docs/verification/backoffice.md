@@ -5,8 +5,8 @@ PostgreSQL 17 and Playwright 1.63.0. Browsers ran against the production contain
 not the development server. Operational data and OAuth providers are deterministic
 fixtures; PostgreSQL and signed session admission are real.
 
-- 64 current unit/contract/tooling tests passed; this count still includes historical
-  conversation tests pending the native migration.
+- 40 retained unit/contract/tooling tests passed. Public-chat tests moved to the portfolio
+  after 31 native unit/network checks and 68 browser checks passed; legacy chat was retired.
 - Strict typing, lint, documentation links, public-file scan and four skill entries passed.
 - Production image sha256:abc01af176d17ce509067ca1ba086b3849662dd0b2dd5a3a6459e4b6aae5c18e
   built successfully: 194,338,842 bytes uncompressed, runtime user node.
@@ -40,3 +40,17 @@ Dependency maintenance was verified separately in GitHub Actions run
 Its complete pre-migration pipeline passed in approximately four minutes; this is not
 a timing measurement for the new backoffice pipeline. Dependabot PRs26 and27 merged
 through required checks into develop. No production deployment followed.
+
+## Interactive chart increment
+
+Recharts 3.10.1 and React-is 19.3.0 were installed with exact versions and no peer overrides.
+The dashboard visualizes validated snapshot outcome/token totals; it does not imply
+historical trends. Charts use semantic colors, no bar animation and a permanent data table.
+Local production compilation passed (17.8s compile phase, single run, not a speed claim).
+All 21 available-mode browser checks passed in 32.4s with two workers, followed by three
+unavailable-mode checks in 8.7s. Six focused chart/mobile checks also passed in 21.9s:
+metric switching and keyboard tooltips in all engines, dark/light Spanish mobile axe and
+no overflow. The images above were refreshed from this run and inspected. npm audit
+reported zero findings. An initial selector-label failure was corrected and reverified.
+These are synthetic operations and real local PostgreSQL/session checks, not live
+provider/telemetry verification. Final immutable-image checks run on the PR's current head.

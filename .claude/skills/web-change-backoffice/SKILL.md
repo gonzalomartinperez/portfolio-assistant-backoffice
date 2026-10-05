@@ -30,3 +30,8 @@ Report commands actually executed, changed behavior and remaining integration ga
 Missing prerequisites stop dependent checks. An absent committed operational contract
 requires a precise backend handoff, not invented production capabilities. Public chat
 belongs to the portfolio; this skill does not authorize changes to another repository.
+
+For dashboard charts use the existing Recharts client boundary and semantic data table;
+pass validated aggregates only. Preserve token colors, both locales and disabled chart
+animation. Snapshot totals are not historical trends. Prometheus/Grafana infrastructure
+belongs to vps-ops; do not expose datasource credentials or embed shared dashboards.

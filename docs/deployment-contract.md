@@ -110,3 +110,13 @@ visibility, registry access, compatible digests, secret delivery, measured limit
 backup/restore evidence, migration recovery and proxy validation. Shared production
 configuration is not maintained here. Historical chat proxy fixtures were retired after
 verified native migration to the portfolio; immutable baseline evidence remains in Git.
+
+## Monitoring integration ownership
+
+Prometheus/Grafana are approved design choices for private technical monitoring;
+installation and effective access controls belong to vps-ops. The application neither
+embeds Grafana nor connects browsers directly to a metrics datasource. No new monitoring
+environment variables or outbound destinations are needed for this image. The API's
+committed private summary remains a prerequisite for real dashboard data; the durable
+backend accounting ledger, not Prometheus counters, determines estimated spend/budget.
+See [monitoring contract request](backend-operations-request.md#prometheus-and-grafana-handoff).

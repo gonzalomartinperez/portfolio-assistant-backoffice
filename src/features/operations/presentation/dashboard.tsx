@@ -1,5 +1,6 @@
 import type { OperationalRead } from "../domain/models";
 import { operationsCopy, type OperationsLocale } from "./copy";
+import { SnapshotChart } from "./charts";
 import { Preferences } from "./preferences";
 import { SignOut } from "../../auth/sign-out";
 function Timestamp({ value }: { value: string }) {
@@ -145,6 +146,13 @@ export function Dashboard({
 					<p>{t.pricing}</p>
 				</section>
 			</div>
+			{snapshot && (
+				<SnapshotChart
+					executions={snapshot.executions}
+					usage={snapshot.usage}
+					locale={locale}
+				/>
+			)}
 			<section className="operation-card trace-section">
 				<h2>{t.traces}</h2>
 				{!snapshot || snapshot.traces.length === 0 ? (

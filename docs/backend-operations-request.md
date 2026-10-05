@@ -45,3 +45,22 @@ Prove private routes are not publicly proxied, read credentials cannot mutate st
 secret/content canaries never reach exports. Test generation success/cancel/error/EOF, observer
 failure, bounded buffers, fresh/stale knowledge and reconciliation with the spend ledger.
 Real OpenAI evaluation remains separately authorized; no telemetry test needs a paid model call.
+
+## Prometheus and Grafana handoff
+
+Use Prometheus for aggregated execution outcomes, first-token/request duration histograms
+and cancellation counters. Labels must be bounded enums (for example outcome or phase),
+never emails, conversation/trace IDs, prompts, URLs or document contents. Metrics are not
+the accounting authority: the durable backend spend ledger supplies settled estimates,
+reservations and budget reconciliation even after process restarts or scrape gaps.
+
+vps-ops owns private collection, authenticated Grafana access, datasource restrictions,
+retention, dashboards and alert delivery. No anonymous/external dashboard sharing or
+Grafana iframe is required. The backoffice reads the validated private API summary;
+it receives neither datasource credentials nor arbitrary PromQL access. Grafana viewers
+may query beyond visible panels, so dashboard visibility alone is not access isolation.
+The API owner defines the committed exporter/observer contract before any live claim.
+
+References: [Prometheus naming and cardinality](https://prometheus.io/docs/practices/naming/)
+and [Grafana security](https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/).
+These are preparation requirements, not authorization to install shared services.

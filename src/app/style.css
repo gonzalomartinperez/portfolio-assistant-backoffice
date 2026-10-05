@@ -305,3 +305,44 @@ h1 {
 		scroll-behavior: auto !important;
 	}
 }
+
+.snapshot-chart {
+	margin-block: 1.5rem;
+}
+.snapshot-chart .operations-toolbar {
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+.snapshot-chart select {
+	min-height: 44px;
+	max-width: 100%;
+	background: var(--surface-raised);
+	color: var(--text-primary);
+	border: 1px solid var(--line-control);
+	border-radius: var(--radius-sm);
+	padding: 0.5rem;
+}
+.snapshot-chart-plot {
+	height: 240px;
+	min-width: 0;
+	width: 100%;
+}
+.snapshot-chart-table {
+	width: 100%;
+	border-collapse: collapse;
+	text-align: left;
+}
+.snapshot-chart-table caption {
+	text-align: left;
+	font-weight: 600;
+	margin-block: 1rem 0.5rem;
+}
+.snapshot-chart-table th,
+.snapshot-chart-table td {
+	padding: 0.5rem;
+	border-bottom: 1px solid var(--line-subtle);
+}
+.snapshot-chart-table td {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}

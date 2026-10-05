@@ -1,4 +1,8 @@
 const en = {
+	breakdown: "Snapshot breakdown",
+	metricView: "Metric",
+	tokens: "Tokens",
+	snapshotOnly: "Current snapshot totals; this is not a historical trend.",
 	title: "Assistant operations",
 	description: "Availability, public knowledge and execution health.",
 	status: "Service",
@@ -56,6 +60,11 @@ const en = {
 	finalization: "Finalization",
 };
 const es: { [Key in keyof typeof en]: string } = {
+	breakdown: "Detalle de la consulta",
+	metricView: "Métrica",
+	tokens: "Tokens",
+	snapshotOnly:
+		"Totales de la consulta actual; no representan una tendencia histórica.",
 	title: "Operaciones del asistente",
 	description:
 		"Disponibilidad, conocimiento público y estado de las ejecuciones.",
