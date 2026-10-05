@@ -143,7 +143,7 @@ jobs:
             --cap-drop ALL --security-opt no-new-privileges \
             -p 127.0.0.1:3108:3000 portfolio-assistant-backoffice:rc
       - name: Install all browser engines and OS dependencies
-        run: npx playwright install --with-deps chromium firefox webkit
+        run: npx --no-install playwright install --with-deps --only-shell chromium firefox webkit
       - name: Verify real-database authorization, operations and accessibility
         run: npm run test:browser -- backoffice.spec.ts --grep-invert "operational failure" --output test-results/available
         env:

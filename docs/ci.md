@@ -29,8 +29,9 @@ cancelling an in-progress release. Timeouts bound every job.
 ## Reproducibility and permissions
 
 `npm ci` is mandatory. Setup-node caches downloads with an explicit lockfile path and its
-OS/architecture/lockfile-aware cache key; a cache never substitutes for installation. One
-required `npm audit --audit-level=moderate` covers production and development dependencies.
+OS/architecture/lockfile-aware cache key; a cache never substitutes for installation. Explicit
+required audits cover both the root and isolated contract-generator lockfiles, including
+production and development dependencies. Frozen installs skip implicit audit/funding work.
 BuildKit uses a separate `backoffice-node24-amd64` scope and content-addressed build inputs.
 No broad node_modules restore key is used. Browser binaries remain uncached, following
 [Playwright's CI guidance](https://playwright.dev/docs/ci#caching-browsers); install their OS
@@ -108,3 +109,13 @@ in unavailable mode for `--grep "operational failure"`. Both reuse the same appl
 image; no global mutation races between browser engines. Their result and HTML directories
 are separate so failure evidence cannot overwrite the successful suite's report. Malformed
 payload validation is also covered at the adapter boundary.
+
+## Headless browser download optimization
+
+CI installs Chromium Headless Shell plus Firefox/WebKit with the locked Playwright CLI
+(`--no-install`, `--only-shell`). No project selects a headed Chromium channel, so the
+unused full Chromium download is omitted without dropping browser/test coverage. OS
+dependencies are still installed; browser caches are intentionally not restored.
+Reference: [Playwright browser installation](https://playwright.dev/docs/browsers#chromium).
+Compare executed installation-step durations before making speedup claims; network and
+runner variation mean one run is not a controlled benchmark.
