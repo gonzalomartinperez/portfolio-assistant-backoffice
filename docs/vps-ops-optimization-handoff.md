@@ -65,6 +65,14 @@ Verify combined application/proxy TLS, cache and security headers on all relevan
 Only Coolify's shared reverse proxy exposes application traffic; restrict administrative
 access separately. Databases, internal monitoring and operational APIs stay private.
 
+**Committed documentation conflict to resolve with the API owner:** the inspected API
+deployment document still describes `/embed` and an assistant-only origin allowlist.
+Those presentation assumptions are obsolete. The native portfolio requires its reviewed
+exact origin in the API configuration; do not copy the old target allowlist unchanged.
+Request an updated committed handoff. Backoffice's retained public contract snapshot is
+historical (`6b1e65f2406ba5ddf21d15c56c34ccf672d90bbb`), not proof of a consumed private
+operations contract. Release metadata must retain that distinction.
+
 ## Backoffice runtime to preserve
 
 Read `docs/deployment-contract.md` for the complete validated environment schema.
@@ -112,6 +120,8 @@ local scan date. Re-scan selected digests and triage findings before release.
 Do not invent backend behavior. Current image runs non-root Python on private8000;
 readiness depends on PostgreSQL/pgvector, Neo4j, current schema and public corpus. Verify
 the committed compatibility contract, Python/runtime versions and actual target image.
+At the inspected revision, API liveness is `/health/live`, readiness `/health/ready`;
+the latter checks schema/checksums, active corpus with matching embedding model and graph.
 The migration entry point is `python -m app.migrate`; ordered checksum-checked SQL and
 LangGraph setup have distinct transaction boundaries. Unknown migrations can reject
 older images. Require backups, reviewed forward recovery and explicit rollback limits.
@@ -121,6 +131,25 @@ real runtime dependency, not removable by assumption. Schedule sync and retentio
 owned operations jobs with least privilege, concurrency locks, bounded time/resource
 limits, idempotence and redacted results. Never ingest private career-ops material.
 The assistant must remain disabled while preparations and fixture tests run.
+
+The optional continuous worker uses the same immutable API image and command
+`python -m app.knowledge_watch`, one replica with its advisory lock, no HTTP port.
+Disable the inherited API HTTP healthcheck for that worker and verify the Coolify
+override. Monitor process state and persisted successful checked_at separately from
+active-corpus freshness. It needs a writable temporary Git cache, GitHub HTTPS and
+separate corpus/ledger write credentials; measure cache/RAM rather than assuming the
+backoffice's 32 MiB tmpfs fits it. Source polling defaults60s/freshness expiry90s;
+production OpenAI requires the documented fresh-knowledge policy. Worker SIGTERM grace
+is at least60s, distinct from HTTP API25s. Do not create a competing recurring sync
+that overlaps the continuous worker; choose its operational mode deliberately.
+
+Keep `AI_PROVIDER=fixture`, `EMBEDDINGS_PROVIDER=fixture`, `ALLOW_PAID_AI=false` until
+paid use is separately approved. Production secrets include API database credentials,
+Neo4j password and RATE_HASH_KEY; OPENAI_API_KEY only when authorized. Current provider
+policy is OpenAI only, GPT-6 Luna, medium effort, no fallback or automatically repeated
+billed generation, shared approved USD10/month generation/embedding ledger. Do not treat
+OpenAI availability as a health probe that spends money. Respect store=False and the
+account's applicable retention policy. No external telemetry exporter is implemented.
 
 Verify SSE through the exact proxy path: no response buffering/shared caching, prompt
 flushing, bounded request sizes, heartbeat/read-idle timeouts, client disconnect and
