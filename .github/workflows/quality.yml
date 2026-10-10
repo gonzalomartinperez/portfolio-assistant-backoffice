@@ -64,6 +64,27 @@ jobs:
           tags: portfolio-assistant-backoffice:rc
           cache-from: type=gha,scope=backoffice-node24-amd64
           cache-to: type=gha,mode=max,scope=backoffice-node24-amd64
+      - name: Verify pinned image scanner
+        run: |
+          mkdir -p /tmp/image-scanner
+          curl --fail --silent --show-error --location --retry 3 \
+            https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_Linux-64bit.tar.gz \
+            --output /tmp/image-scanner/trivy.tar.gz
+          echo 'c6e65abddb348e25f10549df887045629cf28cc72453cd1c63acb717316b3f3f  /tmp/image-scanner/trivy.tar.gz' | sha256sum --check
+          tar -xzf /tmp/image-scanner/trivy.tar.gz -C /tmp/image-scanner trivy
+      - name: Scan the complete runtime and reject high or critical vulnerabilities
+        run: |
+          /tmp/image-scanner/trivy --config '' image --image-src docker \
+            --ignorefile '' --scanners vuln --format json --output /tmp/image-vulnerabilities.json \
+            portfolio-assistant-backoffice:rc
+          /tmp/image-scanner/trivy --config '' convert --ignorefile '' --scanners vuln \
+            --exit-code 1 --severity HIGH,CRITICAL --table-mode detailed /tmp/image-vulnerabilities.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: image-security
+          path: /tmp/image-vulnerabilities.json
+          retention-days: 14
       - name: Export the verified production image
         run: docker save portfolio-assistant-backoffice:rc | gzip -1 > /tmp/image.tar.gz
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -131,7 +152,9 @@ jobs:
         run: |
           docker run --rm --add-host host.docker.internal:host-gateway \
             --env-file /tmp/backoffice-fixture.env \
-            --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
+            --read-only --tmpfs /tmp:uid=65532,gid=65532,mode=0700,size=32m \
+            --memory=512m --memory-swap=512m --cpus=0.75 --pids-limit=128 \
+            --cap-drop ALL --security-opt no-new-privileges \
             portfolio-assistant-backoffice:rc node scripts/auth-migrate.ts
       - name: Exercise OAuth exchange, invitation and revocation against PostgreSQL
         run: node --test tests/integration/auth.test.ts
@@ -139,9 +162,14 @@ jobs:
         run: |
           docker run -d --name assistant-browser --add-host host.docker.internal:host-gateway \
             --env-file /tmp/backoffice-fixture.env \
-            --read-only --tmpfs /tmp --tmpfs /app/.next/cache:uid=1000,gid=1000,mode=0700,size=32m \
+            --read-only --tmpfs /tmp:uid=65532,gid=65532,mode=0700,size=32m \
+            --tmpfs /app/.next/cache:uid=65532,gid=65532,mode=0700,size=32m \
+            --memory=512m --memory-swap=512m --cpus=0.75 --pids-limit=128 \
+            --stop-timeout=20 --log-driver=local --log-opt max-size=10m --log-opt max-file=3 \
             --cap-drop ALL --security-opt no-new-privileges \
             -p 127.0.0.1:3108:3000 portfolio-assistant-backoffice:rc
+      - name: Verify bounded resources, readiness, isolation and anonymous workload
+        run: node scripts/verify-container.ts measure assistant-browser http://127.0.0.1:3108
       - name: Install all browser engines and OS dependencies
         run: npx --no-install playwright install --with-deps --only-shell chromium firefox webkit
       - name: Verify real-database authorization, operations and accessibility
@@ -155,6 +183,8 @@ jobs:
           WEB_UPSTREAM: http://127.0.0.1:3108
           OPERATIONS_FIXTURE_MODE: unavailable
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/unavailable
+      - name: Measure bounded idle SIGTERM termination
+        run: node scripts/verify-container.ts shutdown assistant-browser
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -162,6 +192,7 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            .artifacts/container/
           retention-days: 14
       - name: Collect synthetic container logs
         if: always()

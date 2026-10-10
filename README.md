@@ -95,6 +95,9 @@ This repository owns its Dockerfile, IAM migrations and [runtime contract](docs/
 Private vps-ops owns Coolify and deployment on the future Hostinger KVM 4; the portfolio
 stays on Business. CI verifies an immutable image before browser tests. Publication is
 manual and separately approved; no production deployment controller is included.
+The [container verification](docs/verification/container-readiness.md) records measured
+footprint, hardening and runtime scan results. The [vps-ops handoff and master prompt](docs/vps-ops-optimization-handoff.md)
+defines remaining routing, resource, monitoring and recovery work without authorizing deployment.
 Work enters `develop` through PRs. Main promotion, production OAuth, effective proxy
 headers, physical-device testing and backup/recovery remain separate release gates.
 
