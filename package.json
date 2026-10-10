@@ -4,7 +4,7 @@
 	"private": false,
 	"scripts": {
 		"dev": "next dev --port 3001",
-		"build": "next build --webpack",
+		"build": "next build --webpack && node scripts/prepare-runtime.ts",
 		"start": "next start --port 3001",
 		"lint": "biome lint src tests scripts next.config.ts",
 		"typecheck": "node scripts/check-typescript-toolchain.ts && next typegen && node node_modules/typescript/lib/tsc.js --noEmit",
@@ -27,7 +27,7 @@
 	},
 	"dependencies": {
 		"better-auth": "1.7.7",
-		"next": "16.3.6",
+		"next": "16.3.8",
 		"pg": "8.23.1",
 		"react": "19.3.0",
 		"react-dom": "19.3.0",
@@ -44,6 +44,7 @@
 		"@types/react": "19.3.0",
 		"@types/react-dom": "19.3.0",
 		"@typescript/typescript6": "6.0.2",
+		"@vercel/nft": "1.11.0",
 		"js-yaml": "5.4.2",
 		"typescript": "7.0.2"
 	},

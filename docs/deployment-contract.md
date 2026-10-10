@@ -8,8 +8,9 @@ are not authorized by a source merge. The portfolio remains on Hostinger Busines
 ## Artifact and startup
 
 Build `docker build --platform linux/amd64 -t portfolio-assistant-backoffice:rc .`.
-The Dockerfile pins Node 24.21.0 by digest and uses `npm ci`, Next standalone output,
-`.next/static`, public assets and a non-root runtime (UID/GID 1000). Linux amd64 is the
+The Dockerfile pins its Node 24.21.0 builder and distroless Node 24 Debian 13 nonroot
+runtime by digest (both report Node 24.21.0). It uses `npm ci`, Next standalone output,
+`.next/static`, public assets and a non-root runtime (UID/GID 65532). Linux amd64 is the
 verification target; arm64 is unverified. Build needs dependency and build-time font
 network access. Authentication and operational secrets are runtime-only, never build args.
 
@@ -19,6 +20,9 @@ visibility. vps-ops must select a verified immutable digest, not rebuild source 
 Its agent verifies the exact supported Coolify prebuilt-image workflow.
 
 Startup: exec-form `node server.js`, `/app`, `0.0.0.0:3000`. Keep port 3000 private.
+The runtime contains no shell or npm; do not configure a shell-based Coolify health
+command or `npm start`. Its entrypoint is deliberately empty, so the migration command
+below replaces CMD directly. Use HTTP probes or exec-form Node commands.
 Migrations are explicit, not run automatically at startup. Required configuration is
 validated before authentication initialization. Missing configuration or database access
 makes readiness fail; no secrets or SQL errors are returned to the browser.
@@ -70,8 +74,21 @@ fixture-session or integration reset tools against production.
 No persistent container data is required. PostgreSQL stores IAM records, sessions,
 encrypted OAuth credentials and audit records; vps-ops owns encrypted off-server backup,
 retention and restoration testing. Read-only root uses ephemeral `/tmp` and, when required
-by Next assets, `/app/.next/cache` owned by UID1000. Drop capabilities and enable
-no-new-privileges; resource limits, restart/log policies belong to vps-ops.
+by Next assets, `/app/.next/cache` owned by UID/GID65532. The verified local/CI profile
+uses 32 MiB tmpfs at each path (mode 0700), 512 MiB memory with no additional swap,
+0.75 CPU, 128 PIDs, all capabilities dropped and no-new-privileges. Tmpfs usage counts
+toward memory. The local log driver is bounded to 10 MB x 3 files and shutdown timeout
+is 20s. These are tested starting limits, not a measured VPS capacity guarantee.
+vps-ops owns the effective Coolify resource, restart and compatible logging policies.
+
+BuildKit caches npm downloads without copying them into runtime. A deny-by-default
+build-context allowlist excludes local configuration, test sessions and unrelated files.
+The build adds only the authentication migration's dependency closure with published
+`@vercel/nft`; the existing TypeScript 6 compiler API transforms TypeScript for tracing
+only. Original erasable TypeScript runs on Node 24. Neither tracer nor compiler is shipped.
+Unknown required imports fail packaging; reviewed optional pg drivers and disabled
+instrumentation are narrow exceptions. `runtime-trace.json` records the added file count
+and bytes. Production never installs dependencies or rebuilds on startup.
 
 The backoffice owns `/api/auth/*`, `/api/operations`, `/api/health` and `/api/ready`.
 **Do not route all `/api/*` to FastAPI on the backoffice origin.** At the proposed `https://assistant.gonzalomartinperez.com` origin, route only
@@ -112,6 +129,14 @@ configuration is not maintained here. Historical chat proxy fixtures were retire
 verified native migration to the portfolio; immutable baseline evidence remains in Git.
 
 ## Monitoring integration ownership
+
+The [container evidence](verification/container-readiness.md) records image footprint,
+bounded synthetic workload, idle SIGTERM, dependency and OS scan results. CI scans all
+runtime severities, retains the full report, and rejects HIGH/CRITICAL findings including
+unfixed ones. Medium/low findings are visible, not waived by a clean npm audit. Rescan
+the selected digest before production: vulnerability intelligence changes over time.
+The [vps-ops master handoff](vps-ops-optimization-handoff.md) distinguishes application
+evidence from API-owner and infrastructure work still required.
 
 Prometheus/Grafana are approved design choices for private technical monitoring;
 installation and effective access controls belong to vps-ops. The application neither
