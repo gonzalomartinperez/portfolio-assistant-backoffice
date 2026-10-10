@@ -78,7 +78,7 @@ jobs:
             --ignorefile '' --scanners vuln --format json --output /tmp/image-vulnerabilities.json \
             portfolio-assistant-backoffice:rc
           /tmp/image-scanner/trivy --config '' convert --ignorefile '' --scanners vuln \
-            --exit-code 1 --severity HIGH,CRITICAL /tmp/image-vulnerabilities.json
+            --exit-code 1 --severity HIGH,CRITICAL --table-mode detailed /tmp/image-vulnerabilities.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

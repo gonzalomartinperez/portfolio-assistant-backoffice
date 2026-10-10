@@ -71,12 +71,22 @@ Read `docs/deployment-contract.md` for the complete validated environment schema
 Node24.21.0, Next standalone, digest-pinned distroless Debian13, UID/GID65532, `/app`,
 private port3000, exec `node server.js`, empty entrypoint, no shell/npm. Health commands
 must be HTTP or exec-form Node. Never install dependencies in the runtime.
+Use the image's Docker healthcheck or Compose exec-form Node check. Coolify dashboard
+HTTP checks require curl/wget, which this image intentionally lacks; do not enable them.
+Verify effective image health inheritance and proxy routing in the selected version,
+not a shell-based dashboard command. References: [health checks](https://coolify.io/docs/applications/configuration/health-checks)
+and [prebuilt images](https://coolify.io/docs/applications/deployments/docker-image).
 
 `/api/health` is liveness. `/api/ready` checks authentication configuration/schema/database,
-not real OAuth providers or private operational data. Missing ops data stays unavailable.
+not real OAuth providers or private operational data. The image probe checks readiness;
+monitor process liveness separately without restart loops on database failure. Missing
+ops data stays unavailable.
 Before traffic, serialize `node scripts/auth-migrate.ts` from the exact tested image.
 Back up IAM first; do not assume image rollback reverses schema changes. The initial
 schema's multi-version rollback compatibility remains unverified.
+Do not blindly use Coolify's generic pre-deployment command: it can execute in the old
+container. Verify an exact selected-digest one-off migration instead; see the
+[deployment command semantics](https://coolify.io/docs/applications/builds/dockerfile).
 
 Runtime configuration is server-only and restartable without rebuild: exact origin,
 dedicated PostgreSQL URI, Better Auth secret, owner email, Google/GitHub OAuth settings,
@@ -91,9 +101,9 @@ no additional swap, 0.75 CPU, 128 PIDs, drop all capabilities, no-new-privileges
 local log driver10 MB x3. Tmpfs counts toward RAM. Preserve equivalent bounded policies
 supported by Coolify. Idle SIGTERM was tested; active-request draining is not proven.
 
-Local image disk footprint fell955→302 MB; content bytes198,528,077→72,705,945. Docker29
+Local image disk footprint fell955→302 MB; content bytes198,528,077→72,706,013. Docker29
 containerd disk accounting includes compressed/unpacked shared layers. A small synthetic
-workload sampled59→75 MiB memory, not peak or a VPS capacity guarantee. CI rejects all
+workload sampled53→72 MiB memory, not peak or a VPS capacity guarantee. CI rejects all
 HIGH/CRITICAL runtime CVEs, including unfixed ones; 23 MEDIUM/eight LOW remained on the
 local scan date. Re-scan selected digests and triage findings before release.
 

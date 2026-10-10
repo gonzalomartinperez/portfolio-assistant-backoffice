@@ -16,7 +16,7 @@ private task network and disposable tmpfs. No paid model or live OAuth call occu
 | --- | ---: | ---: |
 | Original full production dependency copy | 955 MB | 198,528,077 |
 | Standalone plus traced migration, slim runtime | 417 MB | 98,245,234 |
-| Same trace, distroless runtime | 302 MB | 72,705,945 |
+| Same trace, distroless runtime | 302 MB | 72,706,013 |
 
 Docker's containerd store retains compressed and unpacked data; disk size is not the
 registry download size or uniquely reclaimable disk space. Local disk footprint fell
@@ -27,17 +27,19 @@ conditions and one transient build-time Google Fonts fetch failure prevent a cre
 build-speed comparison. No browser/bundle speedup is claimed.
 
 The final local image ID is
-`sha256:2540d1d1bb01f75cb468990d31882cc1469a4cf6abc8f719b908015f26d4e3ca`;
+`sha256:be394317f8105531e6d0d01f76781f84f36f6b43afd4ba35cee7a5b2b8232670`;
 it is **not a published registry digest**. Both builder and runtime report Node 24.21.0.
 The migration closure adds 1,218 traced files / 4,419,938 bytes to Next standalone.
-It excludes the tracer, project compiler and npm. The build context is approximately
+It excludes executable tracer/compiler code and npm. Next-traced package metadata can
+remain (for example, TypeScript's manifest); resolving the tools' executable entry points
+fails. Do not delete dependency metadata blindly. The build context is approximately
 535 kB, using a deny-by-default allowlist.
 
 With a read-only root, UID65532, 512 MiB / no additional swap, 0.75 CPU, 128 PIDs and
 two 32 MiB tmpfs paths, 64 anonymous sign-in/health requests at concurrency eight
-completed in 2,225 ms (p50 160 ms, p95 801 ms). Memory gauges were 58.85 MiB idle and
-75.03 MiB afterward, with 11 PIDs. These are samples, **not peak measurements** or a
-capacity test. One idle SIGTERM finished in 551 ms, exit143, no OOM; active-request
+completed in 2,398 ms (p50 221 ms, p95 1,181 ms). Memory gauges were 53.46 MiB idle and
+72.45 MiB afterward, with 11 PIDs. These are samples, **not peak measurements** or a
+capacity test. Final idle SIGTERM finished in 492 ms, exit143, no OOM; active-request
 draining, real dashboard load, TLS/proxy behavior and VPS contention remain unverified.
 
 ## Security and finite acceptance
@@ -53,6 +55,10 @@ The full report remains available; medium/low findings require ongoing triage, n
 claim of a vulnerability-free image. CI now scans OS and libraries, retains every
 severity, and fails HIGH/CRITICAL even without an available fix. No suppression file
 or ignore-unfixed flag is used. Rescan the actual selected digest before deployment.
+All remaining local findings were in libc6, GCC runtime libraries and zlib with no
+packaged fix listed by that scan; no exploitability assessment or permanent waiver is
+claimed. The image's actual exec healthcheck fails without configuration while process
+liveness succeeds, and reports healthy with the isolated migrated PostgreSQL configuration.
 
 | Criterion | Evidence / boundary |
 | --- | --- |
@@ -60,7 +66,7 @@ or ignore-unfixed flag is used. Rescan the actual selected digest before deploym
 | Strict validation | 48 unit/contract tests pass; TS7 with generated route types, Biome and public-file scan pass |
 | Runtime migration | Actual PostgreSQL schema migration succeeds with non-root/read-only bounded image |
 | Authentication boundaries | Two real-PostgreSQL integration tests exercise local OAuth exchange, invitations and revocation; production providers unverified |
-| Runtime isolation | Anonymous operations401, readiness200, only documented tmpfs writable, project compiler absent; resource/log profile checked |
+| Runtime isolation | Anonymous operations401, readiness200, actual probe rejects missing configuration, only documented tmpfs writable, executable compiler absent; resource/log profile checked |
 | Browser regression | 21 available and three unavailable-mode cases pass against the final production image in Chromium, Firefox and WebKit, including axe, locales/themes, focus and mobile overflow |
 | Termination | Idle SIGTERM observed; active requests and proxy-stream drain pending |
 | Production | No registry publication, Coolify deployment, DNS, production secret, provider call or portfolio enablement |
@@ -85,8 +91,8 @@ node scripts/verify-container.ts measure portfolio-backoffice-example http://127
 node scripts/verify-container.ts shutdown portfolio-backoffice-example
 ```
 
-The latter stops that named fixture container. A second idle SIGTERM after browser
-verification took 2,577 ms, exit143. JSON measurements are under ignored
+The latter stops that named fixture container. Earlier idle SIGTERM samples after browser
+verification were 551 ms and 2,577 ms, exit143. JSON measurements are under ignored
 `.artifacts/container/`. CI retains measurements, full vulnerability JSON and browser
 evidence separately; private fixture environment/session files are never uploaded.
 Use the exact checksum-verified scanner command in Quality to reproduce the image gate.

@@ -22,7 +22,11 @@ Its agent verifies the exact supported Coolify prebuilt-image workflow.
 Startup: exec-form `node server.js`, `/app`, `0.0.0.0:3000`. Keep port 3000 private.
 The runtime contains no shell or npm; do not configure a shell-based Coolify health
 command or `npm start`. Its entrypoint is deliberately empty, so the migration command
-below replaces CMD directly. Use HTTP probes or exec-form Node commands.
+below replaces CMD directly. Use the image's exec-form Node probe, an external HTTP
+probe or a Compose `test: ["CMD", "node", ...]`. Coolify's dashboard HTTP checks require
+curl/wget inside the container; do not enable those for this image. Verify image-health
+inheritance and routing in the exact selected Coolify version; do not assume dashboard
+CMD accepts exec-form without a shell. See [official health checks](https://coolify.io/docs/applications/configuration/health-checks).
 Migrations are explicit, not run automatically at startup. Required configuration is
 validated before authentication initialization. Missing configuration or database access
 makes readiness fail; no secrets or SQL errors are returned to the browser.
@@ -30,8 +34,9 @@ makes readiness fail; no secrets or SQL errors are returned to the browser.
 - `GET /api/health`: process liveness only; no database, OAuth or operational guarantees.
 - `GET /api/ready`: configuration and authentication schema/database readiness; 200 or 503
   with a minimal status. It does not certify OAuth providers or the private operational API.
-- Docker health checks liveness every 30s, timeout 5s, start period 20s, retries 3. Coolify
-  should use readiness for traffic admission and retain a separate liveness policy.
+- Docker health checks readiness every 30s, timeout 5s (HTTP abort4s), start period20s,
+  retries3. Use it for traffic admission. Monitor liveness separately; dependency failure
+  is not sufficient justification for a repeated restart loop.
 - SIGTERM reaches Node directly. Use a measured termination grace period, starting with
   20s for local verification; active requests may be interrupted. No zero-downtime guarantee.
 
@@ -70,6 +75,9 @@ PostgreSQL connection, backup first and serialize migration execution in vps-ops
 current migration is initial schema creation; multi-version migration/rollback compatibility
 has not been validated. Image rollback does not reverse database migrations. Do not run
 fixture-session or integration reset tools against production.
+Coolify's generic pre-deployment command can run in the previous container. It is not
+proof that the selected new-image migration was executed; vps-ops must orchestrate and
+record an exact-digest one-off migration before readiness admission.
 
 No persistent container data is required. PostgreSQL stores IAM records, sessions,
 encrypted OAuth credentials and audit records; vps-ops owns encrypted off-server backup,
