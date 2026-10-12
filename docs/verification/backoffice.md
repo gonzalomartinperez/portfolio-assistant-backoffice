@@ -71,3 +71,16 @@ The public replacement merged through portfolio PR94 as
 passed 388 browser checks with eight explicit capability skips, without failures/flaky
 results. All eight shards reused one verified build; job durations ranged318–710s.
 These recorded timings are local/CI evidence, not field performance or promised speedups.
+
+## README recapture — 2026-10-12
+
+Actual production build from revision `618aa914ced48bf08ba8d613537ecd28ef797d5e`,
+Node 24.21.0, Next.js 16.3.8 and Chromium/Playwright 1.63.0. A separate loopback
+PostgreSQL fixture provides real signed owner sessions; operational measurements
+remain visibly synthetic. No Google/GitHub or model requests were made.
+
+Desktop: 1440 × 1080 CSS pixels at device scale 2; expanded execution stages,
+execution chart and token chart/table. Mobile: 390 × 844, Spanish/light theme.
+Captures remove incidental keyboard focus from the skip link, preserve real UI
+layout and use full-page PNGs without compositing or fabricated charts. Only images
+are public; session cookies and fixture configuration remain ignored and private.
