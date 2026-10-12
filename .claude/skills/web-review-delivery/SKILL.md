@@ -20,6 +20,12 @@ permissions. Required checks must fail closed for missing/skipped/cancelled resu
 
 Verify non-root read-only image, assets, health/readiness distinction, isolated database
 migration and graceful termination. Do not upload fixture sessions or environment files.
+Runtime is distroless, UID65532, without shell/npm. Migration runs directly with Node.
+Preserve the deny-by-default build context and explicit migration dependency trace; unknown
+required imports fail packaging. Review the full image scan, not only npm audit: CI rejects
+HIGH/CRITICAL, including unfixed findings. Read [container evidence](../../../docs/verification/container-readiness.md)
+for the bounded resource profile and `node scripts/verify-container.ts` measurement/shutdown
+commands. Idle SIGTERM is not proof of active-request draining or zero downtime.
 Inspect actual Actions runs and job durations when available. Publication remains manual,
 with separate approval and package visibility; it never authorizes deployment.
 

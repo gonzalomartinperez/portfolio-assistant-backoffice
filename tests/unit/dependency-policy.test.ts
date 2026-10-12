@@ -1,18 +1,19 @@
-import { field, record, list, text } from "../../scripts/json.ts";
-import type { GitHubApi } from "../../scripts/dependency-automation.ts";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { load } from "js-yaml";
+import type { GitHubApi } from "../../scripts/dependency-automation.ts";
+import {
+	inspectReadiness,
+	reconcile,
+} from "../../scripts/dependency-automation.ts";
 import {
 	dependencyDecision,
 	gateReason,
 	identityReason,
 } from "../../scripts/dependency-policy.ts";
-import {
-	reconcile,
-	inspectReadiness,
-} from "../../scripts/dependency-automation.ts";
+import { field, list, record, text } from "../../scripts/json.ts";
+
 const repository = "gonzalomartinperez/portfolio-assistant-web";
 const bot = { id: 49699333, login: "dependabot[bot]", type: "Bot" };
 const head = "a".repeat(40);
@@ -546,4 +547,22 @@ test("unavailable token capability is safe only with both activation switches di
 			false,
 		),
 	);
+});
+
+test("contract generator compiler-major proposals respect the isolated API compatibility boundary", () => {
+	const config = record(load(readFileSync(".github/dependabot.yml", "utf8")));
+	const generator = list(field(config, "updates")).find(
+		(update) =>
+			text(field(record(update), "directory")) === "/tooling/api-contract",
+	);
+	assert.ok(generator);
+	const ignored = list(field(record(generator), "ignore"));
+	const compiler = ignored.find(
+		(entry) => text(field(record(entry), "dependency-name")) === "typescript",
+	);
+	assert.ok(compiler);
+	assert.deepEqual(list(field(record(compiler), "update-types")), [
+		"version-update:semver-major",
+	]);
+	assert.equal(text(field(record(generator), "target-branch")), "develop");
 });

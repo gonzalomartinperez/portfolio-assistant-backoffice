@@ -9,7 +9,7 @@ webhook, automatic publication or production deployment job.
 | Job | Purpose |
 | --- | --- |
 | `static` | Frozen install, dependency audit, Biome, strict types with generated Next routes, unit/authorization/operations checks, contract drift, architecture, public-file scan, documentation and skills |
-| `image` | One pinned-base standalone production build; export the exact image used downstream |
+| `image` | One pinned-base standalone production build; complete runtime vulnerability scan with HIGH/CRITICAL gate; export the exact image used downstream |
 | `browser` | Isolated PostgreSQL, image migration, non-root/read-only production runtime, real database-backed authorization and operation fixtures, Chromium/Firefox/WebKit interaction and accessibility checks |
 | `checks` | Always evaluate every required job; reject failures, cancellation and unexpected skips |
 
@@ -59,6 +59,22 @@ are retained on failure; never introduce real credentials or conversation conten
 fixtures. Verified images last seven days. Cleanup runs even after a test failure. Read-only
 root filesystem, non-root user, dropped capabilities and bounded tmpfs match the runtime
 contract; configuration is supplied only at runtime.
+
+The migration and application use the tested 512 MiB / 0.75 CPU / 128 PID profile.
+Application tmpfs paths each allow 32 MiB, UID65532, mode 0700. Local logs rotate at
+10 MB x 3. `node scripts/verify-container.ts measure assistant-browser http://127.0.0.1:3108`
+checks readiness, anonymous denial, filesystem isolation, compiler exclusion, image
+footprint and a bounded anonymous workload. `shutdown` measures idle SIGTERM and
+rejects OOM/forced termination; it does not prove active-request draining.
+Measurements are retained in the browser artifact; they contain no environment values.
+
+Trivy 0.75.0 is downloaded from its fixed upstream release URL and verified against the
+reviewed archive SHA256 before execution. One complete OS/library scan emits JSON;
+native report conversion gates HIGH/CRITICAL without rescanning. No ignorefile, custom
+config or unfixed-vulnerability exemption is loaded. Missing scanner/database/report
+fails the image job; its full report is retained for 14 days even on failure. Download
+and database latency are part of measured CI duration, not an invented speedup. See
+[Trivy CLI](https://trivy.dev/docs/v0.75/guide/references/configuration/cli/trivy_image/).
 
 ## Manual publication, not deployment
 

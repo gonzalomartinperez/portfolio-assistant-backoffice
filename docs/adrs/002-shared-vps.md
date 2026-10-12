@@ -4,6 +4,9 @@ Accepted 2026-09-27 by owner instruction; supersedes managed Node hosting propos
 
 The public frontend and iframe assumptions below are superseded by [ADR 004](004-native-chat-and-private-operations.md).
 Shared hosting and vps-ops authority remain valid.
+The historical blanket `/api/*` route below must not be used for the backoffice:
+its [current runtime contract](../deployment-contract.md) routes only `/api/v1/*` to
+FastAPI and keeps authentication, operations and health paths in Next.
 
 The future Hostinger KVM 4 hosts both assistant containers. The portfolio stays on
 Hostinger Business; its managed Node slots remain reserved. Proposed public origin:

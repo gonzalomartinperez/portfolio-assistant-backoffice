@@ -59,9 +59,12 @@ Pinned Node 24.21.0 executes erasable TypeScript directly: `node scripts/check-d
 `node --test tests/unit/*.test.ts`. This removes types at runtime; **it does not type-check**.
 `npm run typecheck` remains the required check. Use explicit relative `.ts` imports and
 `import type`; no enum/parameter-property transform, ts-node or additional execution runner.
-The former cross-origin fixture uses the official TypeScript 6 compatibility API;
-its migration context is historical, not current backoffice behavior. Compiler APIs
-do not enter the browser bundle. The YAML validator
+The official TypeScript 6 compatibility API supports architecture tooling and in-memory
+TypeScript transformation for migration dependency tracing. Published `@vercel/nft`
+traces that entry outside Next's route graph; original `.ts` sources execute on Node.
+These are build-only tools, excluded from the runtime image and browser bundle. Unknown
+required trace imports fail the build; do not add broad warning exemptions or restore
+the entire production dependency tree. The YAML validator
 includes its own TypeScript declarations; no separate declaration package is needed.
 
 Generated Next server/browser JavaScript, synchronous inline browser bootstrap code, YAML,

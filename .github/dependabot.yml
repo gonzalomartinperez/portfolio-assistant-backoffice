@@ -21,6 +21,10 @@ updates:
   - package-ecosystem: npm
     directory: /tooling/api-contract
     target-branch: develop
+    # openapi-typescript 7.13 requires the classic TypeScript 5 compiler API.
+    ignore:
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
     rebase-strategy: auto
     schedule:
       interval: monthly
