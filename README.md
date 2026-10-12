@@ -6,11 +6,26 @@ freshness, execution stages and estimated usage. Public source code does not imp
 access to operational data.
 
 Google/GitHub authentication, verified-owner admission, invited viewers, live revocation
-and the bilingual dashboard are implemented. The operational backend contract is still
-[requested](docs/backend-operations-request.md), not consumed: real metrics remain unavailable
-until that handoff exists. Synthetic test data is labeled. Current [screenshots and verification](docs/verification/backoffice.md)
+and the bilingual dashboard are implemented. Real metrics require a configured private
+API and read token; the backend now publishes the [versioned operational handoff](https://github.com/gonzalomartinperez/portfolio-assistant-api/blob/8cb0bcbbe987a2438736dd693c86e885fe7922ac/docs/private-observability.md).
+Production pairing remains unverified. Synthetic test data is labeled. Current [screenshots and verification](docs/verification/backoffice.md)
 describe the backoffice; historical [chat screenshots](docs/verification/interaction-polish.md)
 describe the former application.
+
+## Dashboard preview
+
+Actual rendered backoffice, using explicitly synthetic operational data and isolated
+signed test sessions. These captures demonstrate the interface, not production
+telemetry or live OAuth-provider verification.
+
+![English dashboard in dark mode, with availability, knowledge freshness, execution and estimated usage panels](docs/verification/backoffice/desktop-dark-en.png)
+
+![Token breakdown with a selectable chart, accessible data table and expanded execution stages](docs/verification/backoffice/usage-dark-en.png)
+
+![Spanish dashboard in light mode at a narrow mobile viewport](docs/verification/backoffice/mobile-light-es.png)
+
+See [capture provenance and browser results](docs/verification/backoffice.md) for the
+verified environment and limitations.
 
 ## Local setup
 
