@@ -21,8 +21,9 @@ linking, atomic invitations and revocation are documented in [authentication](au
 
 Operational reads use no-store, bounded time/body, no redirects and safe failures. Missing
 or rejected data stays unavailable. No model call, generation retry, transcript storage
-or browser service token exists here. The [backend request](backend-operations-request.md)
-is proposed; an operational API contract has not yet been consumed.
+or browser service token exists here. The [backend request](backend-operations-request.md) records the original requirements.
+The API now publishes a committed private contract, linked from README; production
+configuration and paired authenticated-browser verification remain separate acceptance tasks.
 
 [ADR 004](adrs/004-native-chat-and-private-operations.md) defines ownership. The portfolio
 owns one native conversation feature for compact, maximized, mobile and page presentations.
