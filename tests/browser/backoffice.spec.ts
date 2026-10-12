@@ -138,37 +138,47 @@ test("preferences synchronize language and the single theme authority", async ({
 	await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
 
-test("responsive overview is accessible in both themes without horizontal clipping", async ({
-	page,
-	context,
-}) => {
-	test.skip(!available, "Available-mode lifecycle only");
-	await authenticate(context, "viewer");
-	await page.setViewportSize({ width: 390, height: 844 });
-	await page.emulateMedia({ reducedMotion: "reduce" });
-	await page.goto("/?locale=es");
-	await expect(
-		page.getByRole("heading", { name: "Operaciones del asistente" }),
-	).toBeVisible();
-	for (const theme of ["dark", "light"]) {
-		await page.evaluate((value) => {
-			document.documentElement.dataset.theme = value;
-		}, theme);
-		expect(
-			await page.evaluate(
-				() => document.documentElement.scrollWidth <= window.innerWidth,
-			),
-		).toBe(true);
-		const accessibility = await new AxeBuilder({ page })
-			.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
-			.analyze();
-		expect(accessibility.violations).toEqual([]);
+for (const locale of ["en", "es"] as const) {
+	for (const theme of ["dark", "light"] as const) {
+		test(`mobile overview is accessible in ${locale}/${theme} without horizontal clipping`, async ({
+			page,
+			context,
+		}) => {
+			test.skip(!available, "Available-mode lifecycle only");
+			await authenticate(context, "viewer");
+			await page.setViewportSize({ width: 390, height: 844 });
+			await page.emulateMedia({ reducedMotion: "reduce" });
+			await page.goto(`/?locale=${locale}`);
+			await expect(
+				page.getByRole("heading", {
+					name:
+						locale === "es"
+							? "Operaciones del asistente"
+							: "Assistant operations",
+					exact: true,
+				}),
+			).toBeVisible();
+			await page.evaluate((value) => {
+				document.documentElement.dataset.theme = value;
+			}, theme);
+			await expect
+				.poll(() =>
+					page.evaluate(
+						() => document.documentElement.scrollWidth <= window.innerWidth,
+					),
+				)
+				.toBe(true);
+			const accessibility = await new AxeBuilder({ page })
+				.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+				.analyze();
+			expect(accessibility.violations).toEqual([]);
+			await page.screenshot({
+				path: `test-results/backoffice-${test.info().project.name}-mobile-${locale}-${theme}.png`,
+				fullPage: true,
+			});
+		});
 	}
-	await page.screenshot({
-		path: `test-results/backoffice-${test.info().project.name}-mobile-es.png`,
-		fullPage: true,
-	});
-});
+}
 
 test("operational failure presents safe no-data state without fabricated metrics", async ({
 	page,

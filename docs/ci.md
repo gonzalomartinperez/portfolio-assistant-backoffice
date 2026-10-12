@@ -155,3 +155,8 @@ Runner choice follows the supported [GitHub runner list](https://docs.github.com
 and [Playwright system requirements](https://playwright.dev/docs/intro#system-requirements).
 Pinning the distribution avoids automatic major OS transitions; GitHub still updates
 its image packages for security, so it is not an immutable VM snapshot.
+
+Mobile accessibility cases are independent EN/ES × dark/light scenarios, each with
+the same WCAG tags, clipping assertions and 30s limit. This replaces a compound
+two-scan test with identifiable per-state evidence and expands English coverage.
+It retains one managed lifecycle per operational mode and all three engines.
