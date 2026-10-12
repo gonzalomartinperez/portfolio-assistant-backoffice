@@ -79,7 +79,7 @@ jobs:
             portfolio-assistant-backoffice:rc
           /tmp/image-scanner/trivy --config '' convert --ignorefile '' --scanners vuln \
             --exit-code 1 --severity HIGH,CRITICAL --table-mode detailed /tmp/image-vulnerabilities.json
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: image-security
@@ -87,7 +87,7 @@ jobs:
           retention-days: 14
       - name: Export the verified production image
         run: docker save portfolio-assistant-backoffice:rc | gzip -1 > /tmp/image.tar.gz
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: production-image
           path: /tmp/image.tar.gz
@@ -185,7 +185,7 @@ jobs:
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/unavailable
       - name: Measure bounded idle SIGTERM termination
         run: node scripts/verify-container.ts shutdown assistant-browser
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: browser-verification
@@ -199,7 +199,7 @@ jobs:
         run: docker logs assistant-browser > /tmp/backoffice-container.log 2>&1
       - name: Retain failure logs
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: backoffice-container-failure
           path: /tmp/backoffice-container.log
