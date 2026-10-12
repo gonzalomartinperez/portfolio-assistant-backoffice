@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { record, text } from "./json.ts";
 import { pathToFileURL } from "node:url";
 
 interface ContractSource {
@@ -11,6 +12,7 @@ export function releaseCompatibility(
 	commit: string,
 	image: string,
 	source: unknown,
+	operations: unknown,
 ) {
 	if (!/^[a-f0-9]{40}$/.test(commit))
 		throw new Error("Invalid source revision");
@@ -31,16 +33,25 @@ export function releaseCompatibility(
 		api_commit: source.api_commit,
 		openapi_sha256: source.openapi_sha256,
 	};
+	const operationalSource = record(operations);
+	const operationalCommit = text(operationalSource.api_commit);
+	const operationalHash = text(operationalSource.operations_schema_json_sha256);
+	if (
+		!/^[a-f0-9]{40}$/.test(operationalCommit) ||
+		!/^[a-f0-9]{64}$/.test(operationalHash)
+	)
+		throw new Error("Invalid operational contract provenance");
 	return {
 		schema_version: 2,
 		backoffice_commit: commit,
 		historical_public_api_commit: provenance.api_commit,
 		historical_public_api_contract_sha256: provenance.openapi_sha256,
-		operational_api_commit: null,
+		operational_api_commit: operationalCommit,
+		operational_api_contract_sha256: operationalHash,
 		backoffice_image: image,
 		production_deployment: "disabled",
 		operational_api_compatibility:
-			"unverified: requires API owner contract and integration evidence",
+			"pinned schema/example mapping verified; deployed OAuth/API pairing unverified",
 		verification_mode: "isolated database and operational fixtures",
 		portfolio_compatibility:
 			"Requires portfolio release evidence from its owner",
@@ -60,6 +71,7 @@ if (
 		commit,
 		readFileSync(digestPath, "utf8").trim(),
 		JSON.parse(readFileSync("contracts/source.json", "utf8")),
+		JSON.parse(readFileSync("contracts/operations.source.json", "utf8")),
 	);
 	writeFileSync(outputPath, `${JSON.stringify(release, null, 2)}\n`);
 }

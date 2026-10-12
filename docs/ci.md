@@ -8,7 +8,7 @@ webhook, automatic publication or production deployment job.
 
 | Job | Purpose |
 | --- | --- |
-| `static` | Frozen install, dependency audit, Biome, strict types with generated Next routes, unit/authorization/operations checks, contract drift, architecture, public-file scan, documentation and skills |
+| `static` | Frozen install, dependency audit, Biome, strict types with generated Next routes, unit/authorization/operations checks, public/private contract drift, architecture, public-file scan, documentation and skills |
 | `image` | One pinned-base standalone production build; complete runtime vulnerability scan with HIGH/CRITICAL gate; export the exact image used downstream |
 | `browser` | Isolated PostgreSQL, image migration, non-root/read-only production runtime, real database-backed authorization and operation fixtures, Chromium/Firefox/WebKit interaction and accessibility checks |
 | `checks` | Always evaluate every required job; reject failures, cancellation and unexpected skips |
@@ -135,3 +135,17 @@ dependencies are still installed; browser caches are intentionally not restored.
 Reference: [Playwright browser installation](https://playwright.dev/docs/browsers#chromium).
 Compare executed installation-step durations before making speedup claims; network and
 runner variation mean one run is not a controlled benchmark.
+
+## Workbench increment
+
+The database-backed OAuth suite and browser/OS installation now run independently
+inside the browser job. Both child exit statuses are awaited and either failure stops
+the job; image startup and browser verification cannot proceed after a failed prerequisite.
+No engines or cases are removed. Static/image remain parallel, and browser tests reuse
+the single verified image. Both public/private generated declarations are drift-checked.
+
+Baseline actual run [38319564826](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/actions/runs/38319564826):
+static 25s, image 58s, browser 120s, aggregate gate 5s. This is an observed warm-cache
+run, not a guaranteed budget. The new run must be compared separately: it also includes
+12 additional cross-engine workbench scenarios, so total duration is not a controlled
+speedup comparison. No production workflow is enabled.

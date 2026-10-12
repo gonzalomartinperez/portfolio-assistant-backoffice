@@ -48,7 +48,7 @@ jobs:
           DEPENDABOT_AUTOMERGE: ${{ vars.DEPENDABOT_AUTOMERGE }}
           DEPENDABOT_POLICY_READY: ${{ vars.DEPENDABOT_POLICY_READY }}
       - name: Reject generated contract drift
-        run: npm run contract:generate && git diff --exit-code contracts/types.d.ts
+        run: npm run contract:generate && git diff --exit-code contracts/types.d.ts contracts/operations.types.d.ts
   image:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -156,8 +156,20 @@ jobs:
             --memory=512m --memory-swap=512m --cpus=0.75 --pids-limit=128 \
             --cap-drop ALL --security-opt no-new-privileges \
             portfolio-assistant-backoffice:rc node scripts/auth-migrate.ts
-      - name: Exercise OAuth exchange, invitation and revocation against PostgreSQL
-        run: node --test tests/integration/auth.test.ts
+      - name: Verify database authorization and prepare browsers independently
+        run: |
+          node --test tests/integration/auth.test.ts &
+          auth_pid=$!
+          npx --no-install playwright install --with-deps --only-shell chromium firefox webkit &
+          browsers_pid=$!
+          auth_status=0
+          browsers_status=0
+          wait "$auth_pid" || auth_status=$?
+          wait "$browsers_pid" || browsers_status=$?
+          if [ "$auth_status" -ne 0 ] || [ "$browsers_status" -ne 0 ]; then
+            echo "Authorization verification or browser preparation failed"
+            exit 1
+          fi
       - name: Start the exact image with isolated fixture configuration
         run: |
           docker run -d --name assistant-browser --add-host host.docker.internal:host-gateway \
@@ -170,8 +182,6 @@ jobs:
             -p 127.0.0.1:3108:3000 portfolio-assistant-backoffice:rc
       - name: Verify bounded resources, readiness, isolation and anonymous workload
         run: node scripts/verify-container.ts measure assistant-browser http://127.0.0.1:3108
-      - name: Install all browser engines and OS dependencies
-        run: npx --no-install playwright install --with-deps --only-shell chromium firefox webkit
       - name: Verify real-database authorization, operations and accessibility
         run: npm run test:browser -- backoffice.spec.ts --grep-invert "operational failure" --output test-results/available
         env:

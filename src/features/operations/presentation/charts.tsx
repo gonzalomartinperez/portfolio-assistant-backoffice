@@ -5,6 +5,7 @@ import {
 	Bar,
 	BarChart,
 	CartesianGrid,
+	Cell,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
@@ -12,6 +13,7 @@ import {
 } from "recharts";
 import type { OperationalSnapshot } from "../domain/models";
 import { operationsCopy, type OperationsLocale } from "./copy";
+import styles from "./workbench.module.css";
 
 export function SnapshotChart({
 	executions,
@@ -27,18 +29,44 @@ export function SnapshotChart({
 	const data =
 		view === "executions"
 			? [
-					{ name: t.completed, value: executions.completed },
-					{ name: t.cancelled, value: executions.cancelled },
-					{ name: t.failed, value: executions.failed },
+					{
+						name: t.completed,
+						value: executions.completed,
+						color: "var(--accent)",
+					},
+					{
+						name: t.cancelled,
+						value: executions.cancelled,
+						color: "var(--signal-warning)",
+					},
+					{ name: t.failed, value: executions.failed, color: "var(--danger)" },
+					...(executions.total >
+					executions.completed + executions.cancelled + executions.failed
+						? [
+								{
+									name: t.unclassified,
+									value:
+										executions.total -
+										executions.completed -
+										executions.cancelled -
+										executions.failed,
+									color: "var(--text-muted)",
+								},
+							]
+						: []),
 				]
 			: [
-					{ name: t.input, value: usage.inputTokens },
-					{ name: t.output, value: usage.outputTokens },
+					{ name: t.input, value: usage.inputTokens, color: "var(--accent)" },
+					{
+						name: t.output,
+						value: usage.outputTokens,
+						color: "var(--signal-success)",
+					},
 				];
 	const format = new Intl.NumberFormat(locale === "es" ? "es-AR" : "en-US");
 	return (
 		<section
-			className="operation-card snapshot-chart"
+			className={`operation-card snapshot-chart ${styles.chartPanel}`}
 			aria-labelledby="snapshot-chart-title"
 		>
 			<div className="operations-toolbar">
@@ -76,6 +104,11 @@ export function SnapshotChart({
 							tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
 						/>
 						<Tooltip
+							formatter={(value) =>
+								typeof value === "number"
+									? format.format(value)
+									: t.notAvailable
+							}
 							cursor={{ fill: "var(--accent-wash)" }}
 							contentStyle={{
 								background: "var(--surface-raised)",
@@ -90,7 +123,11 @@ export function SnapshotChart({
 							fill="var(--accent)"
 							radius={[4, 4, 0, 0]}
 							isAnimationActive={false}
-						/>
+						>
+							{data.map((item) => (
+								<Cell key={item.name} fill={item.color} />
+							))}
+						</Bar>
 					</BarChart>
 				</ResponsiveContainer>
 			</div>

@@ -1,26 +1,23 @@
-# Implementation status · 2026-09-27
+# Implementation status · 2026-10-12
 
-The frontend preserves the existing chat capabilities and quality-chat design work while
-introducing enforced feature-oriented boundaries, explicit lifecycle/application ownership,
-validated HTTP/SSE mapping, safe partial recovery and deterministic resource cleanup.
+This repository is now the authenticated portfolio-assistant-backoffice. The native
+public conversation belongs to the portfolio; historical chat artifacts remain identified
+as migration evidence. Current architecture, setup and galleries are in [README](README.md).
 
-The portfolio identity, semantic colors, fonts, approved avatar and data-theme authority
-are retained. Both languages cover public errors, controls, privacy/retention, metadata and
-assistive labels. Responsive conversation/citation/composer layouts, conditional auto-follow,
-keyboard navigation, focus restoration, IME input and reduced motion have automated coverage.
+Implemented: verified owner/invited viewer admission, Google/GitHub account linking,
+revocation, private status validation, a responsive bilingual/light-dark operations
+workbench, accessible snapshot charts, trace filtering and monthly budget estimates.
+The private schema/example are pinned to API `d30d36857c9053693c7817d967a7b38b97d9f12a`;
+synthetic browser tests do not establish deployed API/OAuth acceptance.
 
-The public project includes an adapted TypeScript readability policy, MIT application-code
-license with separate identity/third-party terms, contribution/security guidance, font notices,
-PR/issue templates, dependency updates and reproducible CI with redacted scans/link validation.
-The sole new package is development-only axe; runtime dependencies and Next major are unchanged.
+CI uses strict TypeScript 7, enforced boundaries, frozen installs, one verified non-root
+production image and Chromium/Firefox/WebKit checks. The four canonical repository skills
+share discovery sources. vps-ops owns Coolify, monitoring and all production execution.
+No image publication, deployment or portfolio assistant activation is enabled.
 
-The consumed API snapshot is `94408ab4b59297e93e2574320b3049ee2f5d4f2e`, verified against
-committed upstream artifacts. The committed handoff includes discriminated SSE payloads and examples. The
-portfolio design reference is `45d8a42faa78bfb94952639ed462832c3b4ad109`; no reference repository
-was edited. Integration instructions and the next contract request are in `docs/api-contract.md`.
-
-See the [bounded acceptance checklist](docs/release-checklist.md) and
-[verification report](docs/verification/quality-chat.md) for actual results and limits.
-Physical-device, human screen-reader, deployed production and paid-model behavior remain
-unverified. GitHub PR/check history records integration into develop and any explicitly authorized
-promotion to main. Source promotion does not authorize production deployment.
+See [workbench evidence](docs/verification/operations-workbench.md),
+[container evidence](docs/verification/container-readiness.md),
+[API provenance](docs/api-contract.md) and [release checklist](docs/release-checklist.md).
+Real provider callbacks, deployed pairing, physical devices, screen readers, resource
+capacity and backup/restore remain separate acceptance gates. Source promotion requires
+explicit owner authority and current-head CI; it does not authorize deployment.

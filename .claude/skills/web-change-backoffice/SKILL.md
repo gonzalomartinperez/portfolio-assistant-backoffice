@@ -35,3 +35,10 @@ For dashboard charts use the existing Recharts client boundary and semantic data
 pass validated aggregates only. Preserve token colors, both locales and disabled chart
 animation. Snapshot totals are not historical trends. Prometheus/Grafana infrastructure
 belongs to vps-ops; do not expose datasource credentials or embed shared dashboards.
+
+For workbench changes read [design decisions](../../../docs/design-system.md) and
+[acceptance](../../../docs/verification/operations-workbench.md). Preserve observed windows,
+nullable latency, reservation/settlement separation and zero-budget semantics. Native
+trace filters operate on validated IDs/outcomes only; relative phase bars are not a
+waterfall. Optional Grafana links require the owned URL validator and runtime configuration,
+not arbitrary payload destinations. Test compact/landscape layouts and 200% text.

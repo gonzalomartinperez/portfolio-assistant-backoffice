@@ -1,17 +1,26 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import test from "node:test";
 import { requireCiSuccess } from "../../scripts/check-ci-results.ts";
 import { releaseCompatibility } from "../../scripts/release-compatibility.ts";
 
 const commit = "a".repeat(40);
 const source = { api_commit: "b".repeat(40), openapi_sha256: "c".repeat(64) };
+const operations = {
+	api_commit: "e".repeat(40),
+	operations_schema_json_sha256: "f".repeat(64),
+};
 const image = `ghcr.io/owner/portfolio-assistant-backoffice@sha256:${"d".repeat(64)}`;
 
-test("records immutable image and historical provenance without claiming operational compatibility", () => {
-	const release = releaseCompatibility(commit, image, source);
+test("records immutable image and both contract pins without claiming deployed compatibility", () => {
+	const release = releaseCompatibility(commit, image, source, operations);
 	assert.equal(release.backoffice_commit, commit);
 	assert.equal(release.historical_public_api_commit, source.api_commit);
-	assert.equal(release.operational_api_commit, null);
+	assert.equal(release.operational_api_commit, operations.api_commit);
+	assert.equal(
+		release.operational_api_contract_sha256,
+		operations.operations_schema_json_sha256,
+	);
 	assert.equal(release.schema_version, 2);
 	assert.equal(release.backoffice_image, image);
 	assert.equal(release.production_deployment, "disabled");
@@ -23,15 +32,28 @@ test("rejects mutable tags and unverifiable revisions or provenance", () => {
 		"ghcr.io/owner/web:latest",
 		"",
 	])
-		assert.throws(() => releaseCompatibility(commit, invalid, source));
-	assert.throws(() => releaseCompatibility("develop", image, source));
+		assert.throws(() =>
+			releaseCompatibility(commit, invalid, source, operations),
+		);
+	assert.throws(() =>
+		releaseCompatibility("develop", image, source, operations),
+	);
 	for (const invalid of [
 		null,
 		{},
 		{ ...source, api_commit: "main" },
 		{ ...source, openapi_sha256: "missing" },
 	])
-		assert.throws(() => releaseCompatibility(commit, image, invalid));
+		assert.throws(() =>
+			releaseCompatibility(commit, image, invalid, operations),
+		);
+	assert.throws(() => releaseCompatibility(commit, image, source, {}));
+	assert.throws(() =>
+		releaseCompatibility(commit, image, source, {
+			...operations,
+			api_commit: "develop",
+		}),
+	);
 });
 
 test("required quality gate covers the full graph and publication stays explicit", async () => {
@@ -47,8 +69,10 @@ test("required quality gate covers the full graph and publication stays explicit
 	assert.ok(
 		browserSteps.some(
 			(step: unknown) =>
-				field(step, "run") ===
-				"npx --no-install playwright install --with-deps --only-shell chromium firefox webkit",
+				typeof field(step, "run") === "string" &&
+				text(field(step, "run")).includes(
+					"npx --no-install playwright install --with-deps --only-shell chromium firefox webkit",
+				),
 		),
 	);
 	assert.deepEqual(Object.keys(jobs).sort(), [
@@ -126,4 +150,34 @@ test("required gate fails closed for missing, failed, pending or skipped results
 	);
 	for (const invalid of [null, [], "success", {}])
 		assert.throws(() => requireCiSuccess(invalid));
+});
+
+test("parallel browser prerequisites wait for both children and fail on either error", async () => {
+	const { readFileSync } = await import("node:fs");
+	const { load } = await import("js-yaml");
+	const { field, list, text } = await import("../../scripts/json.ts");
+	const workflow = load(readFileSync(".github/workflows/quality.yml", "utf8"));
+	const step = list(field(workflow, "jobs", "browser", "steps")).find(
+		(value) =>
+			field(value, "name") ===
+			"Verify database authorization and prepare browsers independently",
+	);
+	const run = text(field(step, "run"));
+	for (const [authorization, browsers] of [
+		[0, 0],
+		[1, 0],
+		[0, 1],
+		[1, 1],
+	]) {
+		const result = spawnSync(
+			"bash",
+			[
+				"-e",
+				"-c",
+				`node(){ return ${authorization}; }; npx(){ return ${browsers}; };\n${run}`,
+			],
+			{ encoding: "utf8" },
+		);
+		assert.equal(result.status, authorization === 0 && browsers === 0 ? 0 : 1);
+	}
 });

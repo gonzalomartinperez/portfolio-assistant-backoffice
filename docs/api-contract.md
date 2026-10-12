@@ -1,9 +1,19 @@
 # API contract ownership and refresh
 
-No operational API contract has been consumed. The inspected backend revision is
-`c6012067c4a99db477bb6ddcf1f26dae095641ca`. The bounded private status adapter currently
-follows a [proposed request](backend-operations-request.md), verified with deterministic
-fixtures. Do not claim live telemetry or compatibility from those tests.
+Private operations v1 is pinned to API commit
+`d30d36857c9053693c7817d967a7b38b97d9f12a`. The original schema and example are
+imported from committed Git objects, with SHA256 provenance in
+`contracts/operations.source.json`. The owned minimal OpenAPI wrapper references
+that schema; `operations.types.d.ts` is generated with the existing frozen toolchain.
+The bounded adapter maps this wire schema to independent domain models and rejects
+unknown fields, inconsistent totals, more than 100 traces or 16 phases per trace.
+
+Local unit tests execute the committed API example through the actual runtime mapper.
+Browser tests use deterministic fixtures and real PostgreSQL authentication. Earlier
+[API-side adapter verification](https://github.com/gonzalomartinperez/portfolio-assistant-api/blob/30f2d565ce38d15f5a6e69c2323c0f3e358b3eed/docs/verification/private-observability-2026-10-12.md)
+exercised real HTTP at API `5ff96d3dbd015ddf9f90f83231052f57b7d494c8` with
+backoffice `618aa914ced48bf08ba8d613537ecd28ef797d5e`. It is historical adapter
+evidence, not acceptance of the current dashboard over deployed OAuth/HTTPS.
 
 The public HTTP/SSE contract and conversation mapping now belong to the portfolio's native
 assistant, committed at `7753d39`. That implementation consumes the committed c6012067
@@ -31,4 +41,6 @@ See [TypeScript compatibility](adrs/003-typescript7-compatibility.md).
    that evidence exists, operational compatibility remains unverified and deployment disabled.
 
 `npm run contract:install`, `npm run contract:generate` and `npm run contract:check`
-currently install/regenerate/check only the identified historical public archive.
+install/regenerate/check the historical public archive and the pinned private operations
+snapshot. CI checks drift in both generated declaration files. Public and private contract
+provenance remain separate.
