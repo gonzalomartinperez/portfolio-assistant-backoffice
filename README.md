@@ -48,18 +48,29 @@ credentials, service tokens or private conversations appear in the images.
 
 Each frame focuses on an actual function. Click to open the original-resolution image.
 
+**1 · Restricted sign-in.** Google/GitHub only; no open signup or password fallback.
+
+<p align="center">
+  <a href="docs/assets/gallery/01-sign-in.png"><img src="docs/assets/gallery/01-sign-in.png" width="640" alt="Backoffice sign-in screen with Google and GitHub authentication and restricted-access explanation"></a>
+</p>
+
 <table>
   <tr>
-    <td valign="top" width="50%"><strong>1 · Restricted sign-in</strong><br>Google/GitHub only; no open signup or password fallback.<br><a href="docs/assets/gallery/01-sign-in.png"><img src="docs/assets/gallery/01-sign-in.png" width="480" alt="Backoffice sign-in screen with Google and GitHub authentication and restricted-access explanation"></a></td>
     <td valign="top" width="50%"><strong>2 · Execution outcomes</strong><br>A selectable chart with an accessible data table.<br><a href="docs/assets/gallery/03-executions.png"><img src="docs/assets/gallery/03-executions.png" width="480" alt="Execution chart and table showing completed, cancelled and failed synthetic requests"></a></td>
+    <td valign="top" width="50%"><strong>3 · Token breakdown</strong><br>Reported input/output totals, independent of monetary estimates.<br><a href="docs/assets/gallery/04-tokens.png"><img src="docs/assets/gallery/04-tokens.png" width="480" alt="Selected token metric displaying input and output token bars and equivalent table values"></a></td>
   </tr>
+</table>
+
+**4 · Execution detail.** Expanded stages make a request’s timing understandable.
+
+<p align="center">
+  <a href="docs/assets/gallery/05-execution-stages.png"><img src="docs/assets/gallery/05-execution-stages.png" width="900" alt="Expanded synthetic execution trace with vector retrieval and generation duration rows"></a>
+</p>
+
+<table>
   <tr>
-    <td valign="top"><strong>3 · Token breakdown</strong><br>Reported input/output totals, independent of monetary estimates.<br><a href="docs/assets/gallery/04-tokens.png"><img src="docs/assets/gallery/04-tokens.png" width="480" alt="Selected token metric displaying input and output token bars and equivalent table values"></a></td>
-    <td valign="top"><strong>4 · Execution detail</strong><br>Expanded stages make a request’s timing understandable.<br><a href="docs/assets/gallery/05-execution-stages.png"><img src="docs/assets/gallery/05-execution-stages.png" width="480" alt="Expanded synthetic execution trace with vector retrieval and generation duration rows"></a></td>
-  </tr>
-  <tr>
-    <td valign="top"><strong>5 · Owner-managed access</strong><br>Invite viewers and manage membership; invitation tokens remain private.<br><a href="docs/assets/gallery/06-access.png"><img src="docs/assets/gallery/06-access.png" width="480" alt="Owner access-management screen with a synthetic guest email draft, membership list and account-linking controls"></a></td>
-    <td valign="top"><strong>6 · Safe operational failure</strong><br>Clear no-data state and manual refresh, without invented measurements.<br><a href="docs/assets/gallery/07-unavailable.png"><img src="docs/assets/gallery/07-unavailable.png" width="480" alt="Dashboard showing operational data unavailable, refresh controls and missing-value placeholders"></a></td>
+    <td valign="top" width="50%"><strong>5 · Owner-managed access</strong><br>Invite viewers and manage membership; invitation tokens remain private.<br><a href="docs/assets/gallery/06-access.png"><img src="docs/assets/gallery/06-access.png" width="480" alt="Owner access-management screen with a synthetic guest email draft, membership list and account-linking controls"></a></td>
+    <td valign="top" width="50%"><strong>6 · Safe operational failure</strong><br>Clear no-data state and manual refresh, without invented measurements.<br><a href="docs/assets/gallery/07-unavailable.png"><img src="docs/assets/gallery/07-unavailable.png" width="480" alt="Dashboard showing operational data unavailable, refresh controls and missing-value placeholders"></a></td>
   </tr>
 </table>
 
