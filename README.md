@@ -12,6 +12,19 @@ until that handoff exists. Synthetic test data is labeled. Current [screenshots 
 describe the backoffice; historical [chat screenshots](docs/verification/interaction-polish.md)
 describe the former application.
 
+## Dashboard preview
+
+Actual rendered backoffice, using explicitly synthetic operational data and isolated
+signed test sessions. These captures demonstrate the interface, not production
+telemetry or live OAuth-provider verification.
+
+![English dashboard in dark mode, with availability, knowledge freshness, execution and estimated usage panels](docs/verification/backoffice/desktop-dark-en.png)
+
+![Spanish dashboard in light mode at a narrow mobile viewport](docs/verification/backoffice/mobile-light-es.png)
+
+See [capture provenance and browser results](docs/verification/backoffice.md) for the
+verified environment and limitations.
+
 ## Local setup
 
 Use Linux/WSL, Node from `.nvmrc`, npm and a dedicated PostgreSQL database:
