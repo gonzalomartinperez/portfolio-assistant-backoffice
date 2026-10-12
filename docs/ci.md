@@ -41,7 +41,8 @@ Third-party actions use reviewed immutable commit SHAs. Upload-artifact 7.0.1 an
 download-artifact 8.0.1 replace the reviewed pending maintenance proposals; their upstream
 sources are [upload-artifact](https://github.com/actions/upload-artifact/tree/v7.0.1) and
 [download-artifact](https://github.com/actions/download-artifact/tree/v8.0.1).
-Node 24 actions require a compatible GitHub-hosted runner; no production self-hosted runner
+All three workflows explicitly select Ubuntu 24.04 LTS rather than the moving latest
+label. Node 24 actions require a compatible GitHub-hosted runner; no production self-hosted runner
 receives PR code. Quality has only `contents: read`; checkout never persists credentials.
 PR jobs receive no repository secrets. The dependency policy workflow remains a separate
 trusted metadata controller; see [dependency maintenance](dependency-updates.md).
@@ -149,3 +150,8 @@ static 25s, image 58s, browser 120s, aggregate gate 5s. This is an observed warm
 run, not a guaranteed budget. The new run must be compared separately: it also includes
 12 additional cross-engine workbench scenarios, so total duration is not a controlled
 speedup comparison. No production workflow is enabled.
+
+Runner choice follows the supported [GitHub runner list](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
+and [Playwright system requirements](https://playwright.dev/docs/intro#system-requirements).
+Pinning the distribution avoids automatic major OS transitions; GitHub still updates
+its image packages for security, so it is not an immutable VM snapshot.

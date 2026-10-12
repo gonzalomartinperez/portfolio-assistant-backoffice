@@ -64,6 +64,6 @@ not a claim of pixel parity with GitHub’s own current theme. No image height i
 
 The existing documentation validator now covers HTML src/href as well as Markdown links.
 An isolated Git fixture accepted valid targets and rejected a missing HTML image. Frozen
-install, Biome, 54 unit tests, strict TypeScript 7 and contract generation passed locally.
+install, Biome, 55 unit tests, strict TypeScript 7 and contract generation passed locally.
 The first type check found cached legacy /embed route types; the ignored generated types
 were preserved separately and regenerated, without changing code or disabling checks.

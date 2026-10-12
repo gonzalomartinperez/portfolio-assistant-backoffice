@@ -119,6 +119,8 @@ test("required quality gate covers the full graph and publication stays explicit
 	);
 	for (const workflow of [quality, release]) {
 		for (const job of Object.values(record(workflow.jobs))) {
+			if (field(job, "runs-on") !== undefined)
+				assert.equal(field(job, "runs-on"), "ubuntu-24.04");
 			const steps = field(job, "steps");
 			if (steps === undefined) continue;
 			for (const step of list(steps)) {
