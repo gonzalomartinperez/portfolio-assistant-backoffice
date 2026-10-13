@@ -37,10 +37,10 @@ No broad node_modules restore key is used. Browser binaries remain uncached, fol
 [Playwright's CI guidance](https://playwright.dev/docs/ci#caching-browsers); install their OS
 dependencies explicitly. Compressed image artifacts disable redundant recompression.
 
-Third-party actions use reviewed immutable commit SHAs. Upload-artifact 7.0.2, setup-node 7.1.0 and download-artifact 8.0.1 are reviewed
+Third-party actions use reviewed immutable commit SHAs. Upload-artifact 7.0.2, setup-node 7.1.0 and download-artifact 8.0.2 are reviewed
 immutable pins; their upstream
 sources are [upload-artifact](https://github.com/actions/upload-artifact/tree/v7.0.2) and
-[download-artifact](https://github.com/actions/download-artifact/tree/v8.0.1).
+[download-artifact](https://github.com/actions/download-artifact/tree/v8.0.2).
 All three workflows explicitly select Ubuntu 24.04 LTS rather than the moving latest
 label. Node 24 actions require a compatible GitHub-hosted runner; no production self-hosted runner
 receives PR code. Quality has only `contents: read`; checkout never persists credentials.
@@ -172,3 +172,9 @@ retries; its cache/action metadata/source changes were inspected before adoption
 Upload-artifact 7.0.2 updates its artifact client. No extra token permissions are granted.
 The reviewed dependency grouping reduces separate routine version PRs; high-risk groups
 still require manual review and the full image/browser gate.
+
+Source promotion [38331520843](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/actions/runs/38331520843)
+passed static/image/browser/gate in 32/184/131/7s (5m28s wall time). The fresh main
+merge-ref image build is part of the required gate. Different caches and case counts
+prevent a controlled speedup claim. Two subsequent signed Dependabot patches
+(js-yaml 5.4.3 / download-artifact 8.0.2) receive their own reviewed full gate.
