@@ -283,3 +283,5 @@ proxy headers, API pairing, backup/restore and physical-device behavior remain e
 
 Application code retains the [MIT license](LICENSE). Fonts, identity assets and external
 code retain their own [attribution and terms](THIRD_PARTY_NOTICES.md).
+
+Shared runtime/version acceptance: [runtime baseline](docs/runtime-baseline.md).
