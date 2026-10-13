@@ -1,0 +1,431 @@
+.provenance dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+.caption {
+	color: var(--text-secondary);
+	font-size: 0.8rem;
+	line-height: 1.5;
+	margin-bottom: 0.75rem;
+}
+.shell {
+	max-width: 1440px;
+}
+.header {
+	border-bottom: 0;
+	padding-bottom: 1rem;
+}
+.identity {
+	min-width: 0;
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+.header nav {
+	flex-shrink: 0;
+}
+.identity > div {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+.identity p:last-child {
+	margin-bottom: 0;
+}
+.brandMark {
+	display: grid;
+	place-items: center;
+	width: 52px;
+	height: 52px;
+	flex-shrink: 0;
+	border: 1px solid var(--line-strong);
+	border-radius: var(--radius-md);
+	background: var(--accent-wash);
+	color: var(--accent);
+	font-family: var(--font-display), sans-serif;
+	font-size: 1.75rem;
+}
+.toolbar {
+	border-bottom: 1px solid var(--line-subtle);
+	margin-bottom: 1.25rem;
+	padding-top: 0.5rem;
+}
+.sectionNav {
+	display: flex;
+	gap: 1.25rem;
+}
+.sectionNav a {
+	color: var(--text-secondary);
+	text-decoration: none;
+	min-height: 44px;
+	display: inline-flex;
+	align-items: center;
+}
+.sectionNav a:first-child {
+	color: var(--text-primary);
+	border-bottom: 2px solid var(--accent);
+}
+.refreshGroup {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+}
+.refreshGroup p {
+	max-width: 20rem;
+}
+.fixtureNotice {
+	font-size: 0.8rem;
+	padding: 0.75rem 1rem;
+	background: var(--surface-raised);
+	border-color: var(--line-strong);
+	color: var(--text-secondary);
+}
+.overviewGrid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+	gap: 1.25rem;
+	align-items: stretch;
+	scroll-margin-top: 1rem;
+}
+.metricsGrid {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.metricCard {
+	background: linear-gradient(
+		135deg,
+		var(--surface-raised),
+		var(--surface-base)
+	);
+	padding: 1.25rem;
+	border-color: var(--line-strong);
+}
+.cardHeading {
+	display: flex;
+	gap: 0.75rem;
+	align-items: start;
+	justify-content: space-between;
+}
+.cardHeading h2 {
+	font-size: 0.9rem;
+	color: var(--text-secondary);
+	margin: 0;
+}
+.cardLabel {
+	color: var(--text-muted);
+	font-size: 0.7rem;
+	max-width: 7rem;
+	text-align: right;
+}
+.metricCard .value {
+	font-size: clamp(1.8rem, 3vw, 2.5rem);
+	margin: 1rem 0;
+	font-variant-numeric: tabular-nums;
+}
+.metricCard .cardFoot {
+	font-size: 0.7rem;
+	color: var(--text-muted);
+	margin-bottom: 0;
+}
+.signalDot {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--text-muted);
+	flex-shrink: 0;
+	margin-top: 0.35rem;
+}
+.signalDot[data-state="ready"],
+.signalDot[data-state="fresh"] {
+	background: var(--signal-success);
+	box-shadow: 0 0 0 4px var(--signal-success-wash);
+}
+.signalDot[data-state="degraded"],
+.signalDot[data-state="updating"],
+.signalDot[data-state="stale"] {
+	background: var(--signal-warning);
+	box-shadow: 0 0 0 4px var(--signal-warning-wash);
+}
+.signalDot[data-state="unavailable"] {
+	background: var(--danger);
+}
+.detailGrid {
+	display: grid;
+	grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+	gap: 1.25rem;
+	margin-top: 1.25rem;
+	align-items: start;
+}
+.tracePanel {
+	margin-top: 0;
+	scroll-margin-top: 1rem;
+}
+.panelHeading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+.panelHeading .eyebrow {
+	font-size: 0.7rem;
+}
+.tracePanel .latencyStats {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	padding: 1rem 0;
+	border-block: 1px solid var(--line-subtle);
+	margin: 1rem 0;
+}
+.latencyStats > div + div {
+	border-left: 1px solid var(--line-subtle);
+	padding-left: 1.5rem;
+}
+.tracePanel .latencyStats dd {
+	text-align: left;
+	font-size: 1.7rem;
+	color: var(--text-primary);
+	font-family: var(--font-display), sans-serif;
+	font-variant-numeric: tabular-nums;
+}
+.tracePanel .latencyStats dt {
+	font-size: 0.75rem;
+	margin-bottom: 0.4rem;
+}
+.traceFilters {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 1rem;
+	margin-top: 1.5rem;
+}
+.traceField {
+	/* WebKit native select painting can exceed its box at large text sizes.
+	   Keep space for the focus outline and its offset. */
+	overflow: clip;
+	overflow-clip-margin: 6px;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	min-width: 0;
+	gap: 0.4rem;
+	color: var(--text-secondary);
+	font-size: 0.8rem;
+}
+.traceFilters select,
+.traceFilters input {
+	min-width: 0;
+	max-width: 100%;
+	font-size: 1rem;
+}
+.traceFilters input {
+	width: 100%;
+	min-height: 44px;
+	padding: 0.6rem 0.9rem;
+	border: 1px solid var(--line-control);
+	border-radius: var(--radius-sm);
+	background: var(--surface-base);
+	color: var(--text-primary);
+}
+.filteredCount {
+	margin-top: 0.75rem;
+	font-size: 0.75rem;
+}
+.traceDetail {
+	border: 1px solid var(--line-subtle);
+	border-radius: var(--radius-sm);
+	padding-inline: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+.traceIdentity {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	flex-wrap: wrap;
+}
+.outcomeBadge {
+	font-size: 0.7rem;
+	border-radius: 4px;
+	padding: 0.2rem 0.4rem;
+	background: var(--accent-wash);
+	color: var(--accent);
+}
+.outcomeBadge[data-outcome="completed"] {
+	color: var(--signal-success);
+	background: var(--signal-success-wash);
+}
+.outcomeBadge[data-outcome="cancelled"] {
+	color: var(--signal-warning);
+	background: var(--signal-warning-wash);
+}
+.outcomeBadge[data-outcome="failed"] {
+	color: var(--danger);
+}
+.stages {
+	list-style: none;
+	padding: 0;
+}
+.traceDetail .stages li {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 0.75rem;
+	font-size: 0.8rem;
+}
+.stageTrack {
+	height: 6px;
+	border-radius: 4px;
+	background: var(--line-subtle);
+	overflow: hidden;
+}
+.stageTrack > span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--accent);
+}
+.budgetPanel {
+	background: var(--surface-raised);
+}
+.budgetPanel > .eyebrow {
+	font-size: 0.7rem;
+}
+.budgetSummary {
+	display: flex;
+	align-items: center;
+	gap: 1.25rem;
+	padding-block: 1.5rem;
+}
+.budgetRing {
+	width: 108px;
+	height: 108px;
+	border-radius: 50%;
+	padding: 8px;
+	flex-shrink: 0;
+}
+.budgetRing > span {
+	display: grid;
+	place-items: center;
+	width: 100%;
+	height: 100%;
+	background: var(--surface-raised);
+	border-radius: 50%;
+	color: var(--text-primary);
+	font-family: var(--font-display), sans-serif;
+	font-size: 1.35rem;
+}
+.budgetSummary .budgetValue {
+	font-size: 1.8rem;
+	color: var(--text-primary);
+	margin-bottom: 0.25rem;
+	font-family: var(--font-display), sans-serif;
+	font-variant-numeric: tabular-nums;
+}
+.budgetSummary p:last-child {
+	margin-bottom: 0;
+}
+.budgetPanel > .caption {
+	margin-top: 1rem;
+}
+.provenance {
+	margin-block: 1.5rem;
+	border-top: 1px solid var(--line-subtle);
+	color: var(--text-secondary);
+	font-size: 0.8rem;
+}
+.provenance dl {
+	display: grid;
+	grid-template-columns: minmax(100px, 1fr) minmax(0, 4fr);
+	gap: 0.75rem;
+}
+.preferences {
+	position: relative;
+}
+.preferences :global(.settings-fields) {
+	position: absolute;
+	z-index: 10;
+	top: calc(100% + 0.5rem);
+	right: 0;
+	min-width: 250px;
+	max-width: min(320px, calc(100vw - 2rem));
+	padding: 1rem;
+	border: 1px solid var(--line-control);
+	border-radius: var(--radius-md);
+	background: var(--surface-raised);
+	box-shadow: 0 12px 30px var(--overlay-shadow);
+}
+@media (max-width: 1100px) {
+	.overviewGrid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.metricsGrid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+@media (max-width: 900px) {
+	.metricsGrid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.detailGrid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.refreshGroup {
+		align-items: end;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+}
+@media (max-width: 560px) {
+	.metricsGrid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.identity {
+		align-items: start;
+	}
+	.brandMark {
+		width: 40px;
+		height: 40px;
+		font-size: 1.4rem;
+	}
+	.toolbar {
+		align-items: start;
+		flex-direction: column;
+		gap: 1rem;
+	}
+	.refreshGroup {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+	}
+	.refreshGroup p {
+		max-width: 12rem;
+	}
+	.traceFilters {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.traceFilters select {
+		min-width: 0;
+		width: 100%;
+	}
+	.refreshGroup {
+		flex-wrap: wrap;
+	}
+	.traceDetail .stages li {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.stageTrack {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+	.preferences :global(.settings-fields) {
+		left: 0;
+		right: auto;
+	}
+}
+
+.chartPanel:global(.snapshot-chart) {
+	margin: 0;
+	background: var(--surface-raised);
+	border-color: var(--line-strong);
+}
+.metricCard .cardHeading h2 {
+	font-size: 0.9rem;
+}

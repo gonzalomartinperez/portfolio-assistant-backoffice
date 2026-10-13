@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { parseOperationalSnapshot } from "../../src/features/operations/adapters/validate.ts";
@@ -156,4 +157,30 @@ test("rejects a non-JSON successful response without consuming untrusted content
 	}).read();
 	assert.equal(result.kind, "unavailable");
 	assert.equal(cancelled, true);
+});
+
+test("committed API example maps without infrastructure fields leaking into the model", () => {
+	const result = parseOperationalSnapshot(
+		JSON.parse(readFileSync("contracts/operations.example.json", "utf8")),
+	);
+	assert.equal(result.executions.total, 3);
+	assert.equal(result.usage.settledUsd, 0.01);
+	assert.equal(result.traces[0]?.stages[0]?.name, "generation");
+	assert.equal("schema_version" in result, false);
+	assert.throws(
+		() =>
+			parseOperationalSnapshot({
+				...operationalPayload,
+				traces: [
+					{
+						...operationalPayload.traces[0],
+						stages: Array.from({ length: 17 }, () => ({
+							name: "generation",
+							duration_ms: 1,
+						})),
+					},
+				],
+			}),
+		/Invalid operational payload/,
+	);
 });

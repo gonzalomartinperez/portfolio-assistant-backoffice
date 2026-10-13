@@ -1,15 +1,14 @@
-FROM node:24.21.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS build
+FROM node:24.21.0-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 AS build
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci --no-audit --no-fund
 COPY next.config.ts next-env.d.ts tsconfig.json ./
 COPY src ./src
-COPY contracts/types.d.ts ./contracts/types.d.ts
+COPY contracts/types.d.ts contracts/operations.types.d.ts ./contracts/
 COPY public ./public
-COPY scripts/auth-migrate.ts scripts/prepare-runtime.ts scripts/release-compatibility.ts ./scripts/
+COPY scripts/auth-migrate.ts scripts/prepare-runtime.ts ./scripts/
 COPY migrations ./migrations
-COPY contracts/source.json ./contracts/source.json
 RUN npm run build && mkdir -p .next/standalone/.next/cache
 
 FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:9eeb7f5887d0e239e78264b06f7f11d2e14be534050481803a9e4728fcdd278e AS runtime
@@ -22,8 +21,6 @@ ENV PATH=/nodejs/bin:/usr/local/bin:/usr/bin:/bin
 COPY --from=build --chown=65532:65532 /app/.next/standalone ./
 COPY --from=build --chown=65532:65532 /app/.next/static ./.next/static
 COPY --from=build --chown=65532:65532 /app/public ./public
-COPY --from=build --chown=65532:65532 /app/scripts/release-compatibility.ts ./scripts/release-compatibility.ts
-COPY --from=build --chown=65532:65532 /app/contracts/source.json ./contracts/source.json
 USER 65532:65532
 ENTRYPOINT []
 STOPSIGNAL SIGTERM

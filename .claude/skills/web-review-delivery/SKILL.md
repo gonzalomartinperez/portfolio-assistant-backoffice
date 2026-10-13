@@ -37,3 +37,8 @@ and verify the intended checker rather than forcing peers or claiming unmeasured
 Return tested image/revision, commands/results, actual job timing and remaining VPS-only
 checks. No automatic main merge, paid model calls, production secrets, DNS or destructive
 shared database operations. Follow PR conventions only within invocation authority.
+
+For README/gallery changes follow [capture provenance](../../../docs/verification/readme-gallery.md).
+Use real rendered surfaces, explain synthetic data, preserve image proportions and link
+original PNGs. Verify HTML image links with `npm run docs:check`; never publish private
+fixture sessions, invitation tokens or screenshots implying live production acceptance.

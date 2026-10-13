@@ -8,7 +8,7 @@ technical status and account controls; the portfolio owns conversational identit
 ## Tokens and composition
 
 `src/app/style.css` owns semantic dark/light surfaces, text, borders, cyan accent,
-danger, radii, focus and 140ms/320ms motion durations. Inter is body text, Inter Tight is
+danger, success/warning signals and washes, overlay shadow, radii, focus and 140ms/320ms motion durations. Inter is body text, Inter Tight is
 display type and JetBrains Mono is limited to short labels. Next/font self-hosts approved
 fonts; attribution remains in [third-party notices](../THIRD_PARTY_NOTICES.md).
 
@@ -22,7 +22,8 @@ Owned `components/ui/button` uses native semantics, default/outline/ghost varian
 44px targets, visible focus and truthful disabled/loading states. CSS Modules adapt the
 portfolio's shadcn responsibilities without adding Tailwind, CVA, Radix or a competing
 preset to this small application. Auth CSS Modules own account/forms/dialog geometry;
-operations classes own dashboard cards, toolbar, notices and native trace disclosures.
+the operations CSS Module owns bento layout, dashboard cards, toolbar, notices,
+budget ring, filters and native trace disclosures.
 
 Cards use semantic surfaces, consistent borders/radii and bounded content widths. Long
 identifiers wrap; metrics use readable number formatting. Missing data gets an explicit
@@ -55,3 +56,28 @@ cross the client boundary; sampled trace IDs and credentials are not chart props
 This snapshot is not a time series. Trend controls require an actual committed history
 contract. Do not add another chart library or dashboard platform for the same task.
 Reference: [Recharts accessibility](https://github.com/recharts/recharts/blob/main/storybook/stories/API/Accessibility.mdx).
+
+## Operations workbench
+
+The overview places four compact metric cards beside the snapshot chart. The next row
+provides latency, searchable sampled executions and a monthly budget panel. Success,
+cancellation and failure use semantic colors plus readable text; color never carries the
+only meaning. Cards show their measurement windows. API readiness does not certify OpenAI.
+The static CSS budget ring has a native meter equivalent and separates reservations from
+settlement. Zero budget has no invented percentage; overspend remains visible in text.
+
+Trace outcome/ID filtering is an intentional small client boundary; no extra requests,
+transcript parsing or browser persistence. Relative phase bars compare durations with
+the longest phase, not start times; phases may overlap. Native preferences disclosure
+closes on Escape and restores focus. In-page overview/detail links avoid a speculative
+sidebar with nonfunctional destinations. Layouts collapse at 1100/900/560px and preserve
+controls at 200% text. No looping/chart animation is introduced.
+
+[Research and adaptation](research/operations-dashboard.md) records official references
+and the three owner-supplied visual examples. [Workbench acceptance](verification/operations-workbench.md)
+records actual testing, screenshots and measured bundle impact.
+
+Trace input/select text uses the body-sized 1rem control type independently of compact
+field labels. Browser cases verify a default 16px computed search font in every locale
+and theme; larger user text settings still scale it. This is emulation evidence, not
+physical mobile-keyboard verification.

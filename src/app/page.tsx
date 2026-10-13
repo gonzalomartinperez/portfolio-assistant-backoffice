@@ -1,5 +1,8 @@
 import { getAuthLocale, requireAccess } from "../features/auth/server";
-import { loadOperations } from "../features/operations/entry";
+import {
+	loadOperations,
+	loadGrafanaDestination,
+} from "../features/operations/entry";
 import { Dashboard } from "../features/operations/presentation/dashboard";
 export const dynamic = "force-dynamic";
 export default async function Page({
@@ -21,6 +24,7 @@ export default async function Page({
 						: await getAuthLocale()
 			}
 			fixture={process.env.OPERATIONS_SOURCE_MODE === "fixture"}
+			grafanaUrl={loadGrafanaDestination()}
 		/>
 	);
 }

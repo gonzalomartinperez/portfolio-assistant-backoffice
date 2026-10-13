@@ -13,9 +13,12 @@ const files = [
 let count = 0;
 let missing = 0;
 for (const file of files) {
-	for (const match of readFileSync(file, "utf8").matchAll(
-		/!?\[[^\]]*\]\(([^\s)]+)(?:\s+"[^"]*")?\)/g,
-	)) {
+	const source = readFileSync(file, "utf8");
+	const references = [
+		...source.matchAll(/!?\[[^\]]*\]\(([^\s)]+)(?:\s+"[^"]*")?\)/g),
+		...source.matchAll(/(?:src|href)="([^"]+)"/g),
+	];
+	for (const match of references) {
 		const target = match[1];
 		if (!target) continue;
 		if (/^(?:https?:|mailto:|#)/.test(target)) continue;

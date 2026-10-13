@@ -184,3 +184,20 @@ Official references (reviewed 2026-09-27): [native auto-merge](https://docs.gith
 [event/default-branch requirements](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows),
 [privileged workflow security](https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target),
 [token event behavior](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
+
+## Reviewed maintenance grouping · 2026-10-13
+
+Routine patch proposals for Biome/Node types share one version-update group. SHA-pinned
+GitHub Actions patch/minor proposals share another; they still require manual review.
+React type patches keep their existing group. Major/compiler/runtime/container changes
+remain separate and manual. Groups apply to version updates only: security alerts and
+default-branch security proposals remain visible. Existing conservative eligibility,
+strict current-head checks and disabled activation switches are unchanged.
+
+The five pending proposals #38–42 were reviewed by authenticated author, signed source
+commit and complete changed scope. Original commits are preserved through merge parents
+in a single reviewed maintenance branch. Manifest comparison proved scripts/runtime
+dependencies/compiler unchanged; lock changes cover only Biome CLI packages and Node types.
+The builder digest matches the published Node 24.21.0 Bookworm tag; runtime remains
+the pinned non-root Node 24 image. Passing this manual batch does not authorize future
+unattended Actions/container updates.

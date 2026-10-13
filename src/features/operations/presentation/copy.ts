@@ -1,4 +1,32 @@
 const en = {
+	overview: "Overview",
+	account: "Account",
+	completionShare: "Completion share",
+	unclassified: "Not classified",
+	executionWindow: "Rolling 30-day totals",
+	usageWindow: "Current UTC month",
+	serviceScope:
+		"API and required data services; not an OpenAI availability check.",
+	firstOutput: "First output latency",
+	median: "Median · p50",
+	tail: "Tail · p95",
+	latencyContext:
+		"Observed time to the first response fragment. No target or SLA is implied.",
+	budgetTitle: "Budget headroom",
+	accounted: "Settled + reserved",
+	remaining: "Estimated headroom",
+	budgetShare: "Budget accounted for",
+	zeroBudget: "The configured budget is zero; no percentage is available.",
+	traceFilter: "Filter by outcome",
+	traceSearch: "Trace ID",
+	allOutcomes: "All outcomes",
+	noMatchingTraces: "No sampled executions match these filters.",
+	traceContext:
+		"Sampled execution timings, without prompts or answers. Stages may overlap.",
+	results: "Matching executions",
+	snapshotDetails: "Snapshot details",
+	pricingRevision: "Pricing revision",
+	grafana: "Explore in Grafana",
 	breakdown: "Snapshot breakdown",
 	metricView: "Metric",
 	tokens: "Tokens",
@@ -32,7 +60,7 @@ const en = {
 		"Estimated from configured prices, not an OpenAI invoice. Unsettled reservations remain separate.",
 	pendingTitle: "Operational integration is not configured",
 	pendingBody:
-		"The API owner must publish the operational contract before real metrics can appear here. No demo values are substituted.",
+		"Configure the private operations connection to read measured data. Missing values are never replaced with demo metrics.",
 	unavailableTitle: "Operational data is unavailable",
 	unavailableBody:
 		"The data source could not be read safely. Refresh to try again; this does not generate an answer.",
@@ -60,6 +88,35 @@ const en = {
 	finalization: "Finalization",
 };
 const es: { [Key in keyof typeof en]: string } = {
+	overview: "Resumen",
+	account: "Cuenta",
+	completionShare: "Proporción completada",
+	unclassified: "Sin clasificar",
+	executionWindow: "Totales de los últimos 30 días",
+	usageWindow: "Mes actual en UTC",
+	serviceScope:
+		"API y servicios de datos necesarios; no comprueba la disponibilidad de OpenAI.",
+	firstOutput: "Tiempo hasta la primera respuesta",
+	median: "Mediana · p50",
+	tail: "Percentil · p95",
+	latencyContext:
+		"Tiempo observado hasta el primer fragmento de respuesta. No implica un objetivo ni un SLA.",
+	budgetTitle: "Margen de presupuesto",
+	accounted: "Liquidado + reservado",
+	remaining: "Margen estimado",
+	budgetShare: "Presupuesto contabilizado",
+	zeroBudget:
+		"El presupuesto configurado es cero; no hay un porcentaje disponible.",
+	traceFilter: "Filtrar por resultado",
+	traceSearch: "ID de traza",
+	allOutcomes: "Todos los resultados",
+	noMatchingTraces: "Ninguna ejecución muestreada coincide con estos filtros.",
+	traceContext:
+		"Tiempos de ejecuciones muestreadas, sin preguntas ni respuestas. Las etapas pueden superponerse.",
+	results: "Ejecuciones coincidentes",
+	snapshotDetails: "Detalles de la consulta",
+	pricingRevision: "Revisión de precios",
+	grafana: "Explorar en Grafana",
 	breakdown: "Detalle de la consulta",
 	metricView: "Métrica",
 	tokens: "Tokens",
@@ -95,7 +152,7 @@ const es: { [Key in keyof typeof en]: string } = {
 		"Estimación según los precios configurados, no una factura de OpenAI. Las reservas pendientes se muestran por separado.",
 	pendingTitle: "La integración operativa no está configurada",
 	pendingBody:
-		"El responsable de la API debe publicar el contrato operativo para mostrar métricas reales. No se sustituyen con valores de demostración.",
+		"Configura la conexión privada de operaciones para consultar datos medidos. Los valores ausentes nunca se reemplazan con métricas de demostración.",
 	unavailableTitle: "Los datos operativos no están disponibles",
 	unavailableBody:
 		"No se pudo consultar la fuente de forma segura. Actualiza para volver a intentar; esto no genera una respuesta.",

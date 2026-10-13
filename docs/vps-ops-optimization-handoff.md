@@ -70,8 +70,9 @@ deployment document still describes `/embed` and an assistant-only origin allowl
 Those presentation assumptions are obsolete. The native portfolio requires its reviewed
 exact origin in the API configuration; do not copy the old target allowlist unchanged.
 Request an updated committed handoff. Backoffice's retained public contract snapshot is
-historical (`6b1e65f2406ba5ddf21d15c56c34ccf672d90bbb`), not proof of a consumed private
-operations contract. Release metadata must retain that distinction.
+historical (`6b1e65f2406ba5ddf21d15c56c34ccf672d90bbb`). The separate private v1
+contract now has its own pin/hash in `contracts/operations.source.json`; release metadata
+retains this distinction and does not claim deployed OAuth/API pairing.
 
 ## Backoffice runtime to preserve
 
@@ -186,10 +187,11 @@ bounded and retention bounded by time AND storage. No public metrics endpoint, r
 prompts/answers/cookies or arbitrary trace attributes. No telemetry stack just to fill
 a dashboard; document its measured overhead before activation.
 
-The backoffice private operational API remains proposed at the inspected API revision.
-Read its committed `docs/backend-operations-request.md`; request an additive authenticated
-private contract from the API owner. Do not pretend `/internal/ops/v1/status`, OTLP or
-backend metrics already exist. Technical counters are not the durable accounting ledger
+The API implements private status, metrics and opt-in bounded OTLP. Backoffice consumes
+the v1 schema/example at `d30d36857c9053693c7817d967a7b38b97d9f12a`; see
+[contract provenance](api-contract.md). Configure only authorized private runtime pairing,
+then verify the complete OAuth/HTTPS dashboard against selected immutable images.
+Production collector/Prometheus/Grafana installation remains an infrastructure-owner task. Technical counters are not the durable accounting ledger
 for monetary usage/budgets. Missing data must stay unavailable, never fabricated zeros.
 
 Bound each log driver and every collector/cache. Redact OAuth callback and invitation

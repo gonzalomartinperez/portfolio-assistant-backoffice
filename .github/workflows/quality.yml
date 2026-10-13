@@ -15,13 +15,13 @@ concurrency:
   cancel-in-progress: true
 jobs:
   static:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -48,9 +48,9 @@ jobs:
           DEPENDABOT_AUTOMERGE: ${{ vars.DEPENDABOT_AUTOMERGE }}
           DEPENDABOT_POLICY_READY: ${{ vars.DEPENDABOT_POLICY_READY }}
       - name: Reject generated contract drift
-        run: npm run contract:generate && git diff --exit-code contracts/types.d.ts
+        run: npm run contract:generate && git diff --exit-code contracts/types.d.ts contracts/operations.types.d.ts
   image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -79,7 +79,7 @@ jobs:
             portfolio-assistant-backoffice:rc
           /tmp/image-scanner/trivy --config '' convert --ignorefile '' --scanners vuln \
             --exit-code 1 --severity HIGH,CRITICAL --table-mode detailed /tmp/image-vulnerabilities.json
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: image-security
@@ -87,7 +87,7 @@ jobs:
           retention-days: 14
       - name: Export the verified production image
         run: docker save portfolio-assistant-backoffice:rc | gzip -1 > /tmp/image.tar.gz
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: production-image
           path: /tmp/image.tar.gz
@@ -116,13 +116,13 @@ jobs:
       GOOGLE_CLIENT_SECRET: public-fixture-secret
       GITHUB_CLIENT_ID: public-fixture-client
       GITHUB_CLIENT_SECRET: public-fixture-secret
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -156,8 +156,20 @@ jobs:
             --memory=512m --memory-swap=512m --cpus=0.75 --pids-limit=128 \
             --cap-drop ALL --security-opt no-new-privileges \
             portfolio-assistant-backoffice:rc node scripts/auth-migrate.ts
-      - name: Exercise OAuth exchange, invitation and revocation against PostgreSQL
-        run: node --test tests/integration/auth.test.ts
+      - name: Verify database authorization and prepare browsers independently
+        run: |
+          node --test tests/integration/auth.test.ts &
+          auth_pid=$!
+          npx --no-install playwright install --with-deps --only-shell chromium firefox webkit &
+          browsers_pid=$!
+          auth_status=0
+          browsers_status=0
+          wait "$auth_pid" || auth_status=$?
+          wait "$browsers_pid" || browsers_status=$?
+          if [ "$auth_status" -ne 0 ] || [ "$browsers_status" -ne 0 ]; then
+            echo "Authorization verification or browser preparation failed"
+            exit 1
+          fi
       - name: Start the exact image with isolated fixture configuration
         run: |
           docker run -d --name assistant-browser --add-host host.docker.internal:host-gateway \
@@ -170,8 +182,6 @@ jobs:
             -p 127.0.0.1:3108:3000 portfolio-assistant-backoffice:rc
       - name: Verify bounded resources, readiness, isolation and anonymous workload
         run: node scripts/verify-container.ts measure assistant-browser http://127.0.0.1:3108
-      - name: Install all browser engines and OS dependencies
-        run: npx --no-install playwright install --with-deps --only-shell chromium firefox webkit
       - name: Verify real-database authorization, operations and accessibility
         run: npm run test:browser -- backoffice.spec.ts --grep-invert "operational failure" --output test-results/available
         env:
@@ -185,7 +195,7 @@ jobs:
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/unavailable
       - name: Measure bounded idle SIGTERM termination
         run: node scripts/verify-container.ts shutdown assistant-browser
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: browser-verification
@@ -199,7 +209,7 @@ jobs:
         run: docker logs assistant-browser > /tmp/backoffice-container.log 2>&1
       - name: Retain failure logs
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: backoffice-container-failure
           path: /tmp/backoffice-container.log
@@ -212,13 +222,13 @@ jobs:
   checks:
     if: always()
     needs: [static, image, browser]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           package-manager-cache: false
