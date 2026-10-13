@@ -198,10 +198,22 @@
 	margin-top: 1.5rem;
 }
 .traceField {
+	/* WebKit native select painting can exceed its box at large text sizes.
+	   Keep space for the focus outline and its offset. */
+	overflow: clip;
+	overflow-clip-margin: 6px;
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	min-width: 0;
 	gap: 0.4rem;
 	color: var(--text-secondary);
 	font-size: 0.8rem;
+}
+.traceFilters select,
+.traceFilters input {
+	min-width: 0;
+	max-width: 100%;
+	font-size: 1rem;
 }
 .traceFilters input {
 	width: 100%;

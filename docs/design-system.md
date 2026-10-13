@@ -76,3 +76,8 @@ controls at 200% text. No looping/chart animation is introduced.
 [Research and adaptation](research/operations-dashboard.md) records official references
 and the three owner-supplied visual examples. [Workbench acceptance](verification/operations-workbench.md)
 records actual testing, screenshots and measured bundle impact.
+
+Trace input/select text uses the body-sized 1rem control type independently of compact
+field labels. Browser cases verify a default 16px computed search font in every locale
+and theme; larger user text settings still scale it. This is emulation evidence, not
+physical mobile-keyboard verification.
