@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { operationsCopy, type OperationsLocale } from "./copy";
+import styles from "./workbench.module.css";
 export function Preferences({ locale }: { locale: OperationsLocale }) {
 	const t = operationsCopy[locale];
 	const [theme, setTheme] = useState("dark");
@@ -11,7 +12,16 @@ export function Preferences({ locale }: { locale: OperationsLocale }) {
 		);
 	}, [locale]);
 	return (
-		<details>
+		<details
+			className={styles.preferences}
+			onKeyDown={(event) => {
+				if (event.key === "Escape") {
+					event.preventDefault();
+					event.currentTarget.open = false;
+					event.currentTarget.querySelector("summary")?.focus();
+				}
+			}}
+		>
 			<summary>{t.preferences}</summary>
 			<div className="settings-fields">
 				<label>

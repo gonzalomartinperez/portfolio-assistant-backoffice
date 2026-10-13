@@ -2,10 +2,6 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { betterAuth } from "better-auth";
-import { getMigrations } from "better-auth/db/migration";
-import { genericOAuth } from "better-auth/plugins";
-import { createAuthRuntime } from "../../src/features/auth/runtime.ts";
 const databaseUrl = process.env.BACKOFFICE_DATABASE_URL;
 if (!databaseUrl)
 	throw new Error(
@@ -24,6 +20,17 @@ if (
 	throw new Error(
 		"Authentication integration requires a loopback test/fixture database",
 	);
+const [
+	{ betterAuth },
+	{ getMigrations },
+	{ genericOAuth },
+	{ createAuthRuntime },
+] = await Promise.all([
+	import("better-auth"),
+	import("better-auth/db/migration"),
+	import("better-auth/plugins"),
+	import("../../src/features/auth/runtime.ts"),
+]);
 const configuration = {
 	origin: "http://localhost:3971",
 	databaseUrl,

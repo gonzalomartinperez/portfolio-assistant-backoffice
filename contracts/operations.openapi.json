@@ -1,0 +1,43 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Private operations snapshot",
+    "version": "1"
+  },
+  "paths": {
+    "/internal/ops/v1/status": {
+      "get": {
+        "security": [
+          {
+            "OperationsRead": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validated private operational snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationalSnapshot"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "OperationsRead": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "OperationalSnapshot": {
+        "$ref": "./operations.schema.json"
+      }
+    }
+  }
+}

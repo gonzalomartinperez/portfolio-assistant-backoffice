@@ -21,7 +21,7 @@ jobs:
     uses: ./.github/workflows/quality.yml
   publish:
     needs: verify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment: container-release
     permissions:

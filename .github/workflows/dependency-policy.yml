@@ -18,7 +18,7 @@ concurrency:
 jobs:
   reconcile:
     if: vars.DEPENDABOT_POLICY_READY == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       contents: write

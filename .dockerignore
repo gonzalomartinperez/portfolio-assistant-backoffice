@@ -14,11 +14,10 @@
 !public/**
 !contracts/
 !contracts/types.d.ts
-!contracts/source.json
+!contracts/operations.types.d.ts
 !scripts/
 !scripts/auth-migrate.ts
 !scripts/prepare-runtime.ts
-!scripts/release-compatibility.ts
 !migrations/
 !migrations/**
 **/.env*

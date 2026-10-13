@@ -1,0 +1,7 @@
+{
+  "api_commit": "d30d36857c9053693c7817d967a7b38b97d9f12a",
+  "schema_version": 1,
+  "endpoint": "/internal/ops/v1/status",
+  "operations_schema_json_sha256": "6fbf28e2900dfbd6afe59f8fadcb56de2c223efcbcfc8bfccf43c2116e20d834",
+  "operations_example_json_sha256": "5032cc7ce01d932e3287ebdb1cdc2a07d07df0510be9cce084408b184514dc88"
+}

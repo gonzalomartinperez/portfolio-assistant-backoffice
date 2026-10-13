@@ -1,8 +1,8 @@
+import type { components } from "../../../../contracts/operations.types";
 import type {
 	ExecutionTrace,
 	OperationalSnapshot,
 	RunOutcome,
-	StageName,
 } from "../domain/models.ts";
 export class OperationalPayloadError extends Error {
 	constructor() {
@@ -60,7 +60,9 @@ function outcome(value: unknown): RunOutcome {
 		return value;
 	throw new OperationalPayloadError();
 }
-function stage(value: unknown): StageName {
+function stage(
+	value: unknown,
+): components["schemas"]["OperationalSnapshot"]["traces"][number]["stages"][number]["name"] {
 	if (
 		value === "language" ||
 		value === "vector_retrieval" ||
@@ -79,7 +81,7 @@ function trace(value: unknown): ExecutionTrace {
 		"duration_ms",
 		"stages",
 	]);
-	if (!Array.isArray(item.stages) || item.stages.length > 32)
+	if (!Array.isArray(item.stages) || item.stages.length > 16)
 		throw new OperationalPayloadError();
 	return {
 		id: text(item.id, /^[a-f0-9]{32}$/),
