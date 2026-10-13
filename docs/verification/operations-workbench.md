@@ -68,3 +68,20 @@ readiness/health, filesystem/compiler isolation and bounded anonymous workload c
 11 PIDs; 64 anonymous requests with concurrency 8 in 4,942ms (p50 454ms, p95 2,532ms).
 The 512 MiB / 0.75 CPU profile ran under concurrent WSL workloads. These observations
 do not measure authenticated chart interaction, peak memory or VPS capacity.
+
+## Final workbench CI and local limitations
+
+PR #44 integrated at `4b545c82c1ffbc2753c16d15d2525cec49b5d891` after
+[38324631699](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/actions/runs/38324631699)
+passed the complete current-head gate. Static/image/browser/gate took 25/63/159/7s.
+Mobile a11y now covers EN/ES × dark/light as separate cases, with unchanged WCAG tags
+and 30s limits; the managed available/unavailable lifecycles cover 45 cross-engine cases.
+
+Local exact-image failure-mode tests passed 3/3 in 23.4s. The available-mode local
+run passed 28/33; five cases timed out under WSL load around 29–36. A one-worker
+retry passed three of those five; Firefox's compound accessibility case and WebKit's
+availability expectation still timed out. These failures are retained as limitations,
+not mislabeled as passes. Current CI passed the complete matrix on dedicated runners.
+The compound accessibility test was split by locale/theme, expanding English coverage
+and preserving every assertion; no global timeouts or transport deadlines were increased.
+Physical-device and VPS acceptance remain open, especially under contention.

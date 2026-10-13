@@ -37,9 +37,9 @@ No broad node_modules restore key is used. Browser binaries remain uncached, fol
 [Playwright's CI guidance](https://playwright.dev/docs/ci#caching-browsers); install their OS
 dependencies explicitly. Compressed image artifacts disable redundant recompression.
 
-Third-party actions use reviewed immutable commit SHAs. Upload-artifact 7.0.1 and
-download-artifact 8.0.1 replace the reviewed pending maintenance proposals; their upstream
-sources are [upload-artifact](https://github.com/actions/upload-artifact/tree/v7.0.1) and
+Third-party actions use reviewed immutable commit SHAs. Upload-artifact 7.0.2, setup-node 7.1.0 and download-artifact 8.0.1 are reviewed
+immutable pins; their upstream
+sources are [upload-artifact](https://github.com/actions/upload-artifact/tree/v7.0.2) and
 [download-artifact](https://github.com/actions/download-artifact/tree/v8.0.1).
 All three workflows explicitly select Ubuntu 24.04 LTS rather than the moving latest
 label. Node 24 actions require a compatible GitHub-hosted runner; no production self-hosted runner
@@ -160,3 +160,15 @@ Mobile accessibility cases are independent EN/ES × dark/light scenarios, each w
 the same WCAG tags, clipping assertions and 30s limit. This replaces a compound
 two-scan test with identifiable per-state evidence and expands English coverage.
 It retains one managed lifecycle per operational mode and all three engines.
+
+Final workbench [run 38324631699](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/actions/runs/38324631699):
+static 25s, image 63s, browser 159s, required gate 7s; wall time 3m56s. It includes
+42 available-mode and three unavailable-mode cases across three engines, including all
+four locale/theme accessibility combinations. This is executed Ubuntu 24.04 evidence,
+not a controlled claim of speedup over the smaller docs-only baseline.
+
+Upstream setup-node 7.1.0 adds installed-version validation and bounded manifest fetch
+retries; its cache/action metadata/source changes were inspected before adoption.
+Upload-artifact 7.0.2 updates its artifact client. No extra token permissions are granted.
+The reviewed dependency grouping reduces separate routine version PRs; high-risk groups
+still require manual review and the full image/browser gate.
