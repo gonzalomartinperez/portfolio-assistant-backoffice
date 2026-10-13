@@ -160,3 +160,25 @@ independently. The application makes no request to that URL. Leave it unset unti
 Real dashboard data requires configuring the pinned private API summary; the durable
 backend accounting ledger, not Prometheus counters, determines estimated spend/budget.
 See [monitoring contract request](backend-operations-request.md#prometheus-and-grafana-handoff).
+
+## Shared runtime baseline
+
+See [runtime-baseline.md](runtime-baseline.md) for the2026-10-13 shared cohort and image
+acceptance. Actual committed locks and Dockerfiles supersede historical version/size samples;
+no production publication, deployment or live OAuth/provider check is implied.
+
+## Project-owned IAM artifact
+
+`Dockerfile.postgres` selects PostgreSQL18.6 Trixie with signed security packages and UID999.
+The persistent parent mount is `/var/lib/postgresql`, PGDATA `/var/lib/postgresql/18/docker`.
+Initialize only a NEW volume's ownership before nonroot startup; no automatic recursive
+repair or reuse of PostgreSQL17 data directories. Existing data needs separately verified
+logical migration/restore, libc/locale/collation review and independent IAM secret recovery.
+
+`node scripts/verify-postgres.ts exact-app-test-image exact-db-test-image` creates only fresh
+private task fixtures, applies the same-image migrations twice, checks PostgreSQL18.6 and
+fsync, restores a consistent synthetic logical dump and verifies persistent restart. It
+never accepts caller DATABASE_URL or a production volume. Tested fixture ceiling is0.5CPU,
+256MiB,32MiB shm,20connections; these are not measured VPS reservations or traffic guarantees.
+Coolify owns real resource/volume lifecycle; vps-ops coordinates isolated allocation and
+recovery. Production runtime roles must not use the fixture's superuser privileges.

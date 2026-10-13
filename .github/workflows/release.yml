@@ -20,39 +20,17 @@ jobs:
     if: github.ref == 'refs/heads/develop' && inputs.publication_authorized
     uses: ./.github/workflows/quality.yml
   publish:
+    # Ordinary quality runs keep image bytes on their ephemeral runner. Re-enable only after
+    # the private registry/artifact handoff is implemented and separately owner-approved.
+    if: ${{ false }}
     needs: verify
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 2
     environment: container-release
     permissions:
       contents: read
-      packages: write
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          package-manager-cache: false
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: production-image
-          path: /tmp/image
-      - run: gunzip -c /tmp/image/image.tar.gz | docker load
-      - name: Publish verified image and record compatibility
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Refuse an unconfigured artifact publication path
         run: |
-          set -euo pipefail
-          image="ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_SHA}"
-          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          docker tag portfolio-assistant-backoffice:rc "$image"
-          docker push "$image"
-          docker inspect "$image" --format '{{index .RepoDigests 0}}' > image-digest.txt
-          node scripts/release-compatibility.ts image-digest.txt release.json "$GITHUB_SHA"
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: release-compatibility
-          path: release.json
-          retention-days: 90
+          echo "Private artifact publication is not configured; no image was published."
+          exit 1

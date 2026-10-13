@@ -49,55 +49,10 @@ jobs:
           DEPENDABOT_POLICY_READY: ${{ vars.DEPENDABOT_POLICY_READY }}
       - name: Reject generated contract drift
         run: npm run contract:generate && git diff --exit-code contracts/types.d.ts contracts/operations.types.d.ts
-  image:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          load: true
-          tags: portfolio-assistant-backoffice:rc
-          cache-from: type=gha,scope=backoffice-node24-amd64
-          cache-to: type=gha,mode=max,scope=backoffice-node24-amd64
-      - name: Verify pinned image scanner
-        run: |
-          mkdir -p /tmp/image-scanner
-          curl --fail --silent --show-error --location --retry 3 \
-            https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_Linux-64bit.tar.gz \
-            --output /tmp/image-scanner/trivy.tar.gz
-          echo 'c6e65abddb348e25f10549df887045629cf28cc72453cd1c63acb717316b3f3f  /tmp/image-scanner/trivy.tar.gz' | sha256sum --check
-          tar -xzf /tmp/image-scanner/trivy.tar.gz -C /tmp/image-scanner trivy
-      - name: Scan the complete runtime and reject high or critical vulnerabilities
-        run: |
-          /tmp/image-scanner/trivy --config '' image --image-src docker \
-            --ignorefile '' --scanners vuln --format json --output /tmp/image-vulnerabilities.json \
-            portfolio-assistant-backoffice:rc
-          /tmp/image-scanner/trivy --config '' convert --ignorefile '' --scanners vuln \
-            --exit-code 1 --severity HIGH,CRITICAL --table-mode detailed /tmp/image-vulnerabilities.json
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: always()
-        with:
-          name: image-security
-          path: /tmp/image-vulnerabilities.json
-          retention-days: 14
-      - name: Export the verified production image
-        run: docker save portfolio-assistant-backoffice:rc | gzip -1 > /tmp/image.tar.gz
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: production-image
-          path: /tmp/image.tar.gz
-          retention-days: 7
-          compression-level: 0
   browser:
-    needs: image
     services:
       postgres:
-        image: postgres:17-bookworm@sha256:91eb910c44c7ed13f7f1a4ccadaa9ca72ef14cddc04cacb6e070e48eb44731a3
+        image: postgres:18.6-trixie@sha256:885953109528ad3dfc90362b1a6f50a78620b5315be19f187753d267e484dc5b
         env:
           POSTGRES_DB: backoffice_test
           POSTGRES_USER: backoffice_fixture
@@ -129,12 +84,33 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          name: production-image
-          path: /tmp/image
-      - name: Load the exact production image
-        run: gunzip -c /tmp/image/image.tar.gz | docker load
+          context: .
+          load: true
+          tags: portfolio-assistant-backoffice:rc
+          cache-from: type=gha,scope=backoffice-node24-amd64
+          cache-to: type=gha,mode=max,scope=backoffice-node24-amd64
+      - name: Verify pinned image scanner
+        run: |
+          mkdir -p /tmp/image-scanner
+          curl --fail --silent --show-error --location --retry 3 \
+            https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_Linux-64bit.tar.gz \
+            --output /tmp/image-scanner/trivy.tar.gz
+          echo 'c6e65abddb348e25f10549df887045629cf28cc72453cd1c63acb717316b3f3f  /tmp/image-scanner/trivy.tar.gz' | sha256sum --check
+          tar -xzf /tmp/image-scanner/trivy.tar.gz -C /tmp/image-scanner trivy
+      - name: Scan the complete runtime and reject high or critical vulnerabilities
+        run: |
+          /tmp/image-scanner/trivy --config '' image --image-src docker \
+            --ignorefile '' --scanners vuln --format json --output /tmp/image-vulnerabilities.json \
+            portfolio-assistant-backoffice:rc
+          /tmp/image-scanner/trivy --config '' convert --ignorefile '' --scanners vuln \
+            --exit-code 1 --severity HIGH,CRITICAL --table-mode detailed /tmp/image-vulnerabilities.json
+      - name: Verify the project-owned PostgreSQL18.6 IAM artifact
+        run: |
+          docker build -f Dockerfile.postgres -t portfolio-backoffice-postgres:rc .
+          node scripts/verify-postgres.ts portfolio-assistant-backoffice:rc portfolio-backoffice-postgres:rc
       - name: Write synthetic container configuration
         run: |
           node --input-type=module <<'NODE'
@@ -195,25 +171,6 @@ jobs:
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/unavailable
       - name: Measure bounded idle SIGTERM termination
         run: node scripts/verify-container.ts shutdown assistant-browser
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: always()
-        with:
-          name: browser-verification
-          path: |
-            playwright-report/
-            test-results/
-            .artifacts/container/
-          retention-days: 14
-      - name: Collect synthetic container logs
-        if: always()
-        run: docker logs assistant-browser > /tmp/backoffice-container.log 2>&1
-      - name: Retain failure logs
-        if: failure()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: backoffice-container-failure
-          path: /tmp/backoffice-container.log
-          retention-days: 14
       - name: Remove only this job's container
         if: always()
         run: |
@@ -221,7 +178,7 @@ jobs:
           rm -f /tmp/backoffice-fixture.env
   checks:
     if: always()
-    needs: [static, image, browser]
+    needs: [static, browser]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
