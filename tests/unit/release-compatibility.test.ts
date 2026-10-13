@@ -75,17 +75,8 @@ test("required quality gate covers the full graph and publication stays explicit
 				),
 		),
 	);
-	assert.deepEqual(Object.keys(jobs).sort(), [
-		"browser",
-		"checks",
-		"image",
-		"static",
-	]);
-	assert.deepEqual(field(jobs, "checks", "needs"), [
-		"static",
-		"image",
-		"browser",
-	]);
+	assert.deepEqual(Object.keys(jobs).sort(), ["browser", "checks", "static"]);
+	assert.deepEqual(field(jobs, "checks", "needs"), ["static", "browser"]);
 	assert.equal(field(jobs, "checks", "if"), "always()");
 	const gate = list(field(jobs, "checks", "steps")).find(
 		(step) => field(step, "name") === "Require every validation job",
@@ -93,7 +84,23 @@ test("required quality gate covers the full graph and publication stays explicit
 	assert.equal(field(gate, "run"), "node scripts/check-ci-results.ts");
 	assert.equal(field(quality, "on", "pull_request", "paths"), undefined);
 	assert.deepEqual(quality.permissions, { contents: "read" });
-	assert.equal(field(jobs, "browser", "needs"), "image");
+	assert.equal(field(jobs, "browser", "needs"), undefined);
+	assert.ok(
+		browserSteps.some((step: unknown) =>
+			String(field(step, "uses")).startsWith("docker/build-push-action@"),
+		),
+	);
+	assert.ok(
+		browserSteps.some((step: unknown) =>
+			String(field(step, "run")).includes("--severity HIGH,CRITICAL"),
+		),
+	);
+	assert.ok(
+		browserSteps.every(
+			(step: unknown) =>
+				!String(field(step, "uses")).startsWith("actions/upload-artifact@"),
+		),
+	);
 	const release = record(
 		load(readFileSync(".github/workflows/release.yml", "utf8")),
 	);
@@ -117,6 +124,11 @@ test("required quality gate covers the full graph and publication stays explicit
 		text(field(release, "jobs", "verify", "if")),
 		/refs\/heads\/develop/,
 	);
+	assert.equal(field(release, "jobs", "publish", "if"), "${{ false }}");
+	assert.equal(
+		field(release, "jobs", "publish", "permissions", "packages"),
+		undefined,
+	);
 	for (const workflow of [quality, release]) {
 		for (const job of Object.values(record(workflow.jobs))) {
 			if (field(job, "runs-on") !== undefined)
@@ -134,7 +146,6 @@ test("required quality gate covers the full graph and publication stays explicit
 test("required gate fails closed for missing, failed, pending or skipped results", () => {
 	const success = {
 		static: { result: "success" },
-		image: { result: "success" },
 		browser: { result: "success" },
 	};
 	assert.doesNotThrow(() => requireCiSuccess(success));
@@ -147,9 +158,7 @@ test("required gate fails closed for missing, failed, pending or skipped results
 		undefined,
 	])
 		assert.throws(() => requireCiSuccess({ ...success, browser: { result } }));
-	assert.throws(() =>
-		requireCiSuccess({ static: success.static, image: success.image }),
-	);
+	assert.throws(() => requireCiSuccess({ static: success.static }));
 	for (const invalid of [null, [], "success", {}])
 		assert.throws(() => requireCiSuccess(invalid));
 });

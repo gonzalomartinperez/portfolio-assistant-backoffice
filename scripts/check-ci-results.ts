@@ -1,4 +1,4 @@
-const requiredJobs = ["static", "image", "browser"];
+const requiredJobs = ["static", "browser"];
 
 export function requireCiSuccess(value: unknown): void {
 	if (typeof value !== "object" || value === null || Array.isArray(value))
