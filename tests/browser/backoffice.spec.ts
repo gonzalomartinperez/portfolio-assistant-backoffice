@@ -168,6 +168,13 @@ for (const locale of ["en", "es"] as const) {
 					),
 				)
 				.toBe(true);
+			expect(
+				await page
+					.getByRole("searchbox")
+					.evaluate((element) =>
+						Number.parseFloat(getComputedStyle(element).fontSize),
+					),
+			).toBeGreaterThanOrEqual(16);
 			const accessibility = await new AxeBuilder({ page })
 				.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
 				.analyze();

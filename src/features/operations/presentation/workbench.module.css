@@ -203,6 +203,10 @@
 	color: var(--text-secondary);
 	font-size: 0.8rem;
 }
+.traceFilters select,
+.traceFilters input {
+	font-size: 1rem;
+}
 .traceFilters input {
 	width: 100%;
 	min-height: 44px;
