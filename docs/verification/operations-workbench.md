@@ -85,3 +85,21 @@ not mislabeled as passes. Current CI passed the complete matrix on dedicated run
 The compound accessibility test was split by locale/theme, expanding English coverage
 and preserving every assertion; no global timeouts or transport deadlines were increased.
 Physical-device and VPS acceptance remain open, especially under contention.
+
+## WebKit zoom correction and source promotion
+
+Increasing trace input/select text to 1rem exposed WebKit native select paint overflow
+at 200% text. Runs 38327115944 and 38328663004 correctly failed the gate. Inspection
+of the actual CI image showed a 244px measured selector with 348px parent scroll
+overflow; intrinsic track constraints alone did not solve it. A scoped field paint clip
+with 6px margin retains the focus ring/offset. The native choice popup remains native.
+A local CSS probe confirmed 390px document width, retained focus and ArrowDown selection;
+that diagnostic is separate from production-image acceptance.
+
+Final source `408ceb959cedbbe19580e7e2b6850e89bfd86cfe` passed
+[38330973883](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/actions/runs/38330973883),
+including all 45 browser cases and WebKit 200% text. No timeout, clipping assertion,
+WCAG tag or browser engine was removed. Main promotion PR #46 passed
+[38331520843](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/actions/runs/38331520843)
+and merged at `c52c13a647b04d15c11d8eace46753e3ae3b8685`. Real OAuth, production
+monitoring/API pairing, screen readers, physical phones and VPS capacity remain open.

@@ -81,3 +81,8 @@ Trace input/select text uses the body-sized 1rem control type independently of c
 field labels. Browser cases verify a default 16px computed search font in every locale
 and theme; larger user text settings still scale it. This is emulation evidence, not
 physical mobile-keyboard verification.
+
+At enlarged text sizes, WebKit's native select painting is contained within the trace
+field, with a 6px clip margin for the focus outline/offset. This is scoped to those
+fields; reading surfaces keep natural overflow/scrolling and the choice menu stays native.
+The dedicated WebKit zoom regression must remain enabled.
