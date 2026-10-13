@@ -13,6 +13,11 @@
 	--accent-wash: rgb(76 214 255 / 12%);
 	--accent-ink: #001820;
 	--danger: #ffb4b4;
+	--signal-success: #76dfb1;
+	--signal-success-wash: rgb(118 223 177 / 10%);
+	--signal-warning: #f0ce80;
+	--signal-warning-wash: rgb(240 206 128 / 10%);
+	--overlay-shadow: rgb(0 0 0 / 28%);
 	--duration-micro: 140ms;
 	--duration-transition: 320ms;
 	--ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -35,6 +40,11 @@
 	--accent-wash: rgb(10 110 155 / 10%);
 	--accent-ink: #fff;
 	--danger: #9b2020;
+	--signal-success: #176445;
+	--signal-success-wash: rgb(23 100 69 / 8%);
+	--signal-warning: #805000;
+	--signal-warning-wash: rgb(128 80 0 / 8%);
+	--overlay-shadow: rgb(25 35 50 / 14%);
 }
 *,
 *::before,

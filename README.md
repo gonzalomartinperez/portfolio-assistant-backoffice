@@ -21,8 +21,8 @@ access and a bilingual dashboard keep operational visibility separate from the p
 | --- | --- |
 | Availability | The latest observed API state; missing data stays unavailable instead of becoming a fabricated zero. |
 | Knowledge freshness | Indexed portfolio revision, corpus version and indexing time. |
-| Executions | Completed, cancelled and failed outcomes, plus first-token latency. |
-| Estimated usage | Settled/reserved amounts, configured budget and reported input/output token totals. |
+| Executions | Observed 30-day outcomes and first-token p50/p95; searchable sampled phase timings. |
+| Estimated usage | UTC-month settlement/reservations, budget utilization and remaining headroom, plus reported token totals. |
 | Execution stages | Allowlisted retrieval/generation timings, with no prompts, responses or visitor identifiers. |
 | Access management | Verified owner admission, invited viewers, explicit account linking and live revocation. |
 
@@ -41,7 +41,7 @@ credentials, service tokens or private conversations appear in the images.
 ### Availability, freshness and usage at a glance
 
 <p align="center">
-  <a href="docs/assets/gallery/02-availability.png"><img src="docs/assets/gallery/02-availability.png" width="1000" alt="Four dashboard cards showing service availability, indexed public knowledge, execution totals and estimated usage"></a>
+  <a href="docs/assets/gallery/02-availability.png"><img src="docs/assets/gallery/02-availability.png" width="1000" alt="Complete operations workbench with availability and knowledge cards, outcome chart, latency, searchable execution stages and monthly budget panel"></a>
 </p>
 
 ### A complete operational walkthrough
@@ -61,10 +61,10 @@ Each frame focuses on an actual function. Click to open the original-resolution 
   </tr>
 </table>
 
-**4 · Execution detail.** Expanded stages make a request’s timing understandable.
+**4 · Execution detail.** Filter outcomes, search an opaque trace ID and inspect relative phase timings alongside p50/p95 latency.
 
 <p align="center">
-  <a href="docs/assets/gallery/05-execution-stages.png"><img src="docs/assets/gallery/05-execution-stages.png" width="900" alt="Expanded synthetic execution trace with vector retrieval and generation duration rows"></a>
+  <a href="docs/assets/gallery/05-execution-stages.png"><img src="docs/assets/gallery/05-execution-stages.png" width="900" alt="Latency percentiles, outcome filter and trace search with expanded vector retrieval and generation duration bars"></a>
 </p>
 
 <table>
@@ -90,6 +90,12 @@ locale covers visible and assistive copy. Desktop chart tables remain available 
 fixture behavior and limits. [Full-dashboard captures](docs/verification/backoffice.md)
 provide wider context. Emulation and automated accessibility checks do not prove
 physical-device or screen-reader acceptance.
+
+The custom dashboard complements OpenTelemetry/Prometheus/Grafana. It reads a bounded
+private API summary; infrastructure monitoring stays under vps-ops. An optional approved
+Grafana link requires independent access controls. No historical trends or provider uptime
+are fabricated. [Design research](docs/research/operations-dashboard.md) explains the
+layout and measurement choices.
 
 ## Architecture and trust boundaries
 

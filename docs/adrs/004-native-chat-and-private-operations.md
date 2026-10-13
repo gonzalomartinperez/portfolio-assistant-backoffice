@@ -21,10 +21,10 @@ span attributes. Missing or invalid data is shown as unavailable, never replaced
 fixture values. Synthetic data is explicitly labeled and enabled only for local tests.
 
 The operational API request is documented in [the backend handoff](../backend-operations-request.md).
-It is proposed, not an implemented or consumed contract. The inspected API revision is
-`c6012067c4a99db477bb6ddcf1f26dae095641ca`; real telemetry integration remains blocked
-until its owner publishes a committed compatible handoff. Continue independent fixture
-verification without editing that repository or calling a paid provider.
+The initial proposal has been fulfilled. As of 2026-10-12, private v1 schema/example
+are consumed from `d30d36857c9053693c7817d967a7b38b97d9f12a`, with generated types
+and bounded runtime mapping. See [provenance](../api-contract.md). Deployed OAuth/API
+pairing remains unverified; continue independent fixtures without paid provider calls.
 
 Private vps-ops owns Coolify, proxy routing, monitoring services, networks, databases,
 secrets, backups and deployment. This repository owns its image, IAM migrations and

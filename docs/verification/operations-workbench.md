@@ -1,0 +1,70 @@
+# Operations workbench acceptance · 2026-10-12
+
+The workbench implements the owner-supplied visual direction using existing portfolio
+tokens and Recharts. No additional dependency or monitoring service is installed.
+WSL Linux, Node 24.21.0, Next 16.3.8, React 19.3.0, TypeScript 7.0.2 and
+Playwright 1.63.0 are the local environment. PostgreSQL fixture sessions use an
+owned disposable tmpfs database on loopback 15439, separate from other agents.
+
+## Acceptance criteria
+
+| Area | Required evidence |
+| --- | --- |
+| Measurements | API/store readiness is distinct from OpenAI; 30-day execution windows, UTC-month ledger estimates and sampled traces are labeled. |
+| Budget | Settlement/reservations separate; zero budgets have no invented percentage, overspend remains visible and a native meter matches the ring. |
+| Interaction | Keyboard chart/table switching, combined outcome/ID filters, no-match recovery and Escape preference focus restoration. |
+| Layout | 320px, landscape, tablet, desktop, 200% text; no horizontal clipping. Both themes/locales and reduced motion. |
+| Privacy | Live membership guards; validated allowlisted props; no service tokens, transcripts or provider keys in browser data. |
+| Integration | Committed API schema/example pin, generated declarations and runtime example mapping; deployed OAuth/API pairing reported separately. |
+| Runtime | Production standalone build plus the exact-image migration/browser/resource/security checks in Actions. |
+
+Initial browser verification found wrapped-label exact matching and text-resize overflow.
+The controls now use separate explicit labels; header, refresh and filters reflow at
+large text sizes. Those failures were fixed rather than relaxing assertions or timeouts.
+
+## Evidence boundaries
+
+Screenshots in [the gallery](readme-gallery.md) use explicitly synthetic operational
+values and real isolated PostgreSQL-backed signed authentication. No real OAuth
+provider, paid model, production Grafana datasource or VPS deployment is exercised.
+Grafana is an optional validated navigation destination with independent authorization;
+its presence never asserts that monitoring is online.
+
+The reference build at `618aa914ced48bf08ba8d613537ecd28ef797d5e` emitted
+27 JavaScript assets totaling 1,356,230 bytes in the same environment. Emitted-byte
+comparisons measure build output, not route-specific transfer or field responsiveness.
+The first workbench build emitted 1,363,015 bytes (+6,785, approximately 0.50%).
+The final local production image emitted 1,363,164 bytes (+6,934, about 0.51%);
+individually gzipped assets totaled 416,688 versus 414,135 bytes (+2,553, about 0.62%).
+No dependency was added. These are all emitted assets, not per-route transfer measurements.
+Webpack compilation of the reviewed host build took 33.8s and its framework type phase 8.3s;
+concurrent local workloads prevent a controlled total-build speed comparison.
+
+Physical-device gestures/keyboard, human screen-reader review, live provider callbacks,
+deployed API pairing, production data collection and actual VPS capacity remain unverified.
+
+## Executed checks
+
+- Frozen npm install and isolated contract generation; strict TypeScript 7, Biome,
+  public-file scan, documentation links and all four canonical skills passed.
+- 55 unit tests passed in 20.79s, including contract example mapping, budget/selection
+  modeling, architecture and the four parallel-prerequisite exit combinations.
+- Two real PostgreSQL/auth integration tests passed in 14.48s. The safety guard
+  rejects remote/malformed fixture URLs before importing database/auth libraries.
+- [Actions 38323223253](https://github.com/gonzalomartinperez/portfolio-assistant-backoffice/actions/runs/38323223253)
+  passed static/image/browser jobs for feature source `4ebfcaa8324028107eb432a27e86745d7737f78b`.
+  Later documentation/runner changes require their own current-head checks.
+
+Local Buildx 0.38.0 was downloaded into ignored project tooling, verified against
+the upstream release SHA256 and used without a global installation. The default
+legacy builder correctly rejected BuildKit mounts; documentation now requires Buildx.
+A build of an intermediate context was cancelled after removing publication-only files
+from the runtime; the final application image built successfully.
+
+Local image ID `sha256:ae80128c093725d3c4f2a05537076294bbf2e9de07ad110a0af88569b011c1b1`
+is an engine artifact, not a published registry digest. It passed exact-image migration,
+readiness/health, filesystem/compiler isolation and bounded anonymous workload checks:
+302 MB reported disk, 72,715,386 inspect bytes; 57.73 MiB idle / 77.18 MiB after workload;
+11 PIDs; 64 anonymous requests with concurrency 8 in 4,942ms (p50 454ms, p95 2,532ms).
+The 512 MiB / 0.75 CPU profile ran under concurrent WSL workloads. These observations
+do not measure authenticated chart interaction, peak memory or VPS capacity.

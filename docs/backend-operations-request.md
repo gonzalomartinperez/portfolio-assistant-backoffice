@@ -1,9 +1,10 @@
 # Operational contract request · version 1
 
-Status: **proposed, not a consumed or implemented API capability**. API inspected at
-`c6012067c4a99db477bb6ddcf1f26dae095641ca`; public chat contract remains separately pinned.
-The API currently rejects OpenTelemetry configuration and has no operational HTTP routes.
-Its owner must approve and publish this additive contract before real dashboard integration.
+Status: **historical request, now fulfilled by a committed API implementation**.
+Operations schema/example are consumed from `d30d36857c9053693c7817d967a7b38b97d9f12a`.
+Use [current provenance and refresh procedure](api-contract.md) and the API
+[private observability contract](https://github.com/gonzalomartinperez/portfolio-assistant-api/blob/30f2d565ce38d15f5a6e69c2323c0f3e358b3eed/docs/private-observability.md).
+The requirements below explain the original request; deployment is still unverified.
 
 The browser-facing chat is moving into the portfolio. This repository owns an authenticated
 backoffice. Suggested private endpoint: `GET /internal/ops/v1/status`. The public proxy must
@@ -15,7 +16,7 @@ The proposed payload and runtime mapper are maintained in
 [synthetic example](../tests/fixtures/operations.ts). Required envelope:
 `schema_version: 1`, `observed_at`, `api_commit`, `availability`, `knowledge`, `executions`,
 `usage`, `traces`. Every object rejects unknown keys. Traces are bounded to 100, stages to
-32, and the HTTP response to 256,000 bytes. No credentials, transcripts, prompts, document
+16, and the HTTP response to 256,000 bytes. No credentials, transcripts, prompts, document
 excerpts, personal data, cookies, session identifiers or arbitrary exception messages.
 
 Knowledge includes state, public source commit, corpus version and last successful indexing
@@ -37,7 +38,7 @@ generation, cancellation or shutdown. Bound queues and flush deadlines.
 Collector/Prometheus/Tempo production services, retention and capacity belong to vps-ops.
 Proposed retention is 30 days metrics / 7 days traces, subject to measured disk/resource budget.
 The API owner supplies a committed schema, examples, compatibility notes and regression evidence.
-Until then the backoffice returns unconfigured/unavailable states; synthetic tests are labeled.
+An absent connection still returns unconfigured/unavailable states; synthetic tests are labeled.
 
 ## Required acceptance
 
