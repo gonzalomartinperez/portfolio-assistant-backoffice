@@ -58,3 +58,18 @@ Pequeverso scope confirmation completes the four-session ownership matrix.
 The follow-up passed local unit/contract, strict type generation/checking, formatting,
 lint (the same pre-existing non-error diagnostics), docs, skills and public-file checks.
 Its own exact-head full CI is required before integration; no earlier run is reused.
+
+The first follow-up CI run `39049908313` correctly blocked integration: static checks
+passed, but the owned IAM image verifier accepted `pg_isready` during the official
+entrypoint's temporary Unix-socket bootstrap. Its next query failed because database
+`fixture` did not exist yet. This is a real fixture readiness race, not a passing run.
+The verifier now requires authenticated TCP `SELECT 1` against the target database,
+with a two-second connection timeout and bounded attempts. Deterministic tests cover
+bootstrap rejection, missing database, immediate readiness and exhausted/invalid probes
+without exposing diagnostics. Migration, restore, persistence and image checks remain
+required; no rerun or skip substitutes for fixing the readiness condition.
+
+The reason for the distinction is documented by
+[PostgreSQL pg_isready](https://www.postgresql.org/docs/current/app-pg-isready.html)
+and the [official image entrypoint](https://github.com/docker-library/postgres/blob/master/docker-entrypoint.sh):
+server availability alone is not target-database/application readiness.
