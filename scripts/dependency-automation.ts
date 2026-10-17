@@ -274,6 +274,16 @@ async function main() {
 	const token = process.env.GH_TOKEN;
 	if (!token) throw new Error("Missing API token");
 	const api: GitHubApi = async (path, body, method = body ? "POST" : "GET") => {
+		if (
+			method !== "GET" &&
+			!(
+				path === "/graphql" &&
+				typeof field(body, "query") === "string" &&
+				text(field(body, "query")).trimStart().startsWith("query ") &&
+				!/\bmutation\b/.test(text(field(body, "query")))
+			)
+		)
+			throw new Error("Manual GitHub client rejects API mutations");
 		const response = await fetch(`https://api.github.com${path}`, {
 			method,
 			headers: {
