@@ -9,6 +9,7 @@ permissions:
   contents: read
 env:
   PLAYWRIGHT_SKIP_BROWSER_GC: '1'
+  DOCKER_BUILD_RECORD_UPLOAD: 'false'
 defaults:
   run:
     shell: bash

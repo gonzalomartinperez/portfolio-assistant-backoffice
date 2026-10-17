@@ -15,6 +15,7 @@
 !contracts/
 !contracts/types.d.ts
 !contracts/operations.types.d.ts
+!contracts/product-analytics.types.d.ts
 !scripts/
 !scripts/auth-migrate.ts
 !scripts/prepare-runtime.ts

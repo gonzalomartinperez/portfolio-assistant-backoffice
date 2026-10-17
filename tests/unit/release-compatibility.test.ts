@@ -84,6 +84,7 @@ test("required quality gate covers the full graph and publication stays explicit
 	assert.equal(field(gate, "run"), "node scripts/check-ci-results.ts");
 	assert.equal(field(quality, "on", "pull_request", "paths"), undefined);
 	assert.deepEqual(quality.permissions, { contents: "read" });
+	assert.equal(field(quality, "env", "DOCKER_BUILD_RECORD_UPLOAD"), "false");
 	assert.equal(field(jobs, "browser", "needs"), undefined);
 	assert.ok(
 		browserSteps.some((step: unknown) =>

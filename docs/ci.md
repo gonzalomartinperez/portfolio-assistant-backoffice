@@ -72,3 +72,10 @@ join the drift gate. A SHA-pinned official upload-artifact v7.0.2 step retains P
 screenshots for seven days on success or failure; session fixtures, traces and
 request logs are deliberately excluded because they can contain signed cookies.
 Public/production analytics defaults remain off.
+
+The pinned build-push action also uploads a `.dockerbuild` record by default,
+independently of explicit upload-artifact steps. This was confirmed on failed
+run 39057883143. `DOCKER_BUILD_RECORD_UPLOAD=false` now disables that implicit
+artifact; the workflow policy test enforces it. Build summaries/logs remain available
+without retaining an extra build-record archive. Historical failed runs are retained
+as evidence, not rewritten or described as screenshot-only uploads.
