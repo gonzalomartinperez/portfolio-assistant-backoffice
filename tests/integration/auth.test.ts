@@ -130,10 +130,25 @@ test("real PostgreSQL and Better Auth enforce invitation, role and revocation bo
 				),
 			);
 			assert.equal(callback.status, 302);
+			const sessionCookie = callback.headers
+				.getSetCookie()
+				.find((value) => value.startsWith("backoffice.session_token="));
+			assert.ok(sessionCookie);
 			assert.ok(
-				callback.headers
-					.getSetCookie()
-					.some((value) => value.startsWith("backoffice.session_token=")),
+				/;\s*HttpOnly(?:;|$)/i.test(sessionCookie),
+				"HttpOnly required",
+			);
+			assert.ok(
+				/;\s*SameSite=Lax(?:;|$)/i.test(sessionCookie),
+				"SameSite=Lax required",
+			);
+			assert.ok(
+				/;\s*Path=\/(?:;|$)/i.test(sessionCookie),
+				"Root Path required",
+			);
+			assert.ok(
+				!/;\s*Domain=/i.test(sessionCookie),
+				"Host-scoped cookie required",
 			);
 			const replay = await auth.handler(
 				new Request(

@@ -46,6 +46,12 @@ as LTS or infer measured UI improvements from compiler/tool version changes.
 Its isolated negative fixtures are in `tests/unit/secret-scanner.test.ts`. Report detector
 names/locations only, never values; pattern scanning is not proof that no secrets exist.
 
+Authentication dependency updates require manual closure review and the real PostgreSQL/
+fake-OAuth integration suite, including emitted cookie attributes, invitation replay,
+live revocation and CSRF/origin denial. Do not activate optional provider/plugins to
+exercise a release note. See the [fixed-cohort review](../../../docs/verification/runtime-compatibility-2026-10-17.md);
+fake-provider success does not certify live Google/GitHub or production TLS.
+
 For README/gallery changes follow [capture provenance](../../../docs/verification/readme-gallery.md).
 Use real rendered surfaces, explain synthetic data, preserve image proportions and link
 original PNGs. Verify HTML image links with `npm run docs:check`; never publish private
