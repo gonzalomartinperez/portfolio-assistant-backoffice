@@ -10,8 +10,9 @@ export const viewport: Viewport = {
 	interactiveWidget: "resizes-content",
 };
 export const metadata: Metadata = {
-	title: "GMP · Assistant backoffice",
-	description: "Authenticated operations for Gonzalo’s portfolio assistant.",
+	title: "GMP · Portfolio backoffice",
+	description:
+		"Authenticated website interactions, assistant health and access for Gonzalo’s portfolio.",
 	robots: { index: false, follow: false },
 };
 export default function Layout({ children }: { children: ReactNode }) {

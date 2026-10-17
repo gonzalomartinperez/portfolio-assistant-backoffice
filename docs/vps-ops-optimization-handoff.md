@@ -29,7 +29,7 @@ At this handoff the inspected revisions are:
 
 - Backoffice baseline develop: `f29b6cd91b6869c7ad190067ef9ca53fdfc06312`; consume
   the later merged container optimization and its successful Actions evidence.
-  Canonical public repo is `gonzalomartinperez/portfolio-assistant-backoffice`.
+  Canonical public repo is `gonzalomartinperez/portfolio-backoffice`.
 - API: `c6012067c4a99db477bb6ddcf1f26dae095641ca`. Inspect its committed Dockerfile,
   deployment contract, environment schema, migrations, SSE and knowledge-sync behavior.
 - vps-ops inspected baseline: `04be6193710d23cab324d7b3bb4da9cf12b2be16`.

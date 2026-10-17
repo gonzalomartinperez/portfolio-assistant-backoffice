@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { OperationalRead } from "../domain/models";
 import { summarizeOperations } from "../domain/insights";
 import { operationsCopy, type OperationsLocale } from "./copy";
@@ -23,12 +24,16 @@ export function Dashboard({
 	locale,
 	fixture,
 	grafanaUrl,
+	projectOverview,
+	assistantFeedback,
 }: {
 	result: OperationalRead;
 	role: "owner" | "viewer";
 	locale: OperationsLocale;
 	fixture: boolean;
 	grafanaUrl: string | null;
+	projectOverview: ReactNode;
+	assistantFeedback: ReactNode;
 }) {
 	const t = operationsCopy[locale];
 	const snapshot = result.kind === "available" ? result.snapshot : null;
@@ -66,6 +71,9 @@ export function Dashboard({
 					</div>
 				</div>
 				<nav aria-label={t.account}>
+					<ButtonLink href={`/analytics?locale=${locale}`}>
+						{locale === "es" ? "Interacciones" : "Interactions"}
+					</ButtonLink>
 					{role === "owner" && (
 						<ButtonLink href={`/access?locale=${locale}`}>
 							{t.access}
@@ -95,6 +103,7 @@ export function Dashboard({
 					{t.fixture}
 				</p>
 			)}
+			{projectOverview}
 			{!snapshot && (
 				<section className="operational-notice">
 					<h2>
@@ -204,6 +213,7 @@ export function Dashboard({
 					/>
 				)}
 			</div>
+			{assistantFeedback}
 			<div className={styles.detailGrid}>
 				<section
 					id="execution-details"

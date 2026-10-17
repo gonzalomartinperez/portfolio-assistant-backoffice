@@ -1,0 +1,51 @@
+.bars {
+	display: grid;
+	gap: 0.75rem;
+	margin-block: 1.5rem;
+}
+.row {
+	display: grid;
+	grid-template-columns: 7rem minmax(1rem, 1fr) auto;
+	gap: 0.75rem;
+	align-items: center;
+	font-variant-numeric: tabular-nums;
+}
+.track {
+	background: var(--surface-base);
+	height: 0.75rem;
+	border-radius: var(--radius-sm);
+	overflow: hidden;
+}
+.fill {
+	display: block;
+	height: 100%;
+	background: var(--accent);
+}
+@media (max-width: 28rem) {
+	.row {
+		grid-template-columns: 1fr auto;
+	}
+	.track {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+}
+
+.eventSelect {
+	max-width: 100%;
+}
+.table {
+	table-layout: fixed;
+}
+
+.overview .summary {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.5rem;
+}
+.overview .summary dd {
+	margin: 0.4rem 0 0;
+	text-align: start;
+	font-size: 1.5rem;
+	font-variant-numeric: tabular-nums;
+}

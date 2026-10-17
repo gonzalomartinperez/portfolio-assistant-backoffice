@@ -58,13 +58,43 @@ test("owner receives validated fixture metrics and restricted access navigation"
 	await authenticate(context, "owner");
 	await page.goto("/");
 	await expect(
-		page.getByRole("heading", { name: "Assistant operations" }),
+		page.getByRole("heading", { name: "Portfolio operations" }),
 	).toBeVisible();
 	await expect(
 		page.getByText("Synthetic fixture data · not production telemetry"),
 	).toBeVisible();
 	await expect(page.getByText("fixture-1", { exact: true })).toBeVisible();
 	await expect(page.getByRole("link", { name: "Manage access" })).toBeVisible();
+	await expect(
+		page.getByRole("region", { name: "Website interactions" }),
+	).toBeVisible();
+	await expect(
+		page.getByRole("link", { name: "Explore website data" }),
+	).toHaveAttribute("href", "/analytics?locale=en");
+	const product = page.getByRole("region", { name: "Website interactions" });
+	const summary = product.locator("dl");
+	await expect(summary).toHaveCSS("display", "flex");
+	const cells = summary.locator(":scope > div");
+	expect(await cells.count()).toBe(3);
+	const bounds = await cells.evaluateAll((elements) =>
+		elements.map((element) => {
+			const label = element.querySelector("dt")?.getBoundingClientRect();
+			const count = element.querySelector("dd")?.getBoundingClientRect();
+			return Boolean(
+				label &&
+					count &&
+					Math.abs(label.left - count.left) < 1 &&
+					count.top >= label.bottom,
+			);
+		}),
+	);
+	expect(bounds.every(Boolean)).toBe(true);
+	const feedback = page.getByRole("region", { name: "Answer feedback" });
+	await expect(feedback).toBeVisible();
+	await expect(feedback.getByText("14", { exact: true })).toBeVisible();
+	await expect(feedback.getByText("3", { exact: true })).toBeVisible();
+	await expect(feedback.getByText("82.4%", { exact: true })).toBeVisible();
+	await expect(feedback).toContainText("not a measure of verified accuracy");
 	const data = await page.request.get("/api/operations");
 	expect(data.ok()).toBe(true);
 	expect(data.headers()["cache-control"]).toContain("no-store");
@@ -102,7 +132,7 @@ test("viewer can read operations but cannot enter owner access management", asyn
 	await authenticate(context, "viewer");
 	await page.goto("/");
 	await expect(
-		page.getByRole("heading", { name: "Assistant operations" }),
+		page.getByRole("heading", { name: "Portfolio operations" }),
 	).toBeVisible();
 	await expect(page.getByRole("link", { name: "Manage access" })).toHaveCount(
 		0,
@@ -132,8 +162,11 @@ test("preferences synchronize language and the single theme authority", async ({
 		.getByRole("combobox", { name: "Language", exact: true })
 		.selectOption("es");
 	await expect(
-		page.getByRole("heading", { name: "Operaciones del asistente" }),
+		page.getByRole("heading", { name: "Operaciones del portfolio" }),
 	).toBeVisible();
+	await expect(
+		page.getByRole("region", { name: "Opiniones sobre las respuestas" }),
+	).toContainText("82,4%");
 	await expect(page.locator("html")).toHaveAttribute("lang", "es");
 	await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
@@ -153,8 +186,8 @@ for (const locale of ["en", "es"] as const) {
 				page.getByRole("heading", {
 					name:
 						locale === "es"
-							? "Operaciones del asistente"
-							: "Assistant operations",
+							? "Operaciones del portfolio"
+							: "Portfolio operations",
 					exact: true,
 				}),
 			).toBeVisible();
@@ -198,6 +231,14 @@ test("operational failure presents safe no-data state without fabricated metrics
 		page.getByRole("heading", { name: "Operational data is unavailable" }),
 	).toBeVisible();
 	await expect(page.getByText("fixture-1", { exact: true })).toHaveCount(0);
+	await expect(
+		page.getByRole("region", { name: "Answer feedback" }),
+	).toContainText("Feedback is unavailable; missing data is not zero.");
+	await expect(
+		page
+			.getByRole("region", { name: "Answer feedback" })
+			.getByRole("definition"),
+	).toHaveCount(0);
 	await expect(
 		page.getByRole("button", { name: "Refresh data" }),
 	).toBeVisible();
@@ -362,4 +403,133 @@ test("workbench stays usable at compact, landscape and resized text widths", asy
 	await expect(
 		page.getByRole("button", { name: "Actualizar datos", exact: true }),
 	).toBeVisible();
+});
+
+test("private product analytics requires live access", async ({ page }) => {
+	await page.goto("/analytics");
+	await expect(page).toHaveURL(/\/sign-in/);
+	await expect(
+		page.getByRole("heading", { name: "Portfolio interactions" }),
+	).toHaveCount(0);
+});
+
+test("product counts have honest labels, keyboard filtering and table alternatives", async ({
+	page,
+	context,
+}) => {
+	test.skip(!available, "Available fixture only");
+	await authenticate(context, "viewer");
+	await page.goto("/analytics?locale=en");
+	await expect(
+		page.getByRole("heading", { name: "Portfolio interactions" }),
+	).toBeVisible();
+	await expect(
+		page.getByText("Synthetic fixture data · not production analytics"),
+	).toBeVisible();
+	await expect(page.getByRole("table", { name: /Daily counts/ })).toBeVisible();
+	await page.getByLabel("Interaction", { exact: true }).focus();
+	await page.keyboard.press("ArrowDown");
+	await page.keyboard.press("Enter");
+	await expect(page.getByLabel("Interaction", { exact: true })).toHaveValue(
+		"navigation_click",
+	);
+	await expect(page.getByRole("status")).toHaveText(
+		"No accepted events in this window.",
+	);
+	await page
+		.getByLabel("Interaction", { exact: true })
+		.selectOption("cv_link_open");
+	await expect(
+		page.getByRole("table").getByRole("cell", { name: "7", exact: true }),
+	).toBeVisible();
+	await page
+		.getByLabel("Interaction", { exact: true })
+		.selectOption("company_link_open");
+	await expect(page.getByRole("status")).toHaveText(
+		"No accepted events in this window.",
+	);
+	await page
+		.getByLabel("Interaction", { exact: true })
+		.selectOption("page_view");
+	const findings = await new AxeBuilder({ page }).analyze();
+	expect(findings.violations).toEqual([]);
+	await page.screenshot({
+		path: `test-results/product-${test.info().project.name}-desktop-en.png`,
+		fullPage: true,
+	});
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.emulateMedia({ reducedMotion: "reduce" });
+	await page.goto("/analytics?locale=es");
+	await expect(
+		page.getByRole("heading", { name: "Interacciones del portfolio" }),
+	).toBeVisible();
+	await page.getByText("Preferencias", { exact: true }).click();
+	expect(
+		await page.evaluate(
+			() => document.documentElement.scrollWidth <= window.innerWidth,
+		),
+	).toBe(true);
+	await page.getByLabel("Tema", { exact: true }).selectOption("light");
+	await page.keyboard.press("Escape");
+	await expect(page.getByText("Preferencias", { exact: true })).toBeFocused();
+	await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+	expect(
+		await page.evaluate(
+			() => document.documentElement.scrollWidth <= window.innerWidth,
+		),
+	).toBe(true);
+	expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+	await page.screenshot({
+		path: `test-results/product-${test.info().project.name}-mobile-es.png`,
+		fullPage: true,
+	});
+});
+
+test("privacy notice is bilingual, accessible and public without starting OAuth", async ({
+	page,
+}) => {
+	for (const locale of ["en", "es"]) {
+		await page.goto(`/privacy?locale=${locale}`);
+		await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+			locale === "en" ? "Privacy and data" : "Privacidad y datos",
+		);
+		await expect(
+			page.getByRole("link", {
+				name:
+					locale === "en"
+						? "Contact the maintainer"
+						: "Contactar al responsable",
+			}),
+		).toHaveAttribute(
+			"href",
+			`https://gonzalomartinperez.com/${locale === "es" ? "es/" : ""}contact`,
+		);
+		expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+	}
+});
+
+test("product and privacy content reflow with doubled text on a narrow viewport", async ({
+	page,
+	context,
+}) => {
+	test.skip(!available, "Available fixture only");
+	await authenticate(context, "viewer");
+	await page.setViewportSize({ width: 390, height: 844 });
+	for (const route of ["analytics", "privacy"]) {
+		await page.goto(`/${route}?locale=es`);
+		await page.evaluate(() => {
+			document.documentElement.style.fontSize = "200%";
+		});
+		expect(
+			await page.evaluate(
+				() => document.documentElement.scrollWidth <= window.innerWidth,
+			),
+		).toBe(true);
+		await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+		expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+		await page.screenshot({
+			path: `test-results/product-${test.info().project.name}-${route}-text-200.png`,
+			fullPage: true,
+		});
+	}
 });

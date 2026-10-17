@@ -1,0 +1,5 @@
+{
+  "api_commit": "bb36012eef55e85f7e0cf78df1845f38ef13da63",
+  "endpoint": "/internal/ops/v1/feedback",
+  "schema_sha256": "efe765fd1aec41abf608b0d4f2963dbf83a7cbaa8b8f281aa8cf320cb4943de0"
+}

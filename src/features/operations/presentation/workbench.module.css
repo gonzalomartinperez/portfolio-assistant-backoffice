@@ -415,9 +415,14 @@
 		grid-column: 1 / -1;
 		grid-row: 2;
 	}
+	.preferences {
+		max-width: 100%;
+	}
 	.preferences :global(.settings-fields) {
-		left: 0;
-		right: auto;
+		position: static;
+		width: min(320px, calc(100vw - 2rem));
+		min-width: 0;
+		max-width: 100%;
 	}
 }
 
@@ -428,4 +433,9 @@
 }
 .metricCard .cardHeading h2 {
 	font-size: 0.9rem;
+}
+
+.preferenceField {
+	display: grid;
+	gap: 0.4rem;
 }

@@ -1,3 +1,4 @@
+import { readBoundedJson } from "../../../shared/http/bounded-json.ts";
 import type { OperationsPort } from "../application/read.ts";
 import type { OperationalRead } from "../domain/models.ts";
 import { parseOperationalSnapshot } from "./validate.ts";
@@ -55,48 +56,14 @@ export function createOperationsHttp({
 						checkedAt,
 					};
 				}
-				if (
-					response.headers
-						.get("content-type")
-						?.split(";")[0]
-						?.trim()
-						.toLowerCase() !== "application/json"
-				) {
-					await response.body?.cancel();
-					return { kind: "unavailable", reason: "contract", checkedAt };
-				}
-				const declaredSize = Number(
-					response.headers.get("content-length") ?? 0,
-				);
-				if (declaredSize > 256_000) {
-					await response.body?.cancel();
-					return { kind: "unavailable", reason: "contract", checkedAt };
-				}
-				if (!response.body)
-					return { kind: "unavailable", reason: "contract", checkedAt };
-				const reader = response.body.getReader();
-				const decoder = new TextDecoder("utf-8", { fatal: true });
-				let bytes = 0;
-				let body = "";
 				try {
-					while (true) {
-						const chunk = await reader.read();
-						if (chunk.done) break;
-						bytes += chunk.value.byteLength;
-						if (bytes > 256_000) throw new Error("Payload limit");
-						body += decoder.decode(chunk.value, { stream: true });
-					}
-					body += decoder.decode();
 					return {
 						kind: "available",
-						snapshot: parseOperationalSnapshot(JSON.parse(body)),
+						snapshot: parseOperationalSnapshot(await readBoundedJson(response)),
 						checkedAt,
 					};
 				} catch {
 					return { kind: "unavailable", reason: "contract", checkedAt };
-				} finally {
-					await reader.cancel().catch(() => {});
-					reader.releaseLock();
 				}
 			} catch {
 				return { kind: "unavailable", reason: "transport", checkedAt };

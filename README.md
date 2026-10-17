@@ -1,9 +1,9 @@
-# Portfolio Assistant Backoffice
+# Portfolio Backoffice
 
-**A private operational dashboard for a public, evidence-grounded assistant.**
+**Private operations for the portfolio website and its assistant.**
 
-Understand whether the assistant is available, how fresh its knowledge is, how requests
-finish and what usage is estimated to cost. Google/GitHub authentication, owner-managed
+Review bounded website interactions, assistant availability, knowledge freshness and
+estimated usage. Product counts remain disabled by default. Google/GitHub authentication, owner-managed
 access and a bilingual dashboard keep operational visibility separate from the public chat.
 
 ![Node 24 LTS, Next.js 16, React 19, TypeScript 7, Better Auth, PostgreSQL, Recharts, Biome and Playwright](docs/assets/technology-stack.svg)
@@ -13,20 +13,26 @@ access and a bilingual dashboard keep operational visibility separate from the p
 > **Current state:** authentication, invitations, revocation, private-API validation and
 > dashboard rendering are implemented. Browser evidence uses real isolated PostgreSQL
 > and clearly labeled synthetic metrics. Live OAuth-provider and production API pairing
-> remain unverified. No production deployment or publication is activated here.
+> remain unverified. The paired API's
+> [Neo4j vendor release hold](https://github.com/gonzalomartinperez/portfolio-assistant-api/blob/develop/docs/verification/neo4j-release-blocker-2026-10-17.md)
+> is unresolved; green source CI is not full-stack production acceptance.
+> No deployment or publication is activated here.
 
 ## What you can inspect
 
 | Area | What it tells you |
 | --- | --- |
+| Website interactions | Default-off accepted page/navigation/CV/contact events; seven UTC days, without visitor journeys or conversation text. |
 | Availability | The latest observed API state; missing data stays unavailable instead of becoming a fabricated zero. |
 | Knowledge freshness | Indexed portfolio revision, corpus version and indexing time. |
 | Executions | Observed 30-day outcomes and first-token p50/p95; searchable sampled phase timings. |
 | Estimated usage | UTC-month settlement/reservations, budget utilization and remaining headroom, plus reported token totals. |
 | Execution stages | Allowlisted retrieval/generation timings, with no prompts, responses or visitor identifiers. |
+| Answer feedback | Independently default-off current ratings on retained answers, without transcripts or a verified-accuracy claim. |
 | Access management | Verified owner admission, invited viewers, explicit account linking and live revocation. |
 
-This is the **operations application**, not a second conversation frontend. The native
+This is the **project backoffice**, with website interactions and assistant operations
+as separate features; it is not a second conversation frontend. The native
 assistant belongs to the [portfolio](https://github.com/gonzalomartinperez/portfolio);
 sessions, generation and measurements belong to the
 [API](https://github.com/gonzalomartinperez/portfolio-assistant-api). Public repository
@@ -108,12 +114,14 @@ flowchart LR
     GUARD --> PAGE
     PAGE --> READ[Application read port]
     READ --> HTTP[Bounded private HTTP adapter]
-    HTTP --> API[Assistant API · private status]
+    HTTP --> API[Project API · private status and product counts]
     API --> VIEW[Validated operational view]
     VIEW --> UI[Dashboard + accessible charts]
     UI --> U
 ```
 
+Website counts use the same bounded server-only transport boundary and a separate
+versioned contract. Product reads are default-off and are not public collection approval.
 The backoffice server holds the operational read token. Browsers receive allowlisted view
 data, never that token, an internal service URL or a raw backend error. Every protected
 page, action and API checks current membership; hiding an action does not authorize it.
@@ -122,9 +130,9 @@ page, action and API checks current membership; hiding an action does not author
 flowchart TB
     C[Server composition] --> P[Presentation · pages and controls]
     C --> T[Adapters · private HTTP validation]
-    P --> A[Application · read port]
+    P --> A[Application · feature read ports]
     T --> A
-    A --> D[Domain · operational models]
+    A --> D[Domain · feature models]
     C --> AUTH[Authentication · membership and sessions]
 ```
 
@@ -132,6 +140,7 @@ flowchart TB
 | --- | --- |
 | `src/features/operations/domain`, `application` | Pure models, explicit available/unconfigured/unavailable results and a small read port. |
 | `src/features/operations/adapters`, `presentation` | Bounded transport, wire mapping, dashboard and intentional client controls. |
+| `src/features/analytics` | Pure product-count models, a private read port/adapter and accessible project summary/detail views. |
 | `src/features/auth`, `migrations` | OAuth, membership, invitations, revocation and explicit IAM migration. |
 | `src/components/ui`, `docs/design-system.md` | Owned primitives and portfolio-aligned tokens, variants, themes and localization. |
 
@@ -146,6 +155,8 @@ not invoice totals; availability does not certify the paid model provider.
 Use Linux/WSL, Node **24.22.0** from `.nvmrc`, npm and a dedicated PostgreSQL database.
 
 ```sh
+gh repo clone gonzalomartinperez/portfolio-backoffice
+cd portfolio-backoffice
 nvm use
 npm ci --no-audit --no-fund
 npm run contract:install
@@ -171,13 +182,21 @@ Use a disposable database on an unused loopback port. The values below are publi
 credentials, not production secrets.
 
 ```sh
-docker run -d --name backoffice-readme-fixture \
-  -e POSTGRES_USER=backoffice_fixture -e POSTGRES_PASSWORD=public-fixture-only \
-  -e POSTGRES_DB=backoffice_test --tmpfs /var/lib/postgresql/data \
-  -p 127.0.0.1:15432:5432 \
-  postgres:17-bookworm@sha256:91eb910c44c7ed13f7f1a4ccadaa9ca72ef14cddc04cacb6e070e48eb44731a3
+docker build -f Dockerfile.postgres -t portfolio-backoffice-postgres:local .
 
-docker exec backoffice-readme-fixture pg_isready -U backoffice_fixture
+docker run -d --rm --name portfolio-readme-fixture \
+  --user 999:999 --read-only --cap-drop ALL --security-opt no-new-privileges \
+  --memory 384m --cpus 0.5 --pids-limit 128 \
+  --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+  --tmpfs /var/run/postgresql:uid=999,gid=999,mode=0775,size=16m \
+  --tmpfs /var/lib/postgresql/18/docker:uid=999,gid=999,mode=0700,size=256m \
+  -e PGDATA=/var/lib/postgresql/18/docker \
+  -e POSTGRES_USER=backoffice_fixture -e POSTGRES_PASSWORD=public-fixture-only \
+  -e POSTGRES_DB=backoffice_test \
+  -p 127.0.0.1:15432:5432 \
+  portfolio-backoffice-postgres:local
+
+docker exec portfolio-readme-fixture pg_isready -U backoffice_fixture
 npm run build
 PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install --with-deps chromium
 npm run test:browser -- backoffice.spec.ts --project=chromium
@@ -195,7 +214,8 @@ require a signed fixture session, so an ordinary browser initially sees sign-in.
 manual preview before running Playwright; each lifecycle owns the same isolated ports.
 
 The browser suite starts/stops its own servers. Remove only the disposable database you
-created with `docker rm -f backoffice-readme-fixture`. If 15432 is occupied, select another
+created with `docker stop portfolio-readme-fixture` (its `--rm` removes only that
+owned fixture). If 15432 is occupied, select another
 port and pass `BACKOFFICE_DATABASE_URL` explicitly to the fixture/test processes. Never
 point fixture reset or session tooling at shared/production databases.
 
@@ -250,7 +270,7 @@ real-database and unverified production behavior. Local figures are not field pe
 ## Runtime and release ownership
 
 ```sh
-docker build --platform linux/amd64 -t portfolio-assistant-backoffice:local .
+docker build --platform linux/amd64 -t portfolio-backoffice:local .
 ```
 
 The standalone image runs as UID **65532**, exposes private port **3000**, has no shell/npm,
@@ -288,3 +308,18 @@ Shared runtime/version acceptance: [runtime baseline](docs/runtime-baseline.md).
 
 Cross-session ownership, verified toolchain baselines and Google/Microsoft adaptations
 are recorded in [engineering coordination](docs/engineering-coordination.md).
+
+## Optional product-interaction view
+
+The authenticated `/analytics` surface provides keyboard-selectable daily portfolio
+counts and semantic table alternatives in EN/ES. `PRODUCT_ANALYTICS_ENABLED=false`
+by default means it requests no product data. Public collection remains separately
+disabled. See [contract, local fixture and meaning](docs/product-analytics.md) and
+[privacy review and unresolved production requirements](docs/privacy-review.md).
+The public bilingual `/privacy` notice describes actual essential account storage;
+it does not claim compliance certification or erase backup/retention limitations.
+
+[Feedback semantics and the reviewed improvement loop](docs/feedback-and-improvement.md)
+explain what the optional summary measures and what it deliberately does not collect.
+[Executed evidence](docs/verification/product-feedback-2026-10-17.md) includes current
+browser results, inspected screenshots and dated image-resource observations.

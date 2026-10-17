@@ -25,4 +25,4 @@ USER 999:999
 ARG SERVICE_REVISION=
 LABEL org.opencontainers.image.revision=${SERVICE_REVISION}
 
-LABEL org.opencontainers.image.source="https://github.com/gonzalomartinperez/portfolio-assistant-backoffice"
+LABEL org.opencontainers.image.source="https://github.com/gonzalomartinperez/portfolio-backoffice"

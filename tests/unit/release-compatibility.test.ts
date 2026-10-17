@@ -10,7 +10,7 @@ const operations = {
 	api_commit: "e".repeat(40),
 	operations_schema_json_sha256: "f".repeat(64),
 };
-const image = `ghcr.io/owner/portfolio-assistant-backoffice@sha256:${"d".repeat(64)}`;
+const image = `ghcr.io/owner/portfolio-backoffice@sha256:${"d".repeat(64)}`;
 
 test("records immutable image and both contract pins without claiming deployed compatibility", () => {
 	const release = releaseCompatibility(commit, image, source, operations);
@@ -84,6 +84,7 @@ test("required quality gate covers the full graph and publication stays explicit
 	assert.equal(field(gate, "run"), "node scripts/check-ci-results.ts");
 	assert.equal(field(quality, "on", "pull_request", "paths"), undefined);
 	assert.deepEqual(quality.permissions, { contents: "read" });
+	assert.equal(field(quality, "env", "DOCKER_BUILD_RECORD_UPLOAD"), "false");
 	assert.equal(field(jobs, "browser", "needs"), undefined);
 	assert.ok(
 		browserSteps.some((step: unknown) =>
@@ -95,12 +96,23 @@ test("required quality gate covers the full graph and publication stays explicit
 			String(field(step, "run")).includes("--severity HIGH,CRITICAL"),
 		),
 	);
-	assert.ok(
-		browserSteps.every(
-			(step: unknown) =>
-				!String(field(step, "uses")).startsWith("actions/upload-artifact@"),
-		),
+	const uploads = browserSteps.filter((step: unknown) =>
+		String(field(step, "uses")).startsWith("actions/upload-artifact@"),
 	);
+	assert.equal(uploads.length, 1);
+	const upload = record(uploads[0]);
+	assert.equal(
+		upload.uses,
+		"actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+	);
+	assert.equal(upload.if, "always()");
+	assert.deepEqual(upload.with, {
+		name: "backoffice-ui-screenshots",
+		path: "test-results/**/*.png",
+		"retention-days": 7,
+		"if-no-files-found": "ignore",
+	});
+
 	const release = record(
 		load(readFileSync(".github/workflows/release.yml", "utf8")),
 	);

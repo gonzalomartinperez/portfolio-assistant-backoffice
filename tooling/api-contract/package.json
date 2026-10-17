@@ -6,7 +6,7 @@
 		"node": ">=24 <25"
 	},
 	"scripts": {
-		"generate": "openapi-typescript ../../contracts/openapi.json -o ../../contracts/types.d.ts && openapi-typescript ../../contracts/operations.openapi.json -o ../../contracts/operations.types.d.ts"
+		"generate": "openapi-typescript ../../contracts/openapi.json -o ../../contracts/types.d.ts && openapi-typescript ../../contracts/operations.openapi.json -o ../../contracts/operations.types.d.ts && openapi-typescript ../../contracts/product-analytics.openapi.json -o ../../contracts/product-analytics.types.d.ts && openapi-typescript ../../contracts/feedback.openapi.json -o ../../contracts/feedback.types.d.ts"
 	},
 	"devDependencies": {
 		"openapi-typescript": "7.13.0",

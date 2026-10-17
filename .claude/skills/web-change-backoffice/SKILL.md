@@ -48,3 +48,20 @@ Server Actions decode/authorize and format outcomes; PostgreSQL rechecks the own
 inside each transaction. Test both fake-port use cases and isolated database behavior.
 `npm test` includes cycle and transitive client/server guards; new import/composition
 patterns need negative probes, not broader exceptions. See [architecture](../../../docs/architecture.md).
+
+For product counts read [analytics semantics](../../../docs/product-analytics.md).
+Keep the server-runtime flag off by default, require live membership before reads,
+validate the separately pinned schema and retain table alternatives. Never equate
+interactions with people, completed downloads or exact generation totals. Read
+[privacy review](../../../docs/privacy-review.md) before changing notices; IAM session
+metadata and essential cookies are not anonymous product analytics.
+
+This is `portfolio-backoffice`, the project's private operations UI. Read
+[ADR006](../../../docs/adrs/006-project-backoffice.md) before naming or scope changes.
+Website analytics and assistant health are separate features composed by the server;
+repository renaming never authorizes renaming cookies, IAM tables, health IDs or data.
+
+For feedback read [current-rating semantics](../../../docs/feedback-and-improvement.md).
+Keep its flag independent and off by default. Use count-only server reads; never turn
+visitor ratings into verified accuracy or introduce raw-chat review, automatic training
+or corpus mutation. The retained-answer creation window is not a vote-event timeline.

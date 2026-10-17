@@ -56,3 +56,8 @@ For README/gallery changes follow [capture provenance](../../../docs/verificatio
 Use real rendered surfaces, explain synthetic data, preserve image proportions and link
 original PNGs. Verify HTML image links with `npm run docs:check`; never publish private
 fixture sessions, invitation tokens or screenshots implying live production acceptance.
+
+Dependency maintenance is owner-selected manual. Use the read-only assessment workflow;
+never enable legacy activation flags, grant writer permissions or arm native auto-merge.
+All proposals need normal review and current required CI. See
+[dependency maintenance](../../../docs/dependency-updates.md).

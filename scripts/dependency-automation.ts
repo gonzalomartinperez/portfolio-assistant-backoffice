@@ -17,7 +17,7 @@ export type GitHubApi = (
 
 export async function readProtection(api: GitHubApi) {
 	const response = await api("/graphql", {
-		query: `query { repository(owner:"gonzalomartinperez", name:"portfolio-assistant-backoffice") {
+		query: `query { repository(owner:"gonzalomartinperez", name:"portfolio-backoffice") {
 			ref(qualifiedName:"refs/heads/develop") { branchProtectionRule {
 				requiresStatusChecks requiresStrictStatusChecks isAdminEnforced allowsForcePushes allowsDeletions
 				requiredStatusChecks { context app { databaseId } }
@@ -242,13 +242,57 @@ export async function reconcile({
 	}
 }
 
+export function assertManualRequest(
+	path: string,
+	body: unknown,
+	method: string,
+) {
+	const query = field(body, "query");
+	if (
+		method !== "GET" &&
+		!(
+			path === "/graphql" &&
+			typeof query === "string" &&
+			query.trimStart().startsWith("query ") &&
+			!/\bmutation\b/.test(query)
+		)
+	)
+		throw new Error("Manual GitHub client rejects API mutations");
+}
+
+export async function assessManualDependency(
+	api: GitHubApi,
+	repository: string,
+	number: number,
+) {
+	return {
+		mergeMode: "manual" as const,
+		assessment: await reconcile({
+			api,
+			repository,
+			number,
+			enabled: false,
+			mutate: false,
+		}),
+	};
+}
+
 async function main() {
+	if (
+		process.env.APPLY_DEPENDENCY_POLICY === "true" ||
+		process.env.DEPENDABOT_AUTOMERGE === "true" ||
+		process.env.DEPENDABOT_POLICY_READY === "true"
+	)
+		throw new Error(
+			"Dependency maintenance is manual; write activation is disabled",
+		);
 	const repository = process.env.GITHUB_REPOSITORY;
-	if (repository !== "gonzalomartinperez/portfolio-assistant-backoffice")
+	if (repository !== "gonzalomartinperez/portfolio-backoffice")
 		throw new Error("Unexpected repository");
 	const token = process.env.GH_TOKEN;
 	if (!token) throw new Error("Missing API token");
 	const api: GitHubApi = async (path, body, method = body ? "POST" : "GET") => {
+		assertManualRequest(path, body, method);
 		const response = await fetch(`https://api.github.com${path}`, {
 			method,
 			headers: {
@@ -308,14 +352,12 @@ async function main() {
 		list(field(event, "workflow_run", "pull_requests")).length !== 1
 	)
 		return;
-	const reason = await reconcile({
-		api,
-		repository,
-		number,
-		enabled: process.env.DEPENDABOT_AUTOMERGE === "true",
-		mutate: process.env.APPLY_DEPENDENCY_POLICY === "true",
-	});
-	console.log(`PR #${number}: ${reason}`);
+	console.log(
+		JSON.stringify({
+			pr: number,
+			...(await assessManualDependency(api, repository, number)),
+		}),
+	);
 }
 if (
 	process.argv[1] &&
