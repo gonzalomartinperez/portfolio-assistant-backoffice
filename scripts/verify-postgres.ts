@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
+import { waitForPostgres } from "./postgres-readiness.ts";
 
 const appImage = process.argv[2] ?? "portfolio-assistant-backoffice:rc";
 const databaseImage = process.argv[3] ?? "portfolio-backoffice-postgres:rc";
@@ -25,8 +26,14 @@ function docker(...args: string[]): Buffer {
 function query(sql: string, name = "fixture"): string {
 	return docker(
 		"exec",
+		"--env",
+		`PGPASSWORD=${password}`,
+		"--env",
+		"PGCONNECT_TIMEOUT=2",
 		database,
 		"psql",
+		"--host",
+		"127.0.0.1",
 		"-X",
 		"-v",
 		"ON_ERROR_STOP=1",
@@ -151,17 +158,8 @@ try {
 		"-c",
 		"max_connections=20",
 	);
-	let ready = false;
-	for (let attempt = 0; attempt < 60; attempt++) {
-		try {
-			docker("exec", database, "pg_isready", "-U", "fixture");
-			ready = true;
-			break;
-		} catch {
-			await sleep(1000);
-		}
-	}
-	assert.ok(ready, "Owned IAM fixture readiness failed");
+	// The official bootstrap server only accepts Unix sockets; TCP requires final startup.
+	await waitForPostgres(() => query("SELECT 1"));
 	assert.equal(query("SHOW server_version_num"), "180006");
 	assert.equal(query("SHOW fsync"), "on");
 	migrate();

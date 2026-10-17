@@ -7,11 +7,12 @@ edits, main promotion, artifact publication, assistant activation or deployment.
 | --- | --- |
 | Portfolio assistant | `portfolio-assistant-api` and this `portfolio-assistant-backoffice` |
 | Portfolio website | Public `portfolio`; career-ops ownership is not inferred from its session title |
-| Pequeverso | Its store, assistant API and backoffice; confirmation recorded when received |
+| Pequeverso | `pequeverso`, `pequeverso-assistant-api`, `pequeverso-assistant-backoffice`; directly confirmed |
 | VPS operations | Private `vps-ops`, Coolify, shared proxy/release/operations composition |
 
-All four sessions were contacted through Codex task messages. Portfolio and vps-ops
-confirmed their scopes. Coordinated changes use committed contracts/handoffs; nobody
+All four sessions directly confirmed their scopes through Codex task messages or the
+owner-relayed technical handoff. The Pequeverso confirmation arrived after the initial
+application PRs; its store/API/backoffice ownership is now explicit. Coordinated changes use committed contracts/handoffs; nobody
 edits another owner's worktree or shared workspace instructions. Production remains
 disabled. Reference repository code is not imported across repository boundaries.
 
@@ -59,3 +60,10 @@ The design follows [original Ports and Adapters](https://alistair.cockburn.us/he
 and [official Next data security](https://nextjs.org/docs/app/guides/data-security).
 Installed Next16.4 server-action/server-client docs were read before changing actions.
 Framework CSRF protections do not replace live per-operation authorization.
+
+Pequeverso retains its own tested Oxc parser and store Biome2.5.14/Playwright1.63
+exceptions; neither is imported into this application. Product-specific contract versions
+and source snapshots require independent committed-artifact verification before adoption.
+The portfolio review of commit `8974932c57a52f1dc6c7eef726d00b6bca465d38` found an
+`.mts`/`.cts` source-enumeration gap. The owner received a reproduced negative case; the
+analogous backoffice collector was corrected locally, without edits to the portfolio.
