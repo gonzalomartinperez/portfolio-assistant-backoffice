@@ -13,7 +13,10 @@ access and a bilingual dashboard keep operational visibility separate from the p
 > **Current state:** authentication, invitations, revocation, private-API validation and
 > dashboard rendering are implemented. Browser evidence uses real isolated PostgreSQL
 > and clearly labeled synthetic metrics. Live OAuth-provider and production API pairing
-> remain unverified. No production deployment or publication is activated here.
+> remain unverified. The paired API's
+> [Neo4j vendor release hold](https://github.com/gonzalomartinperez/portfolio-assistant-api/blob/develop/docs/verification/neo4j-release-blocker-2026-10-17.md)
+> is unresolved; green source CI is not full-stack production acceptance.
+> No deployment or publication is activated here.
 
 ## What you can inspect
 
@@ -25,6 +28,7 @@ access and a bilingual dashboard keep operational visibility separate from the p
 | Executions | Observed 30-day outcomes and first-token p50/p95; searchable sampled phase timings. |
 | Estimated usage | UTC-month settlement/reservations, budget utilization and remaining headroom, plus reported token totals. |
 | Execution stages | Allowlisted retrieval/generation timings, with no prompts, responses or visitor identifiers. |
+| Answer feedback | Independently default-off current ratings on retained answers, without transcripts or a verified-accuracy claim. |
 | Access management | Verified owner admission, invited viewers, explicit account linking and live revocation. |
 
 This is the **project backoffice**, with website interactions and assistant operations
@@ -315,9 +319,7 @@ disabled. See [contract, local fixture and meaning](docs/product-analytics.md) a
 The public bilingual `/privacy` notice describes actual essential account storage;
 it does not claim compliance certification or erase backup/retention limitations.
 
-## Current answer feedback
-
-The private overview includes an optional count-only helpful/not-helpful summary.
-It is off by default and distinguishes missing data from zero ratings. Votes concern
-retained answers, not verified correctness or automatic training. See the
-[feedback contract and reviewed improvement loop](docs/feedback-and-improvement.md).
+[Feedback semantics and the reviewed improvement loop](docs/feedback-and-improvement.md)
+explain what the optional summary measures and what it deliberately does not collect.
+[Executed evidence](docs/verification/product-feedback-2026-10-17.md) includes current
+browser results, inspected screenshots and dated image-resource observations.
