@@ -7,6 +7,7 @@ import type { GitHubApi } from "../../scripts/dependency-automation.ts";
 import {
 	inspectReadiness,
 	assessManualDependency,
+	assertManualRequest,
 	reconcile,
 } from "../../scripts/dependency-automation.ts";
 import {
@@ -602,4 +603,31 @@ test("manual CLI rejects legacy write activation before token or network use", (
 	);
 	assert.equal(result.status, 1);
 	assert.match(result.stderr, /manual; write activation is disabled/);
+});
+
+test("manual transport allows read-only GraphQL and rejects mutation methods before fetch", () => {
+	assert.doesNotThrow(() =>
+		assertManualRequest("/repos/owner/repo", undefined, "GET"),
+	);
+	assert.doesNotThrow(() =>
+		assertManualRequest(
+			"/graphql",
+			{ query: "query { repository { name } }" },
+			"POST",
+		),
+	);
+	for (const [path, body, method] of [
+		["/graphql", { query: "mutation { unsafe }" }, "POST"],
+		[
+			"/graphql",
+			{ query: "query { repository { name } } mutation { unsafe }" },
+			"POST",
+		],
+		["/repos/owner/repo/pulls/1/merge", undefined, "PUT"],
+		["/repos/owner/repo", { allow_auto_merge: true }, "PATCH"],
+	] as const)
+		assert.throws(
+			() => assertManualRequest(path, body, method),
+			/rejects API mutations/,
+		);
 });

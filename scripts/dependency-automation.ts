@@ -242,6 +242,24 @@ export async function reconcile({
 	}
 }
 
+export function assertManualRequest(
+	path: string,
+	body: unknown,
+	method: string,
+) {
+	const query = field(body, "query");
+	if (
+		method !== "GET" &&
+		!(
+			path === "/graphql" &&
+			typeof query === "string" &&
+			query.trimStart().startsWith("query ") &&
+			!/\bmutation\b/.test(query)
+		)
+	)
+		throw new Error("Manual GitHub client rejects API mutations");
+}
+
 export async function assessManualDependency(
 	api: GitHubApi,
 	repository: string,
@@ -274,16 +292,7 @@ async function main() {
 	const token = process.env.GH_TOKEN;
 	if (!token) throw new Error("Missing API token");
 	const api: GitHubApi = async (path, body, method = body ? "POST" : "GET") => {
-		if (
-			method !== "GET" &&
-			!(
-				path === "/graphql" &&
-				typeof field(body, "query") === "string" &&
-				text(field(body, "query")).trimStart().startsWith("query ") &&
-				!/\bmutation\b/.test(text(field(body, "query")))
-			)
-		)
-			throw new Error("Manual GitHub client rejects API mutations");
+		assertManualRequest(path, body, method);
 		const response = await fetch(`https://api.github.com${path}`, {
 			method,
 			headers: {
