@@ -28,6 +28,7 @@ export function ProductMetrics({
 			<label htmlFor="product-event">{t.metric}</label>{" "}
 			<select
 				id="product-event"
+				className={styles.eventSelect}
 				value={selected}
 				onChange={(event) => {
 					const value = eventNames.find((name) => name === event.target.value);
@@ -58,7 +59,7 @@ export function ProductMetrics({
 							</div>
 						))}
 					</div>
-					<table className="snapshot-chart-table">
+					<table className={`snapshot-chart-table ${styles.table}`}>
 						<caption>
 							{t.table} · {t.events[selected]}
 						</caption>
