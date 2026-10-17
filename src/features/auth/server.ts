@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { readAuthConfiguration } from "./config.ts";
 import { createAuthRuntime } from "./runtime.ts";
 import { authLocale } from "./copy.ts";
-import type { Access } from "./store.ts";
+import type { Access } from "./domain/access.ts";
 let runtime: ReturnType<typeof createAuthRuntime> | undefined;
 export function getAuthRuntime() {
 	runtime ??= createAuthRuntime(readAuthConfiguration(process.env));

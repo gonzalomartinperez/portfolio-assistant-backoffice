@@ -3,8 +3,8 @@ import test from "node:test";
 import {
 	invitationToken,
 	readAuthConfiguration,
-	validEmail,
 } from "../../src/features/auth/config.ts";
+import { validEmail } from "../../src/features/auth/domain/access.ts";
 const env: NodeJS.ProcessEnv = {
 	NODE_ENV: "test",
 	BACKOFFICE_ORIGIN: "http://localhost:3001",

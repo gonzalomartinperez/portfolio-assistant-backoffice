@@ -1,17 +1,60 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { boundaryErrors } from "../../scripts/check-boundaries.ts";
+import {
+	boundaryErrors,
+	moduleGraphErrors,
+	architectureSourceFile,
+} from "../../scripts/check-boundaries.ts";
 test("source dependency boundaries and public environment allowlist", () => {
+	const sources: Record<string, string> = {};
 	for (const file of readdirSync("src", {
 		recursive: true,
 		encoding: "utf8",
-	}).filter((file) => /\.(ts|tsx)$/.test(file))) {
+	}).filter(architectureSourceFile)) {
 		const name = `src/${file}`;
+		sources[name] = readFileSync(name, "utf8");
 		assert.deepEqual(
 			boundaryErrors(name, readFileSync(name, "utf8")),
 			[],
 			name,
+		);
+	}
+	assert.deepEqual(moduleGraphErrors(sources), []);
+});
+
+test("source collection cannot hide ESM/CommonJS TypeScript dependency violations", () => {
+	for (const extension of ["mts", "cts"]) {
+		const candidates = {
+			"src/features/auth/domain/value.ts": `import "./opaque.${extension}"`,
+			[`src/features/auth/domain/opaque.${extension}`]: 'import "react"',
+		};
+		const sources = Object.fromEntries(
+			Object.entries(candidates).filter(([file]) =>
+				architectureSourceFile(file),
+			),
+		);
+		assert.equal(Object.keys(sources).length, 2);
+		const violations = Object.entries(sources).flatMap(([file, source]) =>
+			boundaryErrors(file, source),
+		);
+		assert.ok(violations.includes("domain dependency"));
+		for (const specifier of [
+			`.${extension}`,
+			extension === "mts" ? ".mjs" : ".cjs",
+		]) {
+			assert.ok(
+				moduleGraphErrors({
+					"src/client.tsx": `"use client"; import "./opaque${specifier}"`,
+					[`src/opaque.${extension}`]: 'import "server-only"',
+				}).some((error) => error.startsWith("client reaches server")),
+			);
+		}
+		assert.ok(
+			moduleGraphErrors({
+				"src/a.ts": 'import "./folder"',
+				[`src/folder/index.${extension}`]: 'import "../a.ts"',
+			}).some((error) => error.startsWith("import cycle")),
 		);
 	}
 });
@@ -23,6 +66,7 @@ test("boundaries resolve traversal and inspect dynamic and type-only imports", (
 		'type X=import("../adapters/api").X',
 		'const x=require("react")',
 		"const x=import(destination)",
+		'import x = require("react")',
 	])
 		assert.notEqual(boundaryErrors(domain, source).length, 0, source);
 	assert.deepEqual(
@@ -35,6 +79,55 @@ test("boundaries resolve traversal and inspect dynamic and type-only imports", (
 			'import x from "./../presentation/chat"',
 		).length,
 		0,
+	);
+});
+
+test("architecture detects relative/dynamic cycles and indirect client-to-server leaks", () => {
+	for (const source of [
+		'export * from "./b"',
+		'const b = import("./b.ts")',
+		'type B = import("./b.ts").B',
+	])
+		assert.ok(
+			moduleGraphErrors({
+				"src/a.ts": source,
+				"src/b.ts": 'import "./a.ts"',
+			}).some((error) => error.startsWith("import cycle")),
+		);
+	assert.ok(
+		moduleGraphErrors({
+			"src/view.tsx": '"use client"; import "./helper"',
+			"src/helper.ts": 'export * from "./private"',
+			"src/private.ts": 'import "server-only";',
+		}).some((error) => error.startsWith("client reaches server")),
+	);
+	assert.deepEqual(
+		moduleGraphErrors({
+			"src/view.tsx": '"use client"; import "./action"',
+			"src/action.ts": '"use server"; import "./private"',
+			"src/private.ts": 'import "server-only";',
+		}),
+		[],
+	);
+});
+
+test("all feature cores reject platform I/O and adapters cannot render presentation", () => {
+	for (const feature of ["auth", "operations"])
+		for (const source of [
+			'fetch("/api")',
+			"process.env.SECRET",
+			'globalThis.fetch("/api")',
+			'import "../store.ts"',
+		])
+			assert.ok(
+				boundaryErrors(`src/features/${feature}/application/example.ts`, source)
+					.length > 0,
+			);
+	assert.ok(
+		boundaryErrors(
+			"src/features/operations/adapters/example.ts",
+			'import "../presentation/dashboard"',
+		).includes("adapter outer dependency"),
 	);
 });
 
@@ -63,4 +156,35 @@ test("client boundaries reject authentication infrastructure imports", () => {
 			module,
 		);
 	}
+});
+
+test("client directives remain effective after comments and inside transitive import-equals graphs", () => {
+	assert.ok(
+		boundaryErrors(
+			"src/components/example.tsx",
+			'// Header\n"use client"; import "node:fs"',
+		).length > 0,
+	);
+	assert.ok(
+		moduleGraphErrors({
+			"src/view.tsx": '// Header\n"use client"; import "./helper"',
+			"src/helper.ts": 'import database = require("./private")',
+			"src/private.ts": 'import { Pool } from "pg"',
+		}).some((error) => error.startsWith("client reaches server")),
+	);
+});
+
+test("client graph resolves emitted JavaScript specifiers and rejects computed loaders", () => {
+	assert.ok(
+		moduleGraphErrors({
+			"src/view.tsx": '"use client"; import "./helper.js"',
+			"src/helper.ts": 'import "server-only"',
+		}).some((error) => error.startsWith("client reaches server")),
+	);
+	assert.ok(
+		moduleGraphErrors({
+			"src/view.tsx": '"use client"; import "./helper"',
+			"src/helper.ts": "const module = import(destination)",
+		}).some((error) => error.startsWith("client computed dependency")),
+	);
 });

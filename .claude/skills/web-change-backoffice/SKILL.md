@@ -42,3 +42,9 @@ nullable latency, reservation/settlement separation and zero-budget semantics. N
 trace filters operate on validated IDs/outcomes only; relative phase bars are not a
 waterfall. Optional Grafana links require the owned URL validator and runtime configuration,
 not arbitrary payload destinations. Test compact/landscape layouts and 200% text.
+
+Access policy and mutation ports live in `auth/domain` and `auth/application`.
+Server Actions decode/authorize and format outcomes; PostgreSQL rechecks the owner
+inside each transaction. Test both fake-port use cases and isolated database behavior.
+`npm test` includes cycle and transitive client/server guards; new import/composition
+patterns need negative probes, not broader exceptions. See [architecture](../../../docs/architecture.md).

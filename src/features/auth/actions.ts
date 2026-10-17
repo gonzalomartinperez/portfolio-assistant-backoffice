@@ -1,7 +1,10 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { authLocale } from "./copy.ts";
-import { validEmail } from "./config.ts";
+import {
+	inviteViewer,
+	revokeViewerAccess,
+} from "./application/manage-access.ts";
 import { requireOwner, getAuthRuntime } from "./server.ts";
 export interface InviteResult {
 	link: string | null;
@@ -12,37 +15,30 @@ export async function inviteUser(
 	data: FormData,
 ): Promise<InviteResult> {
 	const actor = await requireOwner();
-	const email = data.get("email");
-	if (typeof email !== "string" || !validEmail(email.trim()))
-		return { link: null, error: "invalid-email" };
-	try {
-		const token = await getAuthRuntime().store.invite(
-			actor.user.id,
-			email.trim(),
-		);
-		const origin = getAuthRuntime().options.baseURL;
-		revalidatePath("/access");
-		return {
-			link: `${origin}/access/invitation?token=${token}&locale=${authLocale(data.get("locale"))}`,
-			error: null,
-		};
-	} catch {
+	const runtime = getAuthRuntime();
+	const result = await inviteViewer(actor, data.get("email"), runtime.store);
+	if (result.status === "rejected") {
 		return {
 			link: null,
-			error: "unavailable",
+			error:
+				result.reason === "invalid-email" ? "invalid-email" : "unavailable",
 		};
 	}
+	revalidatePath("/access");
+	return {
+		link: `${runtime.options.baseURL}/access/invitation?token=${result.token}&locale=${authLocale(data.get("locale"))}`,
+		error: null,
+	};
 }
 export async function revokeAccess(data: FormData): Promise<void> {
 	const actor = await requireOwner();
-	const id = data.get("id");
-	const kind = data.get("kind");
-	if (
-		typeof id !== "string" ||
-		id.length > 128 ||
-		(kind !== "member" && kind !== "invitation")
-	)
-		throw new Error("Invalid access request");
-	await getAuthRuntime().store.revoke(actor.user.id, id, kind);
+	const result = await revokeViewerAccess(
+		actor,
+		data.get("id"),
+		data.get("kind"),
+		getAuthRuntime().store,
+	);
+	if (result.status === "rejected")
+		throw new Error("Access request could not be completed");
 	revalidatePath("/access");
 }
