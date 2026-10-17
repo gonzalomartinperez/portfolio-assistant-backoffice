@@ -66,6 +66,9 @@ export function Dashboard({
 					</div>
 				</div>
 				<nav aria-label={t.account}>
+					<ButtonLink href={`/analytics?locale=${locale}`}>
+						{locale === "es" ? "Interacciones" : "Interactions"}
+					</ButtonLink>
 					{role === "owner" && (
 						<ButtonLink href={`/access?locale=${locale}`}>
 							{t.access}

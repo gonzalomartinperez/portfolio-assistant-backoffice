@@ -288,3 +288,13 @@ Shared runtime/version acceptance: [runtime baseline](docs/runtime-baseline.md).
 
 Cross-session ownership, verified toolchain baselines and Google/Microsoft adaptations
 are recorded in [engineering coordination](docs/engineering-coordination.md).
+
+## Optional product-interaction view
+
+The authenticated `/analytics` surface provides keyboard-selectable daily portfolio
+counts and semantic table alternatives in EN/ES. `PRODUCT_ANALYTICS_ENABLED=false`
+by default means it requests no product data. Public collection remains separately
+disabled. See [contract, local fixture and meaning](docs/product-analytics.md) and
+[privacy review and unresolved production requirements](docs/privacy-review.md).
+The public bilingual `/privacy` notice describes actual essential account storage;
+it does not claim compliance certification or erase backup/retention limitations.

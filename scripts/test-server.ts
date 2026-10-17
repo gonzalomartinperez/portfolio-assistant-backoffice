@@ -30,6 +30,7 @@ const env = {
 	OPERATIONS_API_ORIGIN: "http://127.0.0.1:8117",
 	OPERATIONS_READ_TOKEN: operationsFixtureToken,
 	OPERATIONS_SOURCE_MODE: "fixture",
+	PRODUCT_ANALYTICS_ENABLED: "true",
 };
 const database = new URL(env.BACKOFFICE_DATABASE_URL);
 if (

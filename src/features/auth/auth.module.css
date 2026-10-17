@@ -4,6 +4,7 @@
 	padding-bottom: env(safe-area-inset-bottom);
 }
 .card {
+	overflow-wrap: anywhere;
 	max-width: 38rem;
 	padding: clamp(1.25rem, 4vw, 2rem);
 	border: 1px solid var(--line-strong);

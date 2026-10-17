@@ -363,3 +363,132 @@ test("workbench stays usable at compact, landscape and resized text widths", asy
 		page.getByRole("button", { name: "Actualizar datos", exact: true }),
 	).toBeVisible();
 });
+
+test("private product analytics requires live access", async ({ page }) => {
+	await page.goto("/analytics");
+	await expect(page).toHaveURL(/\/sign-in/);
+	await expect(
+		page.getByRole("heading", { name: "Portfolio interactions" }),
+	).toHaveCount(0);
+});
+
+test("product counts have honest labels, keyboard filtering and table alternatives", async ({
+	page,
+	context,
+}) => {
+	test.skip(!available, "Available fixture only");
+	await authenticate(context, "viewer");
+	await page.goto("/analytics?locale=en");
+	await expect(
+		page.getByRole("heading", { name: "Portfolio interactions" }),
+	).toBeVisible();
+	await expect(
+		page.getByText("Synthetic fixture data · not production analytics"),
+	).toBeVisible();
+	await expect(page.getByRole("table", { name: /Daily counts/ })).toBeVisible();
+	await page.getByLabel("Interaction", { exact: true }).focus();
+	await page.keyboard.press("ArrowDown");
+	await page.keyboard.press("Enter");
+	await expect(page.getByLabel("Interaction", { exact: true })).toHaveValue(
+		"navigation_click",
+	);
+	await expect(page.getByRole("status")).toHaveText(
+		"No accepted events in this window.",
+	);
+	await page
+		.getByLabel("Interaction", { exact: true })
+		.selectOption("cv_link_open");
+	await expect(
+		page.getByRole("table").getByRole("cell", { name: "7", exact: true }),
+	).toBeVisible();
+	await page
+		.getByLabel("Interaction", { exact: true })
+		.selectOption("company_link_open");
+	await expect(page.getByRole("status")).toHaveText(
+		"No accepted events in this window.",
+	);
+	await page
+		.getByLabel("Interaction", { exact: true })
+		.selectOption("page_view");
+	const findings = await new AxeBuilder({ page }).analyze();
+	expect(findings.violations).toEqual([]);
+	await page.screenshot({
+		path: `test-results/product-${test.info().project.name}-desktop-en.png`,
+		fullPage: true,
+	});
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.emulateMedia({ reducedMotion: "reduce" });
+	await page.goto("/analytics?locale=es");
+	await expect(
+		page.getByRole("heading", { name: "Interacciones del portfolio" }),
+	).toBeVisible();
+	await page.getByText("Preferencias", { exact: true }).click();
+	expect(
+		await page.evaluate(
+			() => document.documentElement.scrollWidth <= window.innerWidth,
+		),
+	).toBe(true);
+	await page.getByLabel("Tema", { exact: true }).selectOption("light");
+	await page.keyboard.press("Escape");
+	await expect(page.getByText("Preferencias", { exact: true })).toBeFocused();
+	await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+	expect(
+		await page.evaluate(
+			() => document.documentElement.scrollWidth <= window.innerWidth,
+		),
+	).toBe(true);
+	expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+	await page.screenshot({
+		path: `test-results/product-${test.info().project.name}-mobile-es.png`,
+		fullPage: true,
+	});
+});
+
+test("privacy notice is bilingual, accessible and public without starting OAuth", async ({
+	page,
+}) => {
+	for (const locale of ["en", "es"]) {
+		await page.goto(`/privacy?locale=${locale}`);
+		await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+			locale === "en" ? "Privacy and data" : "Privacidad y datos",
+		);
+		await expect(
+			page.getByRole("link", {
+				name:
+					locale === "en"
+						? "Contact the maintainer"
+						: "Contactar al responsable",
+			}),
+		).toHaveAttribute(
+			"href",
+			`https://gonzalomartinperez.com/${locale === "es" ? "es/" : ""}contact`,
+		);
+		expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+	}
+});
+
+test("product and privacy content reflow with doubled text on a narrow viewport", async ({
+	page,
+	context,
+}) => {
+	test.skip(!available, "Available fixture only");
+	await authenticate(context, "viewer");
+	await page.setViewportSize({ width: 390, height: 844 });
+	for (const route of ["analytics", "privacy"]) {
+		await page.goto(`/${route}?locale=es`);
+		await page.evaluate(() => {
+			document.documentElement.style.fontSize = "200%";
+		});
+		expect(
+			await page.evaluate(
+				() => document.documentElement.scrollWidth <= window.innerWidth,
+			),
+		).toBe(true);
+		await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+		expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+		await page.screenshot({
+			path: `test-results/product-${test.info().project.name}-${route}-text-200.png`,
+			fullPage: true,
+		});
+	}
+});

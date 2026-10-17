@@ -21,6 +21,11 @@ export default async function SignInPage({
 	return (
 		<main id="main" lang={locale} className={styles.main}>
 			<SignIn locale={locale} unavailable={!available} />
+			<p>
+				<a href={`/privacy?locale=${locale}`}>
+					{locale === "es" ? "Privacidad y datos" : "Privacy and data"}
+				</a>
+			</p>
 			{!available ? (
 				<p className={styles.notice} role="status">
 					{copy.unavailable}
