@@ -37,3 +37,33 @@ for (const file of ["operations.schema.json", "operations.example.json"]) {
 console.log(
 	`Private operations contract matches API ${text(operations.api_commit)}`,
 );
+
+const product = record(
+	JSON.parse(readFileSync("contracts/product-analytics.source.json", "utf8")),
+);
+const productHash = createHash("sha256")
+	.update(readFileSync("contracts/product-analytics.schema.json"))
+	.digest("hex");
+if (productHash !== text(product.schema_sha256))
+	throw new Error("Product schema differs from pinned API");
+const copied = record(
+	JSON.parse(readFileSync("contracts/product-analytics.schema.json", "utf8")),
+);
+const { $defs, ...root } = copied;
+const expectedWrapper = JSON.parse(
+	JSON.stringify({
+		openapi: "3.1.0",
+		info: { title: "Private product analytics", version: "1" },
+		paths: {},
+		components: { schemas: { ...record($defs), ProductSnapshot: root } },
+	}).replaceAll("#/$defs/", "#/components/schemas/"),
+);
+if (
+	JSON.stringify(
+		JSON.parse(
+			readFileSync("contracts/product-analytics.openapi.json", "utf8"),
+		),
+	) !== JSON.stringify(expectedWrapper)
+)
+	throw new Error("Product OpenAPI wrapper drift");
+console.log(`Product contract matches API ${text(product.api_commit)}`);

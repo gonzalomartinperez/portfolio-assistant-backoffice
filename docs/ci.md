@@ -64,3 +64,11 @@ unmerged-branch detection with synthetic markers. Known-pattern coverage cannot 
 that every secret, personal datum, binary format or unreachable object is absent. Fetch
 relevant remote refs before a local audit; do not rewrite history or rotate credentials
 without the maintainer's explicit authorization.
+
+Product analytics uses the existing static/type/contract job and authenticated
+production-image browser job; no duplicate server lifecycle or analytics service.
+Synthetic fixtures enable only the private read flag. The generated product types
+join the drift gate. A SHA-pinned official upload-artifact v7.0.2 step retains PNG
+screenshots for seven days on success or failure; session fixtures, traces and
+request logs are deliberately excluded because they can contain signed cookies.
+Public/production analytics defaults remain off.

@@ -1,0 +1,5 @@
+{
+  "api_commit": "59a5ccec1b38bb1a3679497deffd02749c0e8d49",
+  "endpoint": "/internal/ops/v1/product-analytics",
+  "schema_sha256": "6faf401fdcb6754b355dd94e1e9ce002314d67d5b46647f5b379e98cf07c3ca7"
+}

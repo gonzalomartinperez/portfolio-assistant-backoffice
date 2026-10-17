@@ -1,0 +1,32 @@
+.bars {
+	display: grid;
+	gap: 0.75rem;
+	margin-block: 1.5rem;
+}
+.row {
+	display: grid;
+	grid-template-columns: 7rem minmax(1rem, 1fr) auto;
+	gap: 0.75rem;
+	align-items: center;
+	font-variant-numeric: tabular-nums;
+}
+.track {
+	background: var(--surface-base);
+	height: 0.75rem;
+	border-radius: var(--radius-sm);
+	overflow: hidden;
+}
+.fill {
+	display: block;
+	height: 100%;
+	background: var(--accent);
+}
+@media (max-width: 28rem) {
+	.row {
+		grid-template-columns: 1fr auto;
+	}
+	.track {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+}

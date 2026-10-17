@@ -182,3 +182,12 @@ never accepts caller DATABASE_URL or a production volume. Tested fixture ceiling
 256MiB,32MiB shm,20connections; these are not measured VPS reservations or traffic guarantees.
 Coolify owns real resource/volume lifecycle; vps-ops coordinates isolated allocation and
 recovery. Production runtime roles must not use the fixture's superuser privileges.
+
+## Optional private product counts
+
+`PRODUCT_ANALYTICS_ENABLED=false` (runtime boolean) gates only the `/analytics`
+server-side read. Enable with exact `true` only for separately approved testing.
+The existing private API origin/token are reused; no new service, persistent path,
+IAM migration or public endpoint is added here. API migration 007 is separate.
+See [product analytics](product-analytics.md) and [privacy limits](privacy-review.md).
+Public collection and production rollout remain independently disabled.

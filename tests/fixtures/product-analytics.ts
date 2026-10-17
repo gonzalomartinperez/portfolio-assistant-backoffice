@@ -1,0 +1,40 @@
+export const productPayload = {
+	schema_version: 1,
+	project: "portfolio",
+	window_days: 7,
+	country: "unknown",
+	counts: [
+		{
+			day: "2026-10-16",
+			event_name: "page_view",
+			section: "home",
+			locale: "en",
+			target: "",
+			count: 18,
+		},
+		{
+			day: "2026-10-17",
+			event_name: "page_view",
+			section: "work",
+			locale: "es",
+			target: "",
+			count: 24,
+		},
+		{
+			day: "2026-10-17",
+			event_name: "cv_link_open",
+			section: "cv",
+			locale: "es",
+			target: "es",
+			count: 7,
+		},
+		{
+			day: "2026-10-17",
+			event_name: "contact_link_open",
+			section: "contact",
+			locale: "en",
+			target: "email",
+			count: 4,
+		},
+	],
+};
