@@ -423,8 +423,14 @@ test("product counts have honest labels, keyboard filtering and table alternativ
 		page.getByRole("heading", { name: "Interacciones del portfolio" }),
 	).toBeVisible();
 	await page.getByText("Preferencias", { exact: true }).click();
+	expect(
+		await page.evaluate(
+			() => document.documentElement.scrollWidth <= window.innerWidth,
+		),
+	).toBe(true);
 	await page.getByLabel("Tema", { exact: true }).selectOption("light");
 	await page.keyboard.press("Escape");
+	await expect(page.getByText("Preferencias", { exact: true })).toBeFocused();
 	await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 	expect(
 		await page.evaluate(
