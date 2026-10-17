@@ -7,7 +7,7 @@ are not authorized by a source merge. The portfolio remains on Hostinger Busines
 
 ## Artifact and startup
 
-Build `docker buildx build --load --platform linux/amd64 -t portfolio-assistant-backoffice:rc .`.
+Build `docker buildx build --load --platform linux/amd64 -t portfolio-backoffice:rc .`.
 The Dockerfile pins its Node 24.22.0 builder and distroless Node 24 Debian 13 nonroot
 runtime by digest (both report Node 24.22.0). Local builds require Docker Buildx/BuildKit. CI installs a SHA-pinned Buildx action.
 It uses `npm ci`, Next standalone output,
@@ -15,7 +15,7 @@ It uses `npm ci`, Next standalone output,
 verification target; arm64 is unverified. Build needs dependency and build-time font
 network access. Authentication and operational secrets are runtime-only, never build args.
 
-Intended image name: `ghcr.io/gonzalomartinperez/portfolio-assistant-backoffice`.
+Intended image name: `ghcr.io/gonzalomartinperez/portfolio-backoffice`.
 Visibility/access require separate approval; public source does not determine package
 visibility. vps-ops must select a verified immutable digest, not rebuild source on the VPS.
 Its agent verifies the exact supported Coolify prebuilt-image workflow.
@@ -191,3 +191,12 @@ The existing private API origin/token are reused; no new service, persistent pat
 IAM migration or public endpoint is added here. API migration 007 is separate.
 See [product analytics](product-analytics.md) and [privacy limits](privacy-review.md).
 Public collection and production rollout remain independently disabled.
+
+## Canonical project identity
+
+Repository `gonzalomartinperez/portfolio-backoffice` retains GitHub ID1389594043.
+See [ADR006](adrs/006-project-backoffice.md). Health `application` still reports
+`portfolio-assistant-backoffice` for compatibility. Cookie/authentication names,
+IAM tables, persistent data, environment variables, ports and planned hostnames are
+unchanged. A repository rename does not migrate infrastructure or authorize a new
+registry package; visibility/access/digests must still be approved independently.

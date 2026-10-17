@@ -82,3 +82,11 @@ See [engineering coordination](engineering-coordination.md) for standards and ow
 
 Owned source still prefers `.ts`/`.tsx` per CONTRIBUTING; the guard and primary checker
 cover `.mts`/`.cts` defensively so an alternate TypeScript module suffix cannot evade CI.
+
+## Project-wide composition
+
+[ADR006](adrs/006-project-backoffice.md) establishes the canonical project name and
+website/assistant separation. `analytics` owns its domain, read port, validated
+adapter and presentation; `operations` remains assistant execution/availability.
+The server route composes both after live authorization and runs their reads in
+parallel. No browser/service-token or domain/generated-schema boundary is relaxed.

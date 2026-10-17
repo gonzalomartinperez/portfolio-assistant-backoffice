@@ -1,6 +1,6 @@
 export type AuthLocale = "en" | "es";
 const english = {
-	title: "Assistant backoffice",
+	title: "Portfolio backoffice",
 	intro: "Private operational access. Sign in with your invited account.",
 	google: "Continue with Google",
 	github: "Continue with GitHub",
@@ -52,7 +52,7 @@ const english = {
 };
 type AuthCopy = { [Key in keyof typeof english]: string };
 const spanish: AuthCopy = {
-	title: "Panel de administración del asistente",
+	title: "Administración del portfolio",
 	intro: "Acceso privado a la operación. Inicia sesión con tu cuenta invitada.",
 	google: "Continuar con Google",
 	github: "Continuar con GitHub",

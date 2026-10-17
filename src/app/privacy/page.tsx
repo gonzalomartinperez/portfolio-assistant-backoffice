@@ -1,14 +1,14 @@
 import { ButtonLink } from "../../components/ui/button-link";
 import styles from "../../features/auth/auth.module.css";
 export const metadata = {
-	title: "Privacy / Privacidad — Assistant backoffice",
+	title: "Privacy / Privacidad — Portfolio backoffice",
 	robots: { index: false, follow: false },
 };
 const en = {
 	title: "Privacy and data",
 	back: "Back to sign in",
 	intro:
-		"This is Gonzalo Martín Pérez’s private assistant-operations backoffice. Access is limited to the owner and invited viewers; this is not the public chat.",
+		"This is Gonzalo Martín Pérez’s private portfolio-operations backoffice. Access is limited to the owner and invited viewers; this is not the public chat.",
 	accessTitle: "Account and essential storage",
 	access:
 		"Google or GitHub authenticates your account. The application stores verified email, name, provider/account identifiers, membership and invitation/access audit records in its authentication database. OAuth tokens are encrypted at rest by the application. Better Auth session records may contain network address and browser information for authentication; these are separate from product analytics.",
@@ -27,7 +27,7 @@ const es: typeof en = {
 	title: "Privacidad y datos",
 	back: "Volver al inicio de sesión",
 	intro:
-		"Este es el backoffice privado de operaciones del asistente de Gonzalo Martín Pérez. El acceso está limitado al propietario y a las personas invitadas; no es el chat público.",
+		"Este es el backoffice privado de operaciones del portfolio de Gonzalo Martín Pérez. El acceso está limitado al propietario y a las personas invitadas; no es el chat público.",
 	accessTitle: "Cuenta y almacenamiento esencial",
 	access:
 		"Google o GitHub autentica tu cuenta. La aplicación guarda correo verificado, nombre, identificadores de cuenta y proveedor, permisos e historial de invitaciones y acceso en su base de autenticación. La aplicación cifra los tokens OAuth almacenados. Los registros de sesión de Better Auth pueden incluir dirección de red e información del navegador para la autenticación; son independientes de las métricas de producto.",
