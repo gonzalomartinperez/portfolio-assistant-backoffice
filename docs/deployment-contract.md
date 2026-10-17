@@ -8,8 +8,8 @@ are not authorized by a source merge. The portfolio remains on Hostinger Busines
 ## Artifact and startup
 
 Build `docker buildx build --load --platform linux/amd64 -t portfolio-assistant-backoffice:rc .`.
-The Dockerfile pins its Node 24.21.0 builder and distroless Node 24 Debian 13 nonroot
-runtime by digest (both report Node 24.21.0). Local builds require Docker Buildx/BuildKit. CI installs a SHA-pinned Buildx action.
+The Dockerfile pins its Node 24.22.0 builder and distroless Node 24 Debian 13 nonroot
+runtime by digest (both report Node 24.22.0). Local builds require Docker Buildx/BuildKit. CI installs a SHA-pinned Buildx action.
 It uses `npm ci`, Next standalone output,
 `.next/static`, public assets and a non-root runtime (UID/GID 65532). Linux amd64 is the
 verification target; arm64 is unverified. Build needs dependency and build-time font

@@ -1,4 +1,4 @@
-# Runtime baseline acceptance — 2026-10-13
+# Runtime baseline acceptance — 2026-10-17
 
 The owner authorized execution of the shared deployment-readiness plan. This repository owns
 its code, tests, image and runtime contract. The private vps-ops inventory owns the shared
@@ -6,18 +6,18 @@ baseline/routing/release policy; Coolify remains the sole deployment executor.
 
 | Applicable component | Exact committed lock version |
 | --- | --- |
-| `next` | `16.4.0` |
+| `next` | `16.4.2` |
 | `react` | `19.3.0` |
 | `react-dom` | `19.3.0` |
 | `better-auth` | `1.7.7` |
 | `pg` | `8.23.1` |
 | `typescript` | `7.0.2` |
 | `@biomejs/biome` | `2.5.15` |
-| `@playwright/test` | `1.64.0` |
+| `@playwright/test` | `1.64.1` |
 
 The lockfile is authoritative for the complete dependency graph. This dated view does not
 assert that these versions remain the newest forever or that an image has been published.
-Node24.21.0 is LTS; Next16.x is Active LTS. React, TypeScript, authentication libraries and test tools do not acquire LTS status from that choice. Node26 Current/types are excluded. Both backoffices use Trixie builders and the same digest-pinned nonroot Node24 distroless runtime.
+Node24.22.0 is LTS; Next16.x is Active LTS. React, TypeScript, authentication libraries and test tools do not acquire LTS status from that choice. Node26 Current/types are excluded. This backoffice uses a Trixie builder and a digest-pinned nonroot Node24 distroless runtime. Other applications retain independently tested pins.
 
 ## Image and operations boundaries
 
@@ -42,3 +42,15 @@ See [deployment contract](deployment-contract.md) for ports, health, secrets, da
 The shared baseline does not promise zero downtime, production capacity or an advisory-free
 image. Current unfixed OS findings remain visible; no package is removed or scanner weakened
 merely to change a vulnerability count.
+
+## October 17 patch review
+
+Selected [Node24.22.0 LTS](https://nodejs.org/en/blog/release/v24.22.0),
+[Next16.4.2](https://github.com/vercel/next.js/releases/tag/v16.4.2) and
+[Playwright1.64.1](https://github.com/microsoft/playwright/releases/tag/v1.64.1).
+Official npm metadata confirms Node/React peer compatibility. Next and all platform SWC
+packages advance together; Playwright/test/core advance together. No nightly, forced peer
+resolution or compiler downgrade is used. The Dockerfile pins reviewed registry OCI index
+digests; isolated probes of both exact images report Node24.22.0. Private registry publication
+and deployment are still unauthorized. See
+[verification](verification/toolchain-security-2026-10-17.md) for executed checks and limits.
