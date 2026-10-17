@@ -36,7 +36,7 @@ jobs:
         run: npm audit --audit-level=moderate && npm audit --prefix tooling/api-contract --audit-level=moderate
       - name: Check formatting, lint and strict types
         run: npm run format:check && npm run lint && npm run typecheck
-      - name: Test authorization, operations, contracts and architecture
+      - name: Enforce architecture and test authorization, operations and contracts
         run: npm test
       - name: Scan public files and documentation links
         run: npm run security:check && npm run docs:check && npm run skills:check

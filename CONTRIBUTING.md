@@ -102,3 +102,14 @@ native 7.0.2 checker, including generated Next route types. Do not invoke bare `
 compatibility package can own npm's `.bin/tsc` link. `npm run toolchain:check` detects
 accidental fallback. Keep strictness and full application coverage. See
 [ADR 003](docs/adrs/003-typescript7-compatibility.md) for compiler API and generator details.
+
+## Microsoft engineering references and architectural review
+
+The [engineering coordination handoff](docs/engineering-coordination.md) records the
+Google/Microsoft primary references and cross-session ownership. Apply inward dependency
+rules, capability-based ports and behavior-focused review; do not copy .NET project/class
+patterns into React or replace Biome/Next conventions. `npm test` includes the architecture
+guard and negative fixtures in the required static CI job. For focused feedback use
+`node --test tests/unit/boundaries.test.ts tests/unit/manage-access.test.ts`.
+New aliases, exceptions or client/server composition patterns require meaningful guard
+coverage and a documented compatibility reason. Do not relax a rule to silence a failure.

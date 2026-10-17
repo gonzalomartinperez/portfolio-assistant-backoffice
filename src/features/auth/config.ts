@@ -1,3 +1,5 @@
+import { validEmail } from "./domain/access.ts";
+
 export interface AuthConfiguration {
 	origin: string;
 	databaseUrl: string;
@@ -62,10 +64,6 @@ export function readAuthConfiguration(
 			clientSecret: required("GITHUB_CLIENT_SECRET"),
 		},
 	};
-}
-
-export function validEmail(value: string): boolean {
-	return value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
 export function invitationToken(headers: Headers | undefined): string | null {
