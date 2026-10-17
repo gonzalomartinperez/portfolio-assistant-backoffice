@@ -32,7 +32,7 @@ export function ProductOverview({
 	const format = new Intl.NumberFormat(locale === "es" ? "es-AR" : "en-US");
 	return (
 		<section
-			className="operation-card"
+			className={`operation-card ${styles.overview}`}
 			aria-labelledby="website-overview-title"
 		>
 			<h2 id="website-overview-title">{t.title}</h2>

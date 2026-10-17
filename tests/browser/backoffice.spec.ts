@@ -71,6 +71,24 @@ test("owner receives validated fixture metrics and restricted access navigation"
 	await expect(
 		page.getByRole("link", { name: "Explore website data" }),
 	).toHaveAttribute("href", "/analytics?locale=en");
+	const product = page.getByRole("region", { name: "Website interactions" });
+	const summary = product.locator("dl");
+	await expect(summary).toHaveCSS("display", "flex");
+	const cells = summary.locator(":scope > div");
+	expect(await cells.count()).toBe(3);
+	const bounds = await cells.evaluateAll((elements) =>
+		elements.map((element) => {
+			const label = element.querySelector("dt")?.getBoundingClientRect();
+			const count = element.querySelector("dd")?.getBoundingClientRect();
+			return Boolean(
+				label &&
+					count &&
+					Math.abs(label.left - count.left) < 1 &&
+					count.top >= label.bottom,
+			);
+		}),
+	);
+	expect(bounds.every(Boolean)).toBe(true);
 	const feedback = page.getByRole("region", { name: "Answer feedback" });
 	await expect(feedback).toBeVisible();
 	await expect(feedback.getByText("14", { exact: true })).toBeVisible();
