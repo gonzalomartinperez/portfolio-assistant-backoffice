@@ -6,7 +6,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
 import { waitForPostgres } from "./postgres-readiness.ts";
 
-const appImage = process.argv[2] ?? "portfolio-assistant-backoffice:rc";
+const appImage = process.argv[2] ?? "portfolio-backoffice:rc";
 const databaseImage = process.argv[3] ?? "portfolio-backoffice-postgres:rc";
 for (const value of [appImage, databaseImage])
 	assert.match(value, /^[a-z0-9][a-z0-9/_.-]*:[a-z0-9_.-]+$/);

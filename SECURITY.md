@@ -3,7 +3,7 @@
 Report vulnerabilities privately to [gonzalomartinperez2002@gmail.com](mailto:gonzalomartinperez2002@gmail.com),
 the owner's public contact address verified in the portfolio's `src/content/site-config.ts`
 at `45d8a42faa78bfb94952639ed462832c3b4ad109`. Use the subject
-“portfolio-assistant-backoffice security report”. GitHub private vulnerability reporting was
+“portfolio-backoffice security report”. GitHub private vulnerability reporting was
 not enabled when this policy was written; this policy does not imply that it is available.
 
 Include affected commit/browser, impact and minimal reproduction using fixture data.
@@ -21,7 +21,9 @@ and APIs verify live owner/invited-viewer membership; mutations recheck owner me
 transactionally. Private operations credentials remain server-only, requests use
 `cache: "no-store"`, and runtime validation rejects sensitive or unexpected payload fields.
 No prompts, answers, provider keys, private documents or raw service errors belong in the
-dashboard. No analytics or session replay is included. Live OAuth, HTTPS, session-cookie,
+dashboard. No advertising or session replay is included. The separate product-interaction
+view and collection contract are implemented but disabled by default; they do not
+export visitor identities or conversation text. Live OAuth, HTTPS, session-cookie,
 CSRF/origin and private-proxy settings need independent production verification.
 
 CI runs redacted high-confidence current-file/reachable-history scans and dependency-boundary tests. Review

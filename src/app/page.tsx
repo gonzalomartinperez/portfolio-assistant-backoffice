@@ -1,3 +1,5 @@
+import { loadProductAnalytics } from "../features/analytics/entry";
+import { ProductOverview } from "../features/analytics/presentation/overview";
 import { getAuthLocale, requireAccess } from "../features/auth/server";
 import {
 	loadOperations,
@@ -12,17 +14,22 @@ export default async function Page({
 }) {
 	const access = await requireAccess();
 	const params = await searchParams;
+	const locale =
+		params.locale === "es"
+			? "es"
+			: params.locale === "en"
+				? "en"
+				: await getAuthLocale();
+	const [operations, product] = await Promise.all([
+		loadOperations(),
+		loadProductAnalytics(),
+	]);
 	return (
 		<Dashboard
-			result={await loadOperations()}
+			result={operations}
+			projectOverview={<ProductOverview result={product} locale={locale} />}
 			role={access.role}
-			locale={
-				params.locale === "es"
-					? "es"
-					: params.locale === "en"
-						? "en"
-						: await getAuthLocale()
-			}
+			locale={locale}
 			fixture={process.env.OPERATIONS_SOURCE_MODE === "fixture"}
 			grafanaUrl={loadGrafanaDestination()}
 		/>

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { OperationalRead } from "../domain/models";
 import { summarizeOperations } from "../domain/insights";
 import { operationsCopy, type OperationsLocale } from "./copy";
@@ -23,12 +24,14 @@ export function Dashboard({
 	locale,
 	fixture,
 	grafanaUrl,
+	projectOverview,
 }: {
 	result: OperationalRead;
 	role: "owner" | "viewer";
 	locale: OperationsLocale;
 	fixture: boolean;
 	grafanaUrl: string | null;
+	projectOverview: ReactNode;
 }) {
 	const t = operationsCopy[locale];
 	const snapshot = result.kind === "available" ? result.snapshot : null;
@@ -98,6 +101,7 @@ export function Dashboard({
 					{t.fixture}
 				</p>
 			)}
+			{projectOverview}
 			{!snapshot && (
 				<section className="operational-notice">
 					<h2>

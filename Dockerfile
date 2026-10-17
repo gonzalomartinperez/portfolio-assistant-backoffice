@@ -13,7 +13,7 @@ COPY migrations ./migrations
 RUN npm run build && mkdir -p .next/standalone/.next/cache
 
 FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:59c479c9b8c123e66047315c968aa2d35e31ae5149c856e4110a79c8b3563f0b AS runtime
-LABEL org.opencontainers.image.source="https://github.com/gonzalomartinperez/portfolio-assistant-backoffice"
+LABEL org.opencontainers.image.source="https://github.com/gonzalomartinperez/portfolio-backoffice"
 LABEL org.opencontainers.image.licenses="MIT"
 WORKDIR /app
 COPY LICENSE ./LICENSE

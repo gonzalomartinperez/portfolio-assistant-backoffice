@@ -58,13 +58,19 @@ test("owner receives validated fixture metrics and restricted access navigation"
 	await authenticate(context, "owner");
 	await page.goto("/");
 	await expect(
-		page.getByRole("heading", { name: "Assistant operations" }),
+		page.getByRole("heading", { name: "Portfolio operations" }),
 	).toBeVisible();
 	await expect(
 		page.getByText("Synthetic fixture data · not production telemetry"),
 	).toBeVisible();
 	await expect(page.getByText("fixture-1", { exact: true })).toBeVisible();
 	await expect(page.getByRole("link", { name: "Manage access" })).toBeVisible();
+	await expect(
+		page.getByRole("region", { name: "Website interactions" }),
+	).toBeVisible();
+	await expect(
+		page.getByRole("link", { name: "Explore website data" }),
+	).toHaveAttribute("href", "/analytics?locale=en");
 	const data = await page.request.get("/api/operations");
 	expect(data.ok()).toBe(true);
 	expect(data.headers()["cache-control"]).toContain("no-store");
@@ -102,7 +108,7 @@ test("viewer can read operations but cannot enter owner access management", asyn
 	await authenticate(context, "viewer");
 	await page.goto("/");
 	await expect(
-		page.getByRole("heading", { name: "Assistant operations" }),
+		page.getByRole("heading", { name: "Portfolio operations" }),
 	).toBeVisible();
 	await expect(page.getByRole("link", { name: "Manage access" })).toHaveCount(
 		0,
@@ -132,7 +138,7 @@ test("preferences synchronize language and the single theme authority", async ({
 		.getByRole("combobox", { name: "Language", exact: true })
 		.selectOption("es");
 	await expect(
-		page.getByRole("heading", { name: "Operaciones del asistente" }),
+		page.getByRole("heading", { name: "Operaciones del portfolio" }),
 	).toBeVisible();
 	await expect(page.locator("html")).toHaveAttribute("lang", "es");
 	await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
@@ -153,8 +159,8 @@ for (const locale of ["en", "es"] as const) {
 				page.getByRole("heading", {
 					name:
 						locale === "es"
-							? "Operaciones del asistente"
-							: "Assistant operations",
+							? "Operaciones del portfolio"
+							: "Portfolio operations",
 					exact: true,
 				}),
 			).toBeVisible();

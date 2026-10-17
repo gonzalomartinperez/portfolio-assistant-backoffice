@@ -10,7 +10,7 @@ const operations = {
 	api_commit: "e".repeat(40),
 	operations_schema_json_sha256: "f".repeat(64),
 };
-const image = `ghcr.io/owner/portfolio-assistant-backoffice@sha256:${"d".repeat(64)}`;
+const image = `ghcr.io/owner/portfolio-backoffice@sha256:${"d".repeat(64)}`;
 
 test("records immutable image and both contract pins without claiming deployed compatibility", () => {
 	const release = releaseCompatibility(commit, image, source, operations);

@@ -1,5 +1,5 @@
 const en = {
-	overview: "Overview",
+	overview: "Assistant health",
 	account: "Account",
 	completionShare: "Completion share",
 	unclassified: "Not classified",
@@ -31,8 +31,8 @@ const en = {
 	metricView: "Metric",
 	tokens: "Tokens",
 	snapshotOnly: "Current snapshot totals; this is not a historical trend.",
-	title: "Assistant operations",
-	description: "Availability, public knowledge and execution health.",
+	title: "Portfolio operations",
+	description: "Website interactions, assistant health and private access.",
 	status: "Service",
 	knowledge: "Knowledge",
 	usage: "Estimated usage",
@@ -88,7 +88,7 @@ const en = {
 	finalization: "Finalization",
 };
 const es: { [Key in keyof typeof en]: string } = {
-	overview: "Resumen",
+	overview: "Estado del asistente",
 	account: "Cuenta",
 	completionShare: "Proporción completada",
 	unclassified: "Sin clasificar",
@@ -122,9 +122,9 @@ const es: { [Key in keyof typeof en]: string } = {
 	tokens: "Tokens",
 	snapshotOnly:
 		"Totales de la consulta actual; no representan una tendencia histórica.",
-	title: "Operaciones del asistente",
+	title: "Operaciones del portfolio",
 	description:
-		"Disponibilidad, conocimiento público y estado de las ejecuciones.",
+		"Interacciones del sitio, estado del asistente y acceso privado.",
 	status: "Servicio",
 	knowledge: "Conocimiento",
 	usage: "Consumo estimado",

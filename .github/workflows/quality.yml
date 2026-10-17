@@ -93,7 +93,7 @@ jobs:
         with:
           context: .
           load: true
-          tags: portfolio-assistant-backoffice:rc
+          tags: portfolio-backoffice:rc
           cache-from: type=gha,scope=backoffice-node24-amd64
           cache-to: type=gha,mode=max,scope=backoffice-node24-amd64
       - name: Verify pinned image scanner
@@ -108,13 +108,13 @@ jobs:
         run: |
           /tmp/image-scanner/trivy --config '' image --image-src docker \
             --ignorefile '' --scanners vuln --format json --output /tmp/image-vulnerabilities.json \
-            portfolio-assistant-backoffice:rc
+            portfolio-backoffice:rc
           /tmp/image-scanner/trivy --config '' convert --ignorefile '' --scanners vuln \
             --exit-code 1 --severity HIGH,CRITICAL --table-mode detailed /tmp/image-vulnerabilities.json
       - name: Verify the project-owned PostgreSQL18.6 IAM artifact
         run: |
           docker build -f Dockerfile.postgres -t portfolio-backoffice-postgres:rc .
-          node scripts/verify-postgres.ts portfolio-assistant-backoffice:rc portfolio-backoffice-postgres:rc
+          node scripts/verify-postgres.ts portfolio-backoffice:rc portfolio-backoffice-postgres:rc
       - name: Write synthetic container configuration
         run: |
           node --input-type=module <<'NODE'
@@ -136,7 +136,7 @@ jobs:
             --read-only --tmpfs /tmp:uid=65532,gid=65532,mode=0700,size=32m \
             --memory=512m --memory-swap=512m --cpus=0.75 --pids-limit=128 \
             --cap-drop ALL --security-opt no-new-privileges \
-            portfolio-assistant-backoffice:rc node scripts/auth-migrate.ts
+            portfolio-backoffice:rc node scripts/auth-migrate.ts
       - name: Verify database authorization and prepare browsers independently
         run: |
           node --test tests/integration/auth.test.ts &
@@ -160,7 +160,7 @@ jobs:
             --memory=512m --memory-swap=512m --cpus=0.75 --pids-limit=128 \
             --stop-timeout=20 --log-driver=local --log-opt max-size=10m --log-opt max-file=3 \
             --cap-drop ALL --security-opt no-new-privileges \
-            -p 127.0.0.1:3108:3000 portfolio-assistant-backoffice:rc
+            -p 127.0.0.1:3108:3000 portfolio-backoffice:rc
       - name: Verify bounded resources, readiness, isolation and anonymous workload
         run: node scripts/verify-container.ts measure assistant-browser http://127.0.0.1:3108
       - name: Verify real-database authorization, operations and accessibility

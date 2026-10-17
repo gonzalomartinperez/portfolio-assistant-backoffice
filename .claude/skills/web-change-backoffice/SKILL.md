@@ -55,3 +55,8 @@ validate the separately pinned schema and retain table alternatives. Never equat
 interactions with people, completed downloads or exact generation totals. Read
 [privacy review](../../../docs/privacy-review.md) before changing notices; IAM session
 metadata and essential cookies are not anonymous product analytics.
+
+This is `portfolio-backoffice`, the project's private operations UI. Read
+[ADR006](../../../docs/adrs/006-project-backoffice.md) before naming or scope changes.
+Website analytics and assistant health are separate features composed by the server;
+repository renaming never authorizes renaming cookies, IAM tables, health IDs or data.

@@ -3,7 +3,7 @@ import { authCopy, authLocale } from "../../features/auth/copy.ts";
 import { getAuthLocale, readiness } from "../../features/auth/server.ts";
 import styles from "../../features/auth/auth.module.css";
 export const metadata = {
-	title: "Sign in — Assistant backoffice",
+	title: "Sign in — Portfolio backoffice",
 	robots: { index: false, follow: false },
 };
 export const dynamic = "force-dynamic";

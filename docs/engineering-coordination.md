@@ -5,7 +5,7 @@ edits, main promotion, artifact publication, assistant activation or deployment.
 
 | Active session | Exclusive current responsibility |
 | --- | --- |
-| Portfolio assistant | `portfolio-assistant-api` and this `portfolio-assistant-backoffice` |
+| Portfolio assistant | `portfolio-assistant-api` and this `portfolio-backoffice` |
 | Portfolio website | Public `portfolio`; career-ops ownership is not inferred from its session title |
 | Pequeverso | `pequeverso`, `pequeverso-assistant-api`, `pequeverso-assistant-backoffice`; directly confirmed |
 | VPS operations | Private `vps-ops`, Coolify, shared proxy/release/operations composition |
