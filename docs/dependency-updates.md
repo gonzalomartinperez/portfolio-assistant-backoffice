@@ -1,203 +1,71 @@
-# Conservative dependency maintenance
+# Manual dependency maintenance
 
-**Automatic merging is not activated.** Owner-authorized promotion PR #19 placed the trusted
-policy scripts/workflow on main; repository auto-merge remains off.
-An actual Actions probe also found that its read-only GITHUB_TOKEN cannot inspect the full
-branch protection via GraphQL. Both activation switches must remain off until a supported
-least-privilege inspection mechanism is verified. This is a blocker, not permission to use
-a broad PAT or bypass branch protection.
+The owner-selected profile is **manual merging**, including low-risk Dependabot
+proposals. Native auto-merge is off; no workflow approves, rebases, pushes, arms
+or merges a PR. Existing risk classification and synthetic controller regressions
+are retained as assessment tools, not evidence of live automatic merging.
+The CLI rejects write-activation flags; the trusted workflow has only contents/read
+and pull-requests/read permissions. Production publication/deployment is unrelated.
 
-Repository inspection after the rename found vulnerability alerts and automated security
-PR creation disabled. Both were enabled through the authorized repository settings API;
-the subsequent alert query returned zero open alerts and security-fix creation reported
-`enabled: true`. This enables visibility and proposed fixes, not automatic merging.
-Security PRs may target the default branch and require its normal manual review path.
+## Proposals and review
 
-## Eligibility
+Version-update proposals run weekly, target `develop`, use native
+`rebase-strategy: auto`, bounded open-PR counts and small risk-based groups. The
+seven-day routine npm cooldown does not delay security updates. The contract-generator
+workspace is independent; its compiler-major ignore preserves the documented TypeScript5
+programmatic API compatibility while the application uses TypeScript7. Do not hide
+security alerts to enforce that compatibility exception.
 
-[Policy implementation](../scripts/dependency-policy.ts) is deliberately small:
+Security updates follow GitHub's default-branch behavior and may target `main`.
+They remain visible and require prompt manual review; `target-branch: develop` is
+not a guarantee about security proposals. A default-branch security fix follows the
+normal protected workflow, never administrative bypass or an automatic main merge.
+Dependabot configuration and target workflows become effective from the default branch;
+a develop-only change is not live activation evidence.
 
-| Dependency | Automatic candidate |
-| --- | --- |
-| @types/node | Patch within major 24 |
-| @types/react | Patch or minor within major 19 |
-| @types/react-dom | Patch within major 19 |
+## Risk assessment, not approval
 
-These type-only updates are covered by full strict typing, generated Next routes, build and
-browser/API tests. They are candidates, never unconditional approvals. Every changed lock
-entry must also qualify. New/removed packages, changed dependency relationships, install
-hooks, non-registry tarballs, unexpected fields and unknown transitive updates are manual.
-Package scripts, runtime dependencies, permissions and application code cannot change.
-The current exact manifest pins make lockfile-only changes ambiguous: those remain manual.
+The classifier accepts only authenticated Dependabot identity, expected source repo,
+base and complete file/commit scope. It compares manifests and lock entries semantically;
+titles and labels do not authorize anything. `@types/node`24 patches, `@types/react`19
+patch/minor and `@types/react-dom`19 patches are the narrow low-risk assessment cohort.
+Every grouped or transitive update must qualify. All updates still need human review.
+Majors, prereleases, unstable0.x, unknown metadata, runtime/compiler/framework, IAM,
+cryptography, persistence, Actions, Docker/OS, mixed-risk groups, lock-only ambiguity,
+script changes, unexpected files and human-added commits require closer investigation.
+`dependencies:manual` is a veto, never approval.
 
-Everything else requires review: majors, prereleases, 0.x, downgrades, frameworks/compiler,
-Markdown/security/session/persistence packages, test engines, Actions, Docker/OS, mixed-risk
-groups and unrecognized metadata. Development dependencies are not automatically harmless.
-The independently locked `/tooling/api-contract` npm workspace is monitored separately;
-its compiler and generator updates require manual review and regeneration checks.
-Routine compiler-major proposals in that workspace are ignored because the generator's
-current peer contract requires TypeScript 5.x; the application continues using TypeScript 7.
-Reevaluate that narrow ignore rule when a generator release supports the replacement API.
-This is not an instruction to suppress security alerts or override incompatible peers.
-Actual PR #33 failed frozen installation with ERESOLVE (`openapi-typescript@7.13.0`
-requires `typescript@^5.x`). It is superseded by this compatibility policy, not merged.
-Dependabot reads configuration from the default branch: this develop change needs a
-separately authorized promotion before its routine-update filter becomes active.
-Groups qualify only if every update passes. Authenticated GitHub author ID/login/type,
-same-repository source, develop base and one verified GitHub-signed Dependabot commit are
-required. Human additions or rebases are manual; titles and labels never grant eligibility.
-`dependencies:manual` vetoes automation. For immediate intervention, disable auto-merge in
-the PR UI first, then apply the label; event processing is not instantaneous.
+The separate policy workflow reads trusted default-branch scripts, never a PR checkout,
+PR dependencies or artifacts. It does not repeat after every Quality run. A skipped
+human-PR diagnostic is not a required check. Required Quality `checks` still covers the
+complete application with strict branch freshness and administrator enforcement.
+Missing/failed/pending checks, conflicts or blocking reviews are not mergeable.
+Do not replace mandatory reviews with a bot approval, PAT or merge-anyway operation.
 
-## Controls and event flow
+After a reviewed promotion, dispatch a read-only assessment with
+`gh workflow run dependency-policy.yml -f pr_number=<existing-pr>`.
+Local API fixtures test spoofing, all group members, scripts/file changes, revision
+changes, missing/failed checks and branch advancement. They do not prove live GitHub
+bot behavior. A real bot PR, when available, must be checked against its current SHA.
+Readiness inspection can report missing GITHUB_TOKEN protection visibility; it is not
+permission to weaken branch rules or enable automation.
 
-Quality remains the complete unprivileged PR pipeline. Its existing required `checks` name
-is preserved. The separate [policy workflow](../.github/workflows/dependency-policy.yml)
-executes only default-branch scripts with Node built-ins: no PR checkout, package install,
-PR artifact, external shell interpolation, approval or direct merge API. Checkout credentials
-are not persisted. Existing reviewed checkout/setup-node SHA pins are reused.
+Native rebasing refreshes eligible young PRs when relevant base/dependency changes occur;
+CI runs again for new revisions. Old (about30days), conflicted or human-modified PRs may
+need manual intervention. There is no custom rebase bot, force-push loop or comment spam.
+Pause proposals using Dependabot configuration through a normal PR; to defer one PR,
+leave it open with a clear explanation. Never suppress a security alert to reduce churn.
+Recover a problematic merged update by a reviewed revert/fix PR with the same checks.
+Application rollback does not reverse migrations or authorize a deployment rollback.
 
-The control job needs contents:write and pull-requests:write for native auto-merge,
-checks:write for the head-bound `dependency-policy` check, and actions:read to inspect Quality.
-Protection uses the GraphQL branchProtectionRule read path; the REST protection endpoint
-requires Administration:read, which GITHUB_TOKEN cannot request. The existing static job
-probes the GraphQL query with its read-only workflow token. If GitHub explicitly denies it,
-the static job requires BOTH activation switches to be disabled and reports the blocker.
-Network/schema errors still fail; denial while either switch is enabled also fails. The
-mutation controller always fails closed on inaccessible protection. This diagnostic does
-not declare deployment/automation readiness. No production secret, PAT,
-environment or self-hosted runner is used. All other permissions
-are absent. A permission/API error fails closed; do not add a broad PAT to work around it.
-The API client prints fixed decision codes, never raw API responses or credentials.
+## Controls observed and verification
 
-On PR opening, synchronization, reopening, base/draft/label changes and manual auto-merge
-requests, reevaluate current API data. Quality completion also reconciles the current PR,
-not blindly the triggering run. Concurrency is per PR; different PRs do not cancel each
-other. New heads need a new policy check. Superseded queued events are safe because the
-next run rereads current state. Native required checks remain authoritative.
+Both permanent branches keep their existing protections. Repository auto-merge remains
+false and legacy activation flags must be false/unset. Inventory open bot PRs and revoke
+any already-armed native request before claiming the manual profile is reconciled.
+No label can substitute for these controls. Actual settings/Actions evidence is recorded
+in the delivery report; local fixtures alone are not a live workflow result.
 
-For a Dependabot PR the controller first disables any existing auto-merge, then checks the
-complete manifest/lock delta. It requires strict branch protection including both `checks`
-and `dependency-policy` (the latter bound to GitHub Actions app ID 15368), administrator
-enforcement, no force pushes/deletion, current develop ancestry and a conflict-free head.
-It verifies the latest full Quality run for that head and all five successful jobs, including
-the run's authenticated Dependabot actor. Missing, failed, pending, cancelled or skipped
-verification cannot arm auto-merge. Reruns by a human deliberately require manual review.
-
-The policy check remains pending while native squash auto-merge is armed. GitHub then
-applies **all** required checks, approvals, conversation resolution and strict up-to-date
-rules, including future additional requirements. No review is created. Ineligible PRs get
-a successful *manual-only decision* after auto-merge is revoked, so normal reviewed merges
-are not blocked by eligibility policy. Verification failures leave a failed policy check.
-A newly required human approval remains mandatory and may prevent unattended integration.
-
-## Repository audit and activation
-
-2026-09-27 authenticated audit: public repository, default main, all three merge methods
-allowed, auto-merge false. Develop protection requires `checks`, strict updates,
-administrator enforcement and conversation resolution; zero mandatory approvals, no force
-push/deletion, no rulesets/merge queue. Default workflow token is read-only and Actions
-cannot create approving reviews. No open Dependabot PR was available for live merge testing.
-Public GitHub Free supports these controls; private Free repositories may not. Verify actual
-plan/protection availability after any visibility/ownership change, rather than assuming it.
-
-Activation must be a separately authorized, reviewed operation:
-
-0. Resolve protection inspection access first. Run 36336719405 demonstrated GraphQL
-   rejection with the read-only workflow token; local admin success is not compatibility
-   evidence. A separately reviewed repository-scoped read-only GitHub App may be needed;
-   no App/PAT or new secret is created here. Do not enable either switch until the exact
-   intended token path is tested. This repository does not silently weaken the requirement.
-1. Verify the approved workflow, policy scripts, their `scripts/json.ts` helper and Dependabot
-   configuration exist on the default branch. PR #19 fulfilled this prerequisite through the
-   separately authorized application promotion; it did not activate automatic merging.
-   The scripts have no npm dependency prerequisite.
-2. Set repository variable `DEPENDABOT_POLICY_READY=true`. This bootstrap switch stays true
-   during ordinary pauses. With `DEPENDABOT_AUTOMERGE` unset/false the job evaluates and
-   revokes bot auto-merge but does not arm it. Dispatch against an ordinary open PR to
-   establish a successful `dependency-policy` check on its head. Verify actual GITHUB_TOKEN
-   permissions, including GraphQL branchProtectionRule reads, without expanding credentials if unavailable.
-3. Add required `dependency-policy`, bound to app 15368, **preserving** `checks`, strictness,
-   reviews and all existing protections. Reconcile all open PRs before requiring it so none
-   is stranded awaiting an event. Check on an actual eligible Dependabot PR that Quality
-   runs for the current revision and policy cannot be bypassed by a modified head.
-4. Enable repository native auto-merge and set `DEPENDABOT_AUTOMERGE=true` only after the
-   above checks succeed. Dispatch one eligible PR and inspect native auto-merge, required
-   checks and merge result. If an essential control is unavailable, leave automation off.
-
-Neither variable, repository auto-merge setting nor required policy check was activated by
-this implementation. Full mutation/token behavior remains blocked by protection inspection
-access. The ordinary Quality tests do exercise the decision/controller
-against deterministic authenticated-API fixtures; those are not a live automatic merge.
-
-## Rebasing, security and maintenance
-
-Version updates target develop monthly, bounded to three npm/two Actions/two Docker PRs.
-Only React-type patches are grouped; broad development-tool grouping was removed. npm
-routine updates have seven-day cooldown; security alerts/fixes must not wait on this routine
-schedule. Native `rebase-strategy: auto` handles relevant base/dependency changes. Updated
-heads run PR CI again. Dependabot stops automatic rebasing old PRs after about 30 days and
-may not safely rebase conflicts or human-modified work. Review those manually; no rebase bot,
-repeated comments, force pushes or custom branch-push reconciliation loop is installed.
-
-Security updates concern the **default branch**, even though version updates target develop.
-Do not retarget/close them blindly, suppress alerts or mistake a green develop build for a
-security fix on main. Security fixes receive prompt manual attention and the same risk checks.
-The earlier alert API inspection could not establish enabled alert access; owner verification
-of Dependabot alerts/security updates remains required. Ignore/cooldown configuration became
-available on the default branch through PR #19; new version-update PRs were observed afterward.
-
-GitHub-token mutations do not generally trigger ordinary push workflows. This repository
-intentionally has no post-merge deployment/push pipeline; the tested PR revision is the gate.
-Dependabot itself owns future rebases and PR events. Do not infer a new release, image publish
-or production deployment from a merge. Inspect actual reruns after rebasing during activation.
-
-Pause: set `DEPENDABOT_AUTOMERGE=false`, explicitly disable auto-merge on currently armed PRs,
-and dispatch reconciliation for each. Changing a variable alone emits no PR event. Keep
-`DEPENDABOT_POLICY_READY=true` so required decisions continue. Never switch off the whole
-workflow while its check is required. For one PR, disable native auto-merge and add the veto.
-Recover a bad merged update with a reviewed revert/fix PR into develop and the full CI graph;
-never rewrite shared history or automatically roll back a deployment.
-
-## Verification
-
-`node --test tests/unit/dependency-policy.test.ts` runs policy, mocked controller and workflow
-security tests; `npm test` includes them in the existing static job. They cover allowlisted
-patch/minor, major/prerelease/0.x/unknown, groups/transitives, spoofing, files/scripts, human
-commits, wrong base, head changes, stale branches, conflicts, failed/missing/cancelled/pending
-checks, pause/veto, API failure, ordering and a strictly read-only invocation.
-
-For an authorized read-only audit with an existing local gh login:
-
-```sh
-GITHUB_REPOSITORY=gonzalomartinperez/portfolio-assistant-web \
-PR_NUMBER=123 GH_TOKEN="$(gh auth token)" node scripts/dependency-automation.ts
-```
-
-The default is read-only; do not set `APPLY_DEPENDENCY_POLICY` locally. Replace 123 with the
-actual PR number. No fake vulnerability PR is needed. Actual run evidence is recorded in
-[CI documentation](ci.md); activation limitations remain explicit.
-
-Official references (reviewed 2026-09-27): [native auto-merge](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/automatically-merging-a-pull-request),
-[Dependabot options](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference),
-[rebase limitations](https://docs.github.com/code-security/supply-chain-security/keeping-your-dependencies-updated-automatically/managing-pull-requests-for-dependency-updates),
-[event/default-branch requirements](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows),
-[privileged workflow security](https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target),
-[token event behavior](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
-
-## Reviewed maintenance grouping · 2026-10-13
-
-Routine patch proposals for Biome/Node types share one version-update group. SHA-pinned
-GitHub Actions patch/minor proposals share another; they still require manual review.
-React type patches keep their existing group. Major/compiler/runtime/container changes
-remain separate and manual. Groups apply to version updates only: security alerts and
-default-branch security proposals remain visible. Existing conservative eligibility,
-strict current-head checks and disabled activation switches are unchanged.
-
-The five pending proposals #38–42 were reviewed by authenticated author, signed source
-commit and complete changed scope. Original commits are preserved through merge parents
-in a single reviewed maintenance branch. Manifest comparison proved scripts/runtime
-dependencies/compiler unchanged; lock changes cover only Biome CLI packages and Node types.
-The builder digest matches the published Node 24.21.0 Bookworm tag; runtime remains
-the pinned non-root Node 24 image. Passing this manual batch does not authorize future
-unattended Actions/container updates.
+References: [Dependabot options](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference),
+[native rebasing limitations](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/managing-pull-requests-for-dependency-updates),
+[secure workflow guidance](https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions).
