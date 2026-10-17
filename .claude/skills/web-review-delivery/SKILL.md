@@ -38,6 +38,14 @@ Return tested image/revision, commands/results, actual job timing and remaining 
 checks. No automatic main merge, paid model calls, production secrets, DNS or destructive
 shared database operations. Follow PR conventions only within invocation authority.
 
+For tooling patches, inspect the installed Next.js upgrade documentation, registry metadata
+and [dated runtime baseline](../../../docs/runtime-baseline.md). Match the builder/runtime
+Node version and verify actual immutable-image probes. Do not classify stable test tools
+as LTS or infer measured UI improvements from compiler/tool version changes.
+`npm run security:check` scans current files and reachable Git history; CI needs full history.
+Its isolated negative fixtures are in `tests/unit/secret-scanner.test.ts`. Report detector
+names/locations only, never values; pattern scanning is not proof that no secrets exist.
+
 For README/gallery changes follow [capture provenance](../../../docs/verification/readme-gallery.md).
 Use real rendered surfaces, explain synthetic data, preserve image proportions and link
 original PNGs. Verify HTML image links with `npm run docs:check`; never publish private

@@ -15,13 +15,15 @@ The current `develop` revision is the active review target; this project has not
 a production support window. Browser validation is not server authorization. Session,
 CSRF, retention and provider security also depend on the separately maintained API.
 
-The frontend uses credentialed requests with `cache: "no-store"`, a memory-only CSRF token,
-validated JSON/SSE, sanitized Markdown, HTTPS-only output links and no remote model images
-or raw HTML. Only theme and locale preferences are persisted locally. Provider/admin keys,
-private documents and raw backend errors do not belong in this repository or its client.
-No analytics or session replay is included. Production must configure HTTPS, cookie policy,
-CORS and the public API origin; local fixtures do not certify those deployment settings.
+This repository implements the authenticated operations backoffice. The native visitor
+conversation UI belongs to the separately maintained portfolio. Protected pages, actions
+and APIs verify live owner/invited-viewer membership; mutations recheck owner membership
+transactionally. Private operations credentials remain server-only, requests use
+`cache: "no-store"`, and runtime validation rejects sensitive or unexpected payload fields.
+No prompts, answers, provider keys, private documents or raw service errors belong in the
+dashboard. No analytics or session replay is included. Live OAuth, HTTPS, session-cookie,
+CSRF/origin and private-proxy settings need independent production verification.
 
-CI runs a redacted high-confidence public-file scan and dependency-boundary tests. Review
+CI runs redacted high-confidence current-file/reachable-history scans and dependency-boundary tests. Review
 runtime dependency changes and lockfile diffs; Dependabot proposes updates to `develop`.
 These checks supplement review and do not constitute a comprehensive security audit.

@@ -1,5 +1,10 @@
 # Contributing
 
+Developed and maintained exclusively by Gonzalo Martín Pérez. Suggestions, bug reports
+and constructive feedback are welcome through the repository’s available channels.
+Development priorities, implementation, reviews and releases remain the maintainer’s
+responsibility. Security reports use the private channel in [SECURITY.md](SECURITY.md).
+
 Read the [README](README.md) for setup and [architecture](docs/architecture.md) for
 boundaries. Work on a focused task branch and open a PR against `develop`; never merge
 feature work into `main`. An explicitly owner-authorized promotion uses a separate
@@ -55,7 +60,7 @@ validation. `allowJs: false`, `strict`, `noUncheckedIndexedAccess`,
 complete project, including tooling and generated Next route types. Do not exclude scripts
 or add casts/suppressions merely to satisfy the migration.
 
-Pinned Node 24.21.0 executes erasable TypeScript directly: `node scripts/check-docs.ts` and
+Pinned Node 24.22.0 executes erasable TypeScript directly: `node scripts/check-docs.ts` and
 `node --test tests/unit/*.test.ts`. This removes types at runtime; **it does not type-check**.
 `npm run typecheck` remains the required check. Use explicit relative `.ts` imports and
 `import type`; no enum/parameter-property transform, ts-node or additional execution runner.
@@ -93,8 +98,11 @@ change needs a short description. Keep the canonical instructions in `AGENTS.md`
 linked docs; don't duplicate them in tool-specific files.
 
 Never commit credentials, private documents, `.env.local`, build output or browser traces
-containing personal sessions. `npm run security:check` reports only rule names and file
-paths, never matched values; it complements review and does not prove absence of secrets.
+containing personal sessions. `npm run security:check` checks current files and reachable
+Git history, including ignored-but-tracked files; shallow clones fail closed. It reports
+rule names and file/object locations, never matched values. It complements review and
+does not prove absence of secrets. See [CI guidance](docs/ci.md#local-browser-lease-and-redacted-history-checks)
+for safe shared-cache browser installation and local history prerequisites.
 
 `npm ci` installs the main toolchain; `npm run contract:install` performs the frozen
 independent generator install. `npm run typecheck` verifies and explicitly invokes the
