@@ -42,5 +42,12 @@ See [TypeScript compatibility](adrs/003-typescript7-compatibility.md).
 
 `npm run contract:install`, `npm run contract:generate` and `npm run contract:check`
 install/regenerate/check the historical public archive and the pinned private operations
-snapshot. CI checks drift in both generated declaration files. Public and private contract
+snapshot plus the separately pinned product and feedback schemas. CI checks drift in all four generated declaration files. Public and private contract
 provenance remain separate.
+
+## Independent feedback contract
+
+`contracts/feedback.source.json` pins the committed API schema and hash independently
+of operational status and product counts. The minimal owned OpenAPI wrapper is checked
+against that schema, then the frozen generator emits `feedback.types.d.ts`. No public
+paths are invented by the wrapper. See [feedback semantics](feedback-and-improvement.md).

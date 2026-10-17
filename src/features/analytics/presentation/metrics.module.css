@@ -38,13 +38,14 @@
 	table-layout: fixed;
 }
 
-.summary {
+.overview .summary {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 1.5rem;
 }
-.summary dd {
+.overview .summary dd {
 	margin: 0.4rem 0 0;
+	text-align: start;
 	font-size: 1.5rem;
 	font-variant-numeric: tabular-nums;
 }

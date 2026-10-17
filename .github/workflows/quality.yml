@@ -52,7 +52,7 @@ jobs:
           DEPENDABOT_AUTOMERGE: ${{ vars.DEPENDABOT_AUTOMERGE }}
           DEPENDABOT_POLICY_READY: ${{ vars.DEPENDABOT_POLICY_READY }}
       - name: Reject generated contract drift
-        run: npm run contract:generate && git diff --exit-code contracts/types.d.ts contracts/operations.types.d.ts contracts/product-analytics.types.d.ts
+        run: npm run contract:generate && git diff --exit-code contracts/types.d.ts contracts/operations.types.d.ts contracts/product-analytics.types.d.ts contracts/feedback.types.d.ts
   browser:
     services:
       postgres:
@@ -126,6 +126,7 @@ jobs:
           values.push('OPERATIONS_READ_TOKEN=public-loopback-operations-fixture');
           values.push('OPERATIONS_SOURCE_MODE=fixture');
           values.push('PRODUCT_ANALYTICS_ENABLED=true');
+          values.push('FEEDBACK_OVERVIEW_ENABLED=true');
           values.push('BACKOFFICE_DATABASE_URL=postgres://backoffice_fixture:public-fixture-only@host.docker.internal:5432/backoffice_test');
           writeFileSync('/tmp/backoffice-fixture.env', values.join('\n') + '\n', { mode: 0o600 });
           NODE

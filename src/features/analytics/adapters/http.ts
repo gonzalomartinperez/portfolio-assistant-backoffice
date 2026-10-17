@@ -1,3 +1,4 @@
+import { readBoundedJson } from "../../../shared/http/bounded-json.ts";
 import type { ProductReadPort } from "../application/read.ts";
 import { parseProductSnapshot } from "./validate.ts";
 export function createProductHttp({
@@ -37,40 +38,14 @@ export function createProductHttp({
 					redirect: "error",
 					signal: AbortSignal.timeout(5000),
 				});
-				if (
-					!response.ok ||
-					response.headers
-						.get("content-type")
-						?.split(";")[0]
-						?.trim()
-						.toLowerCase() !== "application/json" ||
-					Number(response.headers.get("content-length") ?? 0) > 256000 ||
-					!response.body
-				) {
+				if (!response.ok) {
 					await response.body?.cancel();
 					return { kind: "unavailable" };
 				}
-				const reader = response.body.getReader();
-				const decoder = new TextDecoder("utf-8", { fatal: true });
-				let bytes = 0;
-				let body = "";
-				try {
-					while (true) {
-						const chunk = await reader.read();
-						if (chunk.done) break;
-						bytes += chunk.value.byteLength;
-						if (bytes > 256000) throw new Error("Analytics payload limit");
-						body += decoder.decode(chunk.value, { stream: true });
-					}
-					body += decoder.decode();
-					return {
-						kind: "available",
-						snapshot: parseProductSnapshot(JSON.parse(body)),
-					};
-				} finally {
-					await reader.cancel().catch(() => {});
-					reader.releaseLock();
-				}
+				return {
+					kind: "available",
+					snapshot: parseProductSnapshot(await readBoundedJson(response)),
+				};
 			} catch {
 				return { kind: "unavailable" };
 			}

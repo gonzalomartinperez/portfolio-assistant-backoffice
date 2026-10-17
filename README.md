@@ -314,3 +314,10 @@ disabled. See [contract, local fixture and meaning](docs/product-analytics.md) a
 [privacy review and unresolved production requirements](docs/privacy-review.md).
 The public bilingual `/privacy` notice describes actual essential account storage;
 it does not claim compliance certification or erase backup/retention limitations.
+
+## Current answer feedback
+
+The private overview includes an optional count-only helpful/not-helpful summary.
+It is off by default and distinguishes missing data from zero ratings. Votes concern
+retained answers, not verified correctness or automatic training. See the
+[feedback contract and reviewed improvement loop](docs/feedback-and-improvement.md).

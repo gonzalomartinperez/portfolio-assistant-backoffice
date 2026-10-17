@@ -54,6 +54,7 @@ makes readiness fail; no secrets or SQL errors are returned to the browser.
 | `OPERATIONS_API_ORIGIN` | Optional exact private HTTP(S) origin | Server-only endpoint location; absent means unconfigured. Never a browser/public variable. |
 | `OPERATIONS_READ_TOKEN` | Optional secret paired with operational origin | Read-only private service credential; never forwarded to browser. |
 | `OPERATIONS_GRAFANA_URL` | Optional approved HTTPS `/d/<uid>/<slug>` dashboard URL | Runtime link only; no credentials/query/fragment, no iframe, datasource request or availability claim. Exact loopback HTTP is local-only. Invalid values hide the link. |
+| `FEEDBACK_OVERVIEW_ENABLED` | Optional runtime boolean, default false | Enables only the private current-rating view; requires the compatible API flag and token. No collection or training activation. |
 | `OPERATIONS_SOURCE_MODE` | Omit in production | `fixture` labels synthetic local evidence; production must never substitute fixtures. |
 | `PORT`, `HOSTNAME` | Image defaults 3000 and 0.0.0.0 | Retain defaults; health check targets 3000. |
 | `NODE_ENV`, `NEXT_TELEMETRY_DISABLED` | Image sets production and 1 | Next/Better Auth product telemetry disabled. |
@@ -200,3 +201,13 @@ See [ADR006](adrs/006-project-backoffice.md). Health `application` still reports
 IAM tables, persistent data, environment variables, ports and planned hostnames are
 unchanged. A repository rename does not migrate infrastructure or authorize a new
 registry package; visibility/access/digests must still be approved independently.
+
+## Optional feedback summary
+
+See [rating semantics and compatibility](feedback-and-improvement.md). The consumed
+schema is pinned to API `bb36012eef55e85f7e0cf78df1845f38ef13da63`; public API/SSE
+and the independent operations/product contract pins remain unchanged. Set
+`FEEDBACK_OVERVIEW_ENABLED=true` on both compatible applications only after approval.
+This is an aggregate-only read using the existing private token/origin. It adds no
+migration, persistent path, service, host port or provider access. API-side deployment
+is still blocked by the documented Neo4j vendor findings; source CI does not waive them.

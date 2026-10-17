@@ -35,3 +35,9 @@ Primary references consulted:
 exemptions, not a project approval;
 [W3C table captions](https://www.w3.org/WAI/tutorials/tables/caption-summary/)
 explains associating summaries with semantic tables.
+
+The optional [feedback summary](feedback-and-improvement.md) reads aggregate current
+ratings only. It exports no transcript or message identifiers and cannot train or
+mutate the corpus. API retention/deletion affects the totals; this is not a raw-chat
+review or lifetime feedback ledger. The independently default-off flag is not approval
+to activate public collection or production services.
