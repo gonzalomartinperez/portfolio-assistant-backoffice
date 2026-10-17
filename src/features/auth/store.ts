@@ -1,20 +1,12 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { Pool } from "pg";
-
-export interface AccessUser {
-	id: string;
-	name: string;
-	email: string;
-}
-export interface Access {
-	user: AccessUser;
-	role: "owner" | "viewer";
-}
+import type { Access, AccessUser, RevocationKind } from "./domain/access.ts";
+import type { AccessManagementPort } from "./application/manage-access.ts";
 const digest = (token: string) =>
 	createHash("sha256").update(token).digest("hex");
 
 export function createAccessStore(pool: Pool, ownerEmail: string) {
-	return {
+	const store = {
 		async mayRegister(
 			email: string,
 			verified: boolean,
@@ -121,7 +113,7 @@ export function createAccessStore(pool: Pool, ownerEmail: string) {
 		async revoke(
 			actorId: string,
 			subjectId: string,
-			kind: "member" | "invitation",
+			kind: RevocationKind,
 		): Promise<void> {
 			const client = await pool.connect();
 			try {
@@ -186,4 +178,5 @@ export function createAccessStore(pool: Pool, ownerEmail: string) {
 			return { members: members.rows, invitations: invitations.rows };
 		},
 	};
+	return store satisfies AccessManagementPort;
 }

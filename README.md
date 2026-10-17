@@ -285,3 +285,6 @@ Application code retains the [MIT license](LICENSE). Fonts, identity assets and 
 code retain their own [attribution and terms](THIRD_PARTY_NOTICES.md).
 
 Shared runtime/version acceptance: [runtime baseline](docs/runtime-baseline.md).
+
+Cross-session ownership, verified toolchain baselines and Google/Microsoft adaptations
+are recorded in [engineering coordination](docs/engineering-coordination.md).

@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import {
+	inviteViewer,
+	revokeViewerAccess,
+} from "../../src/features/auth/application/manage-access.ts";
 const databaseUrl = process.env.BACKOFFICE_DATABASE_URL;
 if (!databaseUrl)
 	throw new Error(
@@ -174,7 +178,12 @@ test("real PostgreSQL and Better Auth enforce invitation, role and revocation bo
 				{ method: "oauth", oauth: { providerId: "google" } },
 			),
 		);
-		const token = await store.invite(owner.id, "viewer@example.com");
+		const actor = await store.access(owner);
+		assert.ok(actor);
+		const invitation = await inviteViewer(actor, " Viewer@Example.com ", store);
+		assert.equal(invitation.status, "created");
+		if (invitation.status !== "created") throw new Error("Expected invitation");
+		const token = invitation.token;
 		assert.equal(
 			await store.mayRegister("viewer@example.com", true, token),
 			true,
@@ -208,8 +217,22 @@ test("real PostgreSQL and Better Auth enforce invitation, role and revocation bo
 			false,
 		);
 		await assert.rejects(() => store.invite("viewer", "another@example.com"));
+		assert.deepEqual(
+			await inviteViewer(
+				{
+					user: { id: "viewer", name: "Viewer", email: "viewer@example.com" },
+					role: "owner",
+				},
+				"another@example.com",
+				store,
+			),
+			{ status: "rejected", reason: "unavailable" },
+		);
 		await context.internalAdapter.createSession("viewer");
-		await store.revoke(owner.id, "viewer", "member");
+		assert.deepEqual(
+			await revokeViewerAccess(actor, "viewer", "member", store),
+			{ status: "revoked" },
+		);
 		assert.equal(
 			await store.access({
 				id: "viewer",
