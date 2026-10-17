@@ -28,9 +28,10 @@ baseline is preserved in Git, not presented as the current implementation.
 
 - Integrated: product counts and factual privacy notice (PR64); project identity and
   website/assistant separation (PR65). Canonical repository: `portfolio-backoffice`.
-- In progress: count-only answer feedback, pinned to API72; independent default-off
+- Integrated in develop: count-only answer feedback, pinned to API72; independent default-off
   runtime flag, no raw conversation review or automatic learning. See
-  [feedback scope](feedback-and-improvement.md) for exact semantics and evidence.
+  [feedback scope](feedback-and-improvement.md) for exact semantics and
+  [executed evidence](verification/product-feedback-2026-10-17.md).
 - Blocked: production release acceptance, including the API's unresolved Neo4j image
   findings and fresh exact-digest assessment; ordinary code CI is not that acceptance.
 - Deferred: publication, deployment/activation, live OAuth and physical-device testing.
