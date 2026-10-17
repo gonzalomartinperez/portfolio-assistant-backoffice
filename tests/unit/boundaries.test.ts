@@ -4,13 +4,14 @@ import { readFileSync, readdirSync } from "node:fs";
 import {
 	boundaryErrors,
 	moduleGraphErrors,
+	architectureSourceFile,
 } from "../../scripts/check-boundaries.ts";
 test("source dependency boundaries and public environment allowlist", () => {
 	const sources: Record<string, string> = {};
 	for (const file of readdirSync("src", {
 		recursive: true,
 		encoding: "utf8",
-	}).filter((file) => /\.(ts|tsx)$/.test(file))) {
+	}).filter(architectureSourceFile)) {
 		const name = `src/${file}`;
 		sources[name] = readFileSync(name, "utf8");
 		assert.deepEqual(
@@ -20,6 +21,42 @@ test("source dependency boundaries and public environment allowlist", () => {
 		);
 	}
 	assert.deepEqual(moduleGraphErrors(sources), []);
+});
+
+test("source collection cannot hide ESM/CommonJS TypeScript dependency violations", () => {
+	for (const extension of ["mts", "cts"]) {
+		const candidates = {
+			"src/features/auth/domain/value.ts": `import "./opaque.${extension}"`,
+			[`src/features/auth/domain/opaque.${extension}`]: 'import "react"',
+		};
+		const sources = Object.fromEntries(
+			Object.entries(candidates).filter(([file]) =>
+				architectureSourceFile(file),
+			),
+		);
+		assert.equal(Object.keys(sources).length, 2);
+		const violations = Object.entries(sources).flatMap(([file, source]) =>
+			boundaryErrors(file, source),
+		);
+		assert.ok(violations.includes("domain dependency"));
+		for (const specifier of [
+			`.${extension}`,
+			extension === "mts" ? ".mjs" : ".cjs",
+		]) {
+			assert.ok(
+				moduleGraphErrors({
+					"src/client.tsx": `"use client"; import "./opaque${specifier}"`,
+					[`src/opaque.${extension}`]: 'import "server-only"',
+				}).some((error) => error.startsWith("client reaches server")),
+			);
+		}
+		assert.ok(
+			moduleGraphErrors({
+				"src/a.ts": 'import "./folder"',
+				[`src/folder/index.${extension}`]: 'import "../a.ts"',
+			}).some((error) => error.startsWith("import cycle")),
+		);
+	}
 });
 test("boundaries resolve traversal and inspect dynamic and type-only imports", () => {
 	const domain = "src/features/operations/domain/example.ts";

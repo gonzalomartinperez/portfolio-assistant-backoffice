@@ -2,6 +2,8 @@ import path from "node:path";
 import ts from "@typescript/typescript6";
 const within = (file: string, directory: string) =>
 	file === directory || file.startsWith(directory + path.sep);
+export const architectureSourceFile = (file: string) =>
+	/\.(?:[cm]?ts|tsx)$/.test(file);
 export function boundaryErrors(file: string, source: string) {
 	const filename = path.resolve(file);
 	const relative = path.relative(path.resolve("src/features"), filename);
@@ -66,7 +68,8 @@ export function boundaryErrors(file: string, source: string) {
 			adapter &&
 			destination &&
 			(within(destination, path.join(feature, "presentation")) ||
-				destination.replace(/\.tsx?$/, "") === path.join(feature, "entry"))
+				destination.replace(/\.(?:[cm]?ts|tsx)$/, "") ===
+					path.join(feature, "entry"))
 		)
 			errors.push("adapter outer dependency");
 		if (
@@ -244,10 +247,16 @@ export function moduleGraphErrors(sources: Record<string, string>): string[] {
 					base,
 					`${base}.ts`,
 					`${base}.tsx`,
+					`${base}.mts`,
+					`${base}.cts`,
 					base.replace(/\.js$/, ".ts"),
 					base.replace(/\.jsx$/, ".tsx"),
+					base.replace(/\.mjs$/, ".mts"),
+					base.replace(/\.cjs$/, ".cts"),
 					path.join(base, "index.ts"),
 					path.join(base, "index.tsx"),
+					path.join(base, "index.mts"),
+					path.join(base, "index.cts"),
 				].find((candidate) => modules.has(candidate));
 				if (target) edges.push(target);
 			}

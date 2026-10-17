@@ -65,7 +65,8 @@ flowchart LR
 ## Architectural CI contract
 
 `npm test` runs dependency tests in the existing required static job. The AST guards
-cover every feature core, static/dynamic/type-only and import-equals dependencies,
+cover every feature core, static/dynamic/type-only and import-equals dependencies in `.ts`, `.tsx`, `.mts` and
+`.cts`,
 relative paths, cycles and transitive client-to-server imports. Explicit `use server`
 modules are RPC boundaries; traversal stops there, and Next validates their exports.
 The production build still enforces `server-only`. Pure application modules may not
@@ -78,3 +79,6 @@ module-graph resolution supports this repository's relative imports and no path 
 Adding aliases/reexports or a new composition mechanism requires corresponding guard
 coverage. Client code must never receive secrets even when its import graph is valid.
 See [engineering coordination](engineering-coordination.md) for standards and ownership.
+
+Owned source still prefers `.ts`/`.tsx` per CONTRIBUTING; the guard and primary checker
+cover `.mts`/`.cts` defensively so an alternate TypeScript module suffix cannot evade CI.
