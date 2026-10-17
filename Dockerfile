@@ -6,7 +6,7 @@ COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci --no-audit --no-fund
 COPY next.config.ts next-env.d.ts tsconfig.json ./
 COPY src ./src
-COPY contracts/types.d.ts contracts/operations.types.d.ts ./contracts/
+COPY contracts/types.d.ts contracts/operations.types.d.ts contracts/product-analytics.types.d.ts ./contracts/
 COPY public ./public
 COPY scripts/auth-migrate.ts scripts/prepare-runtime.ts ./scripts/
 COPY migrations ./migrations
