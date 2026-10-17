@@ -517,6 +517,12 @@ test("manual assessment executes only trusted default-branch code with read-only
 		`\${{ github.event.repository.default_branch }}`,
 	);
 	assert.equal(field(steps[0], "with", "persist-credentials"), false);
+	assert.equal(field(steps[0], "with", "sparse-checkout-cone-mode"), false);
+	assert.match(
+		text(field(steps[0], "with", "sparse-checkout")),
+		/package\.json/,
+	);
+	assert.match(text(field(steps[0], "with", "sparse-checkout")), /\.nvmrc/);
 	assert.equal(
 		field(steps[0], "with", "allow-unsafe-pr-checkout") ?? false,
 		false,
