@@ -7,9 +7,9 @@ baseline/routing/release policy; Coolify remains the sole deployment executor.
 | Applicable component | Exact committed lock version |
 | --- | --- |
 | `next` | `16.4.2` |
-| `react` | `19.3.0` |
-| `react-dom` | `19.3.0` |
-| `better-auth` | `1.7.7` |
+| `react` | `19.3.1` |
+| `react-dom` | `19.3.1` |
+| `better-auth` | `1.7.10` |
 | `pg` | `8.23.1` |
 | `typescript` | `7.0.2` |
 | `@biomejs/biome` | `2.5.15` |
@@ -54,3 +54,11 @@ resolution or compiler downgrade is used. The Dockerfile pins reviewed registry 
 digests; isolated probes of both exact images report Node24.22.0. Private registry publication
 and deployment are still unauthorized. See
 [verification](verification/toolchain-security-2026-10-17.md) for executed checks and limits.
+
+## Fixed runtime compatibility review — October 17, 17:35 UTC
+
+React/DOM/is19.3.1 and Better Auth1.7.10 were evaluated as a separate manual-risk cohort,
+not automatically admitted by the dependency policy. Node/Next/TypeScript/Playwright and
+base-image pins remain those verified above. Provider plugins, signup/password policy,
+private operations contract and application-owned migrations are unchanged. See
+[runtime compatibility evidence](verification/runtime-compatibility-2026-10-17.md).

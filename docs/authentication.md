@@ -1,7 +1,7 @@
 # Backoffice authentication
 
 The source repository is public; operational data requires an invited account.
-Better Auth 1.7.7 handles OAuth and PostgreSQL sessions. Google and GitHub are the
+Better Auth 1.7.10 handles OAuth and PostgreSQL sessions. Google and GitHub are the
 only production providers. Password login and public registration are disabled.
 The application validates verified email and database membership on every protected
 request. A cookie alone never grants access. All credentials remain server-only.
