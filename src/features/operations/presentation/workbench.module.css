@@ -429,3 +429,8 @@
 .metricCard .cardHeading h2 {
 	font-size: 0.9rem;
 }
+
+.preferenceField {
+	display: grid;
+	gap: 0.4rem;
+}

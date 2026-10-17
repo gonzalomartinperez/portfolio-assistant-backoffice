@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { operationsCopy, type OperationsLocale } from "./copy";
 import styles from "./workbench.module.css";
 export function Preferences({ locale }: { locale: OperationsLocale }) {
 	const t = operationsCopy[locale];
+	const preferenceId = useId();
 	const [theme, setTheme] = useState("dark");
 	useEffect(() => {
 		document.documentElement.lang = locale;
@@ -24,9 +25,10 @@ export function Preferences({ locale }: { locale: OperationsLocale }) {
 		>
 			<summary>{t.preferences}</summary>
 			<div className="settings-fields">
-				<label>
-					{t.language}
+				<div className={styles.preferenceField}>
+					<label htmlFor={`${preferenceId}-locale`}>{t.language}</label>
 					<select
+						id={`${preferenceId}-locale`}
 						value={locale}
 						onChange={(event) => {
 							const target = new URL(window.location.href);
@@ -40,10 +42,11 @@ export function Preferences({ locale }: { locale: OperationsLocale }) {
 						<option value="en">English</option>
 						<option value="es">Español</option>
 					</select>
-				</label>
-				<label>
-					{t.theme}
+				</div>
+				<div className={styles.preferenceField}>
+					<label htmlFor={`${preferenceId}-theme`}>{t.theme}</label>
 					<select
+						id={`${preferenceId}-theme`}
 						value={theme}
 						onChange={(event) => {
 							const value = event.target.value === "light" ? "light" : "dark";
@@ -59,7 +62,7 @@ export function Preferences({ locale }: { locale: OperationsLocale }) {
 						<option value="dark">{t.dark}</option>
 						<option value="light">{t.light}</option>
 					</select>
-				</label>
+				</div>
 			</div>
 		</details>
 	);
