@@ -143,7 +143,7 @@ not invoice totals; availability does not certify the paid model provider.
 
 ### With your development OAuth applications
 
-Use Linux/WSL, Node **24.21.0** from `.nvmrc`, npm and a dedicated PostgreSQL database.
+Use Linux/WSL, Node **24.22.0** from `.nvmrc`, npm and a dedicated PostgreSQL database.
 
 ```sh
 nvm use
@@ -179,7 +179,7 @@ docker run -d --name backoffice-readme-fixture \
 
 docker exec backoffice-readme-fixture pg_isready -U backoffice_fixture
 npm run build
-npx playwright install --with-deps chromium
+PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install --with-deps chromium
 npm run test:browser -- backoffice.spec.ts --project=chromium
 ```
 
@@ -223,7 +223,7 @@ database described above:
 
 ```sh
 npm run build
-npx playwright install --with-deps chromium firefox webkit
+PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install --with-deps chromium firefox webkit
 npm run test:browser -- backoffice.spec.ts
 ```
 

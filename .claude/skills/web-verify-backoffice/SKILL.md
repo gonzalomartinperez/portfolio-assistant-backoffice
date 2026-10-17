@@ -9,6 +9,12 @@ commands with pinned Node, frozen dependencies, a production build, Playwright e
 and an isolated PostgreSQL database whose name includes test or fixture. Never point
 fixture or migration tools at shared data or stop unrelated services to free a port.
 
+Before installing browsers locally, preserve other active sessions with
+`PLAYWRIGHT_SKIP_BROWSER_GC=1 npx --no-install playwright install --with-deps chromium firefox webkit`
+or a task-owned `PLAYWRIGHT_BROWSERS_PATH` used for both installation and execution.
+Never clean the shared browser cache. A cache collision is an infrastructure failure;
+retain the failed result and repeat the affected checks after the browsers are restored.
+
 Run `npm run test:auth` for real OAuth exchange/session/invitation behavior with the
 local fake provider; this is not verification of live Google/GitHub applications.
 Run `npm run test:browser` for real membership guards and synthetic operations through

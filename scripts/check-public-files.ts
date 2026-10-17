@@ -1,5 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, existsSync, statSync } from "node:fs";
+import { secretDetectors } from "./secret-patterns.ts";
+import { checkSecretHistory } from "./check-secret-history.ts";
 const files = [
 	...new Set(
 		execFileSync(
@@ -10,19 +12,6 @@ const files = [
 			.split("\0")
 			.filter(Boolean),
 	),
-];
-const rules: ReadonlyArray<readonly [string, RegExp]> = [
-	["private-key", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/],
-	["provider-token", /\bsk-(?:proj-)?[A-Za-z0-9_-]{24,}\b/],
-	[
-		"github-token",
-		/\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,})\b/,
-	],
-	["cloud-access-key", /\bAKIA[A-Z0-9]{16}\b/],
-	[
-		"public-secret-config",
-		/NEXT_PUBLIC_[A-Z_]*(?:SECRET|PASSWORD|PRIVATE_KEY|API_KEY)/,
-	],
 ];
 let findings = 0;
 let checked = 0;
@@ -37,11 +26,22 @@ for (const file of files) {
 	if (bytes.includes(0)) continue;
 	checked++;
 	const text = bytes.toString("utf8");
-	for (const [name, pattern] of rules)
-		if (pattern.test(text)) {
-			console.error(`${name}: ${file} (matched value redacted)`);
-			findings++;
-		}
+	for (const name of secretDetectors(text)) {
+		console.error(`${name}: ${file} (matched value redacted)`);
+		findings++;
+	}
+}
+try {
+	const history = checkSecretHistory((object, detector) => {
+		console.error(
+			`${detector}: history object ${object} (matched value redacted)`,
+		);
+	});
+	findings += history.findings;
+	console.log(`Git history scan: ${history.blobs} reachable blobs checked.`);
+} catch {
+	console.error("Git history scan could not complete (details redacted).");
+	findings++;
 }
 console.log(
 	`Public-file scan: ${checked} text files, ${findings} findings. High-confidence patterns only; not a complete secret audit.`,
