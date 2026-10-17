@@ -387,6 +387,14 @@ test("product counts have honest labels, keyboard filtering and table alternativ
 	).toBeVisible();
 	await expect(page.getByRole("table", { name: /Daily counts/ })).toBeVisible();
 	await page.getByLabel("Interaction", { exact: true }).focus();
+	await page.keyboard.press("ArrowDown");
+	await page.keyboard.press("Enter");
+	await expect(page.getByLabel("Interaction", { exact: true })).toHaveValue(
+		"navigation_click",
+	);
+	await expect(page.getByRole("status")).toHaveText(
+		"No accepted events in this window.",
+	);
 	await page
 		.getByLabel("Interaction", { exact: true })
 		.selectOption("cv_link_open");
