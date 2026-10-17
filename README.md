@@ -105,6 +105,20 @@ layout and measurement choices.
 
 ## Architecture and trust boundaries
 
+<p align="center">
+  <a href="docs/assets/architecture-overview.svg"><img src="docs/assets/architecture-overview.svg" width="1100" alt="Invited OAuth access, protected Next.js composition, separate IAM and private API reads feeding accessible aggregate views — click for the full-size diagram"></a>
+</p>
+
+Solid arrows show requests or synchronization; dashed arrows show returned data.
+Frames identify trust boundaries. This overview describes implemented responsibilities,
+not production deployment or a security certification. Open the original to zoom. [Diagram source and visual conventions](docs/diagrams.md)
+explain the symbols and review procedure.
+
+
+
+<details>
+<summary>Editable Mermaid view</summary>
+
 ```mermaid
 flowchart LR
     U[Owner or invited viewer] --> AUTH[Google / GitHub OAuth]
@@ -119,6 +133,8 @@ flowchart LR
     VIEW --> UI[Dashboard + accessible charts]
     UI --> U
 ```
+
+</details>
 
 Website counts use the same bounded server-only transport boundary and a separate
 versioned contract. Product reads are default-off and are not public collection approval.

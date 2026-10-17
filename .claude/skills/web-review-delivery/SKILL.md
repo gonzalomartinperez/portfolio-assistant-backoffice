@@ -61,3 +61,8 @@ Dependency maintenance is owner-selected manual. Use the read-only assessment wo
 never enable legacy activation flags, grant writer permissions or arm native auto-merge.
 All proposals need normal review and current required CI. See
 [dependency maintenance](../../../docs/dependency-updates.md).
+
+For README overview diagrams read [the owned diagram source and review rules](../../../docs/diagrams.md).
+Keep the first-party SVG and Mermaid semantics aligned. Inspect both palettes, card
+text bounds and narrow/full-size rendering; never substitute a deployment claim for
+an architecture view or add scripts/remote resources to the documentation graphic.
