@@ -53,3 +53,7 @@ keyboard preferences, mobile overflow, reduced motion and safe unavailable state
 API CI39061876817 separately passed461 offline and31 real-service tests, including
 rating replacement/deletion against PostgreSQL. Browser fixtures are not evidence
 of deployed API pairing, OAuth providers, live model compliance or physical devices.
+
+[Executed UI/image evidence](verification/product-feedback-2026-10-17.md) records
+current-head CI, actual screenshot inspection, the visual defect found/fixed and
+measured hosted-image observations without a field-performance claim.

@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { spawnSync } from "node:child_process";
 import { load } from "js-yaml";
 import type { GitHubApi } from "../../scripts/dependency-automation.ts";
 import {
 	inspectReadiness,
+	assessManualDependency,
+	assertManualRequest,
 	reconcile,
 } from "../../scripts/dependency-automation.ts";
 import {
@@ -14,7 +17,7 @@ import {
 } from "../../scripts/dependency-policy.ts";
 import { field, list, record, text } from "../../scripts/json.ts";
 
-const repository = "gonzalomartinperez/portfolio-assistant-web";
+const repository = "gonzalomartinperez/portfolio-backoffice";
 const bot = { id: 49699333, login: "dependabot[bot]", type: "Bot" };
 const head = "a".repeat(40);
 const base = "b".repeat(40);
@@ -497,19 +500,30 @@ test("read-only invocation never writes, even when eligible", async () => {
 		false,
 	);
 });
-test("privileged workflow executes only default-branch policy with pinned actions and no installs", () => {
+test("manual assessment executes only trusted default-branch code with read-only permissions", () => {
 	const raw = readFileSync(
 		new URL("../../.github/workflows/dependency-policy.yml", import.meta.url),
 		"utf8",
 	);
 	const workflow = record(load(raw));
 	assert.deepEqual(workflow.permissions, {});
+	assert.deepEqual(field(workflow, "jobs", "reconcile", "permissions"), {
+		contents: "read",
+		"pull-requests": "read",
+	});
+	assert.equal(field(workflow, "on", "workflow_run"), undefined);
 	const steps = list(field(workflow, "jobs", "reconcile", "steps")).map(record);
 	assert.equal(
 		field(steps[0], "with", "ref"),
 		`\${{ github.event.repository.default_branch }}`,
 	);
 	assert.equal(field(steps[0], "with", "persist-credentials"), false);
+	assert.equal(field(steps[0], "with", "sparse-checkout-cone-mode"), false);
+	assert.match(
+		text(field(steps[0], "with", "sparse-checkout")),
+		/package\.json/,
+	);
+	assert.match(text(field(steps[0], "with", "sparse-checkout")), /\.nvmrc/);
 	assert.equal(
 		field(steps[0], "with", "allow-unsafe-pr-checkout") ?? false,
 		false,
@@ -565,4 +579,55 @@ test("contract generator compiler-major proposals respect the isolated API compa
 		"version-update:semver-major",
 	]);
 	assert.equal(text(field(record(generator), "target-branch")), "develop");
+});
+
+test("manual profile assesses even an eligible candidate without any API mutation", async () => {
+	const s = service();
+	const result = await assessManualDependency(s.api, repository, 1);
+	assert.equal(result.mergeMode, "manual");
+	assert.equal(result.assessment, "eligible-automation-paused");
+	assert.equal(
+		s.calls.some((call) => call.body && !query(call).startsWith("query")),
+		false,
+	);
+});
+
+test("manual CLI rejects legacy write activation before token or network use", () => {
+	const result = spawnSync(
+		process.execPath,
+		["scripts/dependency-automation.ts"],
+		{
+			env: { ...process.env, GH_TOKEN: "", APPLY_DEPENDENCY_POLICY: "true" },
+			encoding: "utf8",
+		},
+	);
+	assert.equal(result.status, 1);
+	assert.match(result.stderr, /manual; write activation is disabled/);
+});
+
+test("manual transport allows read-only GraphQL and rejects mutation methods before fetch", () => {
+	assert.doesNotThrow(() =>
+		assertManualRequest("/repos/owner/repo", undefined, "GET"),
+	);
+	assert.doesNotThrow(() =>
+		assertManualRequest(
+			"/graphql",
+			{ query: "query { repository { name } }" },
+			"POST",
+		),
+	);
+	for (const [path, body, method] of [
+		["/graphql", { query: "mutation { unsafe }" }, "POST"],
+		[
+			"/graphql",
+			{ query: "query { repository { name } } mutation { unsafe }" },
+			"POST",
+		],
+		["/repos/owner/repo/pulls/1/merge", undefined, "PUT"],
+		["/repos/owner/repo", { allow_auto_merge: true }, "PATCH"],
+	] as const)
+		assert.throws(
+			() => assertManualRequest(path, body, method),
+			/rejects API mutations/,
+		);
 });

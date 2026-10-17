@@ -67,3 +67,17 @@ An isolated Git fixture accepted valid targets and rejected a missing HTML image
 install, Biome, 55 unit tests, strict TypeScript 7 and contract generation passed locally.
 The first type check found cached legacy /embed route types; the ignored generated types
 were preserved separately and regenerated, without changing code or disabling checks.
+
+## Actual GitHub Mermaid rendering — 2026-10-17
+
+A fresh read-only Chromium156.0.8078.4 context opened the public GitHub README pages
+at API `fa3acf079077633a12eb8afb4aae2af52aa76d03` and backoffice
+`93529c2e3c3a8fa4f10105f1b9ee39012f8d3705`. GitHub's own
+`viewscreen.githubusercontent.com/markdown/mermaid` renderer produced all three API
+and both backoffice diagrams without syntax/parse errors. Validation checked actual
+SVG diagram labels (including LangGraph, Bootstrap and server composition), not merely
+renderer icons. GitHub did not expose a semantic renderer version; none is claimed.
+Local ignored evidence: `.artifacts/diagram-review/github.json` and the two full-page
+GitHub captures. This was public-page verification, not a private-document upload or
+an independently installed Mermaid runtime. No browser installation/cache cleanup or
+application/provider call was needed.

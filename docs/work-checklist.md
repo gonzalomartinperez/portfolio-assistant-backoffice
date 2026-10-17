@@ -14,7 +14,7 @@ and portfolio PR94 (`83a4ecde0591da9c35c939a8c6b82dc9b010fdc6`). Main and produc
 | 3 | UX and accessibility | Verified EN/ES, dark/light, compact/maximized/mobile/page, continuity, sources, keyboard, reduced motion and 200% text; physical devices/assistive technology pending |
 | 3 | CI and production image | Completed: current-head backoffice run37247552502 passes exact-image migration/auth/browser checks; native run37248316043 passes all required gates and Hostinger compatibility |
 | 4 | Skills | Four canonical workflows; structural/negative tests and actual Codex/Claude discovery pass in working tree and clean Linux clone; model-driven routing/invocation unverified |
-| 4 | Rename and dependencies | Public repo renamed in place to portfolio-backoffice (same repository ID/history); Dependabot26/27 merged with required checks; security-alert/fix proposals enabled; conservative automatic arming stays disabled pending safe activation |
+| 4 | Rename and dependencies | Public repo renamed in place to portfolio-backoffice (same repository ID/history); Dependabot26/27 merged with required checks; security-alert/fix proposals enabled; manual review is the selected policy; auto-merge remains disabled |
 | 4 | Deployment handoff | Committed application image/runtime/Coolify contract and private monitoring request; vps-ops owns shared production execution |
 | pending | Deployed operational telemetry | Private API v1 is implemented and pinned; configure authorized runtime pairing through vps-ops; no deployed metrics or trends are claimed |
 | deferred | Production acceptance | Real OAuth registrations, OpenAI evaluation, image-publication approval, Coolify/DNS/effective headers, backups and device testing |
@@ -28,9 +28,10 @@ baseline is preserved in Git, not presented as the current implementation.
 
 - Integrated: product counts and factual privacy notice (PR64); project identity and
   website/assistant separation (PR65). Canonical repository: `portfolio-backoffice`.
-- In progress: count-only answer feedback, pinned to API72; independent default-off
+- Integrated in develop: count-only answer feedback, pinned to API72; independent default-off
   runtime flag, no raw conversation review or automatic learning. See
-  [feedback scope](feedback-and-improvement.md) for exact semantics and evidence.
+  [feedback scope](feedback-and-improvement.md) for exact semantics and
+  [executed evidence](verification/product-feedback-2026-10-17.md).
 - Blocked: production release acceptance, including the API's unresolved Neo4j image
   findings and fresh exact-digest assessment; ordinary code CI is not that acceptance.
 - Deferred: publication, deployment/activation, live OAuth and physical-device testing.
