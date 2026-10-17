@@ -25,6 +25,7 @@ export function Dashboard({
 	fixture,
 	grafanaUrl,
 	projectOverview,
+	assistantFeedback,
 }: {
 	result: OperationalRead;
 	role: "owner" | "viewer";
@@ -32,6 +33,7 @@ export function Dashboard({
 	fixture: boolean;
 	grafanaUrl: string | null;
 	projectOverview: ReactNode;
+	assistantFeedback: ReactNode;
 }) {
 	const t = operationsCopy[locale];
 	const snapshot = result.kind === "available" ? result.snapshot : null;
@@ -211,6 +213,7 @@ export function Dashboard({
 					/>
 				)}
 			</div>
+			{assistantFeedback}
 			<div className={styles.detailGrid}>
 				<section
 					id="execution-details"

@@ -71,6 +71,12 @@ test("owner receives validated fixture metrics and restricted access navigation"
 	await expect(
 		page.getByRole("link", { name: "Explore website data" }),
 	).toHaveAttribute("href", "/analytics?locale=en");
+	const feedback = page.getByRole("region", { name: "Answer feedback" });
+	await expect(feedback).toBeVisible();
+	await expect(feedback.getByText("14", { exact: true })).toBeVisible();
+	await expect(feedback.getByText("3", { exact: true })).toBeVisible();
+	await expect(feedback.getByText("82.4%", { exact: true })).toBeVisible();
+	await expect(feedback).toContainText("not a measure of verified accuracy");
 	const data = await page.request.get("/api/operations");
 	expect(data.ok()).toBe(true);
 	expect(data.headers()["cache-control"]).toContain("no-store");
@@ -140,6 +146,9 @@ test("preferences synchronize language and the single theme authority", async ({
 	await expect(
 		page.getByRole("heading", { name: "Operaciones del portfolio" }),
 	).toBeVisible();
+	await expect(
+		page.getByRole("region", { name: "Opiniones sobre las respuestas" }),
+	).toContainText("82,4%");
 	await expect(page.locator("html")).toHaveAttribute("lang", "es");
 	await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
@@ -204,6 +213,14 @@ test("operational failure presents safe no-data state without fabricated metrics
 		page.getByRole("heading", { name: "Operational data is unavailable" }),
 	).toBeVisible();
 	await expect(page.getByText("fixture-1", { exact: true })).toHaveCount(0);
+	await expect(
+		page.getByRole("region", { name: "Answer feedback" }),
+	).toContainText("Feedback is unavailable; missing data is not zero.");
+	await expect(
+		page
+			.getByRole("region", { name: "Answer feedback" })
+			.getByRole("definition"),
+	).toHaveCount(0);
 	await expect(
 		page.getByRole("button", { name: "Refresh data" }),
 	).toBeVisible();

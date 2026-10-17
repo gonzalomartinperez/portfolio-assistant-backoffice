@@ -31,6 +31,7 @@ const env = {
 	OPERATIONS_READ_TOKEN: operationsFixtureToken,
 	OPERATIONS_SOURCE_MODE: "fixture",
 	PRODUCT_ANALYTICS_ENABLED: "true",
+	FEEDBACK_OVERVIEW_ENABLED: "true",
 };
 const database = new URL(env.BACKOFFICE_DATABASE_URL);
 if (
